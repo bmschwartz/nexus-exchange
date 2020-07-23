@@ -1,0 +1,57 @@
+scalar DateTime
+
+extend type Query {
+  groupOrderSets(input: GroupOrderSetsInput!): [OrderSet!]
+}
+
+extend type Mutation {
+  createOrderSet(input: CreateOrderSetInput!): OrderSet
+}
+
+###################
+# Order
+###################
+type Order @key(fields: "id") {
+  id: ID!
+  orderSet: OrderSet!
+  membership: GroupMembership!
+  symbol: String!
+  side: OrderSide!
+  createdAt: DateTime!
+}
+
+###################
+# OrderSet
+###################
+type OrderSet @key(fields: "id") {
+  id: ID!
+  orders: [Order!]!
+  createdAt: DateTime!
+}
+
+input CreateOrderSetInput {
+  groupId: ID!
+  description: String
+
+  # TODO: What else?
+}
+
+input GroupOrderSetsInput {
+  groupId: ID!
+}
+
+###########################
+# GroupMembership extension
+###########################
+extend type GroupMembership @key(fields: "id") {
+  id: ID! @external
+  orders: [Order!]!
+}
+
+###########################
+# Enums
+###########################
+enum OrderSide {
+  BUY
+  SELL
+}

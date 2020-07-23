@@ -1,0 +1,36 @@
+{
+  "name": "monest-exchange-service",
+  "scripts": {
+    "start": "node dist/server",
+    "clean": "rm -rf dist",
+    "build": "npm -s run clean && npm -s run generate && tsc",
+    "generate": "npm -s run generate:prisma",
+    "generate:prisma": "prisma generate",
+    "postinstall": "npm -s run generate",
+    "dev": "ts-node-dev src/server --no-notify --respawn --transpileOnly"
+  },
+  "dependencies": {
+    "@apollo/federation": "^0.18.0",
+    "@prisma/client": "2.2.2",
+    "apollo": "^2.28.0",
+    "apollo-server": "2.15.1",
+    "graphql": "15.3.0"
+  },
+  "devDependencies": {
+    "@prisma/cli": "^2.2.2",
+    "@types/node": "12.12.50",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "ts-node": "8.10.2",
+    "ts-node-dev": "1.0.0-pre.50",
+    "typescript": "3.9.6"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "trailingComma": "all"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}

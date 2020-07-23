@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id            Int        @default(autoincrement()) @id
+  orderSetId    Int
+  membershipId  Int
+  symbol        String
+  side          order_side
+  lastTimestamp DateTime?
+  createdAt     DateTime   @default(now())
+  orderSet      OrderSet   @relation(fields: [orderSetId], references: [id])
+}
+
+model OrderSet {
+  id          Int      @default(autoincrement()) @id
+  description String?
+  groupId     Int
+  createdAt   DateTime @default(now())
+  orders      Order[]
+}
+
+enum order_side {
+  BUY
+  SELL
+}
