@@ -16,11 +16,16 @@ extend type Mutation {
 ###################
 type Order @key(fields: "id") {
   id: ID!
-  orderSet: OrderSet!
-  membership: GroupMembership!
-  symbol: String!
-  side: OrderSide!
   createdAt: DateTime!
+  membership: GroupMembership!
+  orderSet: OrderSet!
+  orderSide: OrderSide!
+  orderType: OrderType!
+  price: Float
+  quantity: Float
+  stopPrice: Float
+  symbol: String!
+  lastTimestamp: DateTime!
 }
 
 ###################
@@ -28,8 +33,14 @@ type Order @key(fields: "id") {
 ###################
 type OrderSet @key(fields: "id") {
   id: ID!
-  orders: [Order!]!
   createdAt: DateTime!
+  description: String!
+  orders: [Order!]!
+  orderSide: OrderSide!
+  orderType: OrderType!
+  percent: Float!
+  price: Float
+  stopPrice: Float
 }
 
 input OrderSetInput {
@@ -72,4 +83,9 @@ extend type GroupMembership @key(fields: "id") {
 enum OrderSide {
   BUY
   SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
 }
