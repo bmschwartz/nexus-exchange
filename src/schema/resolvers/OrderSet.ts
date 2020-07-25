@@ -1,6 +1,11 @@
 import { Context } from "../../context";
 
 export const OrderSetQueries = {
+  async orderSet(parent: any, args: any, ctx: Context) {
+    const { input: { id } } = args
+    return ctx.prisma.orderSet.findOne({ where: { id: Number(id) } })
+  },
+
   async groupOrderSets(parent: any, args: any, ctx: Context) {
     const { input: { groupId } } = args
     return ctx.prisma.orderSet.findMany({ where: { groupId: Number(groupId) } })
@@ -11,9 +16,46 @@ export const OrderSetMutations = {
   async createOrderSet(parent: any, args: any, ctx: Context) {
     const { input: { groupId, description } } = args
 
-    return ctx.prisma.orderSet.create({
-      data: { groupId, description }
+    const orderSet = ctx.prisma.orderSet.create({
+      data: { groupId: Number(groupId), description }
     })
+
+    if (!orderSet) {
+      return null
+    }
+
+    // emit orderset created message
+
+    return orderSet
+  },
+
+  async updateOrderSet(parent: any, args: any, ctx: Context) {
+    const { input: { orderSetId, description } } = args
+
+    const orderSet = ctx.prisma.orderSet.update({
+      where: { id: Number(orderSetId) },
+      data: { description }
+    })
+
+    if (!orderSet) {
+      return null
+    }
+
+    // emit orderset updated message
+
+    return orderSet
+  },
+
+  async deleteOrderSet(parent: any, args: any, ctx: Context) {
+    const { input: { orderSetId } } = args
+
+    const orderSet = ctx.prisma.orderSet.delete({
+      where: { id: Number(orderSetId) }
+    })
+
+    console.log(`deleted order set ${(await orderSet).id}`)
+
+    return orderSet
   }
 }
 

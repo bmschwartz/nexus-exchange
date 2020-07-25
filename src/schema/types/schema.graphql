@@ -1,11 +1,14 @@
 scalar DateTime
 
 extend type Query {
+  orderSet(input: OrderSetInput!): OrderSet
   groupOrderSets(input: GroupOrderSetsInput!): [OrderSet!]
 }
 
 extend type Mutation {
   createOrderSet(input: CreateOrderSetInput!): OrderSet
+  updateOrderSet(input: UpdateOrderSetInput!): OrderSet
+  deleteOrderSet(input: DeleteOrderSetInput!): OrderSet
 }
 
 ###################
@@ -29,11 +32,26 @@ type OrderSet @key(fields: "id") {
   createdAt: DateTime!
 }
 
+input OrderSetInput {
+  id: ID!
+}
+
 input CreateOrderSetInput {
   groupId: ID!
   description: String
 
   # TODO: What else?
+}
+
+input UpdateOrderSetInput {
+  orderSetId: ID!
+  description: String!
+
+  # TODO: What else?
+}
+
+input DeleteOrderSetInput {
+  orderSetId: ID!
 }
 
 input GroupOrderSetsInput {

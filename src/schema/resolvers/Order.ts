@@ -12,7 +12,7 @@ export const OrderResolvers = {
     }
 
     return ctx.prisma.orderSet.findOne({
-      where: { id: order.id }
+      where: { id: Number(order.id) }
     })
   },
 
