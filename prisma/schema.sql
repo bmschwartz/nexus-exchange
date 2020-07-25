@@ -28,8 +28,11 @@ ALTER TABLE "public"."OrderSet"
   ADD COLUMN "stopPrice" DECIMAL,
   ADD COLUMN "percent" DECIMAL;
 
-  ALTER TABLE "public"."Order"
+ALTER TABLE "public"."Order"
   ADD COLUMN "orderType" ORDER_TYPE,
   ADD COLUMN "price" DECIMAL,
   ADD COLUMN "stopPrice" DECIMAL,
   ADD COLUMN "quantity" DECIMAL;
+
+ALTER TABLE "public"."OrderSet"
+  ADD COLUMN "side" ORDER_SIDE;

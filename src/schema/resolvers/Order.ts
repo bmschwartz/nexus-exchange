@@ -16,6 +16,16 @@ export const OrderResolvers = {
     })
   },
 
+  async side({ id }: any, args: any, ctx: Context) {
+    const order = await ctx.prisma.order.findOne({ where: { id } })
+    return order && order.side
+  },
+
+  async orderType({ id }: any, args: any, ctx: Context) {
+    const order = await ctx.prisma.order.findOne({ where: { id } })
+    return order && order.orderType
+  },
+
   async membership(order: any, args: any, ctx: Context) {
     return {
       id: order.membershipId

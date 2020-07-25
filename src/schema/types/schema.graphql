@@ -19,7 +19,7 @@ type Order @key(fields: "id") {
   createdAt: DateTime!
   membership: GroupMembership!
   orderSet: OrderSet!
-  orderSide: OrderSide!
+  side: OrderSide!
   orderType: OrderType!
   price: Float
   quantity: Float

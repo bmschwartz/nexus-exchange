@@ -12,21 +12,35 @@ model Order {
   orderSetId    Int
   membershipId  Int
   symbol        String
-  side          order_side
+  side          OrderSide
   lastTimestamp DateTime?
   createdAt     DateTime   @default(now())
+  orderType     OrderType?
+  price         Float?
+  stopPrice     Float?
+  quantity      Float?
   orderSet      OrderSet   @relation(fields: [orderSetId], references: [id])
 }
 
 model OrderSet {
-  id          Int      @default(autoincrement()) @id
+  id          Int        @default(autoincrement()) @id
   description String?
   groupId     Int
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
+  orderType   OrderType?
+  price       Float?
+  stopPrice   Float?
+  percent     Float?
+  side        OrderSide?
   orders      Order[]
 }
 
-enum order_side {
+enum OrderSide {
   BUY
   SELL
+}
+
+enum OrderType {
+  LIMIT
+  MARKET
 }
