@@ -14,14 +14,27 @@ export const OrderSetQueries = {
 
 export const OrderSetMutations = {
   async createOrderSet(parent: any, args: any, ctx: Context) {
-    const { input: { groupId, description } } = args
+    const {
+      input: { groupId, description, side, orderType, price, stopPrice, percent }
+    } = args
+
+    if (percent < 1 || percent > 100) {
+      throw new Error("Percent must be between 1 and 100")
+    }
+    if (stopPrice) {
+      if (side == "BUY" && stopPrice >= price) {
+        throw new Error("Stop price must be lower than entry price for BUY orders")
+      } else if (side == "SELL") {
+        throw new Error("Stop price must be higher than entry price for SELL orders")
+      }
+    }
 
     const orderSet = ctx.prisma.orderSet.create({
-      data: { groupId: Number(groupId), description }
+      data: { groupId: Number(groupId), description, side, orderType, price, stopPrice, percent }
     })
 
     if (!orderSet) {
-      return null
+      throw new Error("Unable to create the OrderSet")
     }
 
     // emit orderset created message
@@ -54,5 +67,11 @@ export const OrderSetResolvers = {
 
   async orders({ id: orderSetId }: any, args: any, ctx: Context) {
     return ctx.prisma.order.findMany({ where: { orderSetId: Number(orderSetId) } })
-  }
+  },
+
+  async orderSide({ id }: any, args: any, ctx: Context) {
+    const orderSet = await ctx.prisma.orderSet.findOne({ where: { id } })
+    console.log(orderSet)
+    return orderSet && orderSet.side
+  },
 }
