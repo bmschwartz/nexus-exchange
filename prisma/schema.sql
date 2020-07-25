@@ -2,6 +2,7 @@ DROP DATABASE IF EXISTS "monest_exchange";
 CREATE DATABASE "monest_exchange";
 
 CREATE TYPE ORDER_SIDE AS ENUM('BUY', 'SELL');
+CREATE TYPE ORDER_TYPE AS ENUM('MARKET', 'LIMIT');
 
 CREATE TABLE "public"."OrderSet" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
@@ -20,3 +21,15 @@ CREATE TABLE "public"."Order" (
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id)
 );
+
+ALTER TABLE "public"."OrderSet"
+  ADD COLUMN "orderType" ORDER_TYPE,
+  ADD COLUMN "price" DECIMAL,
+  ADD COLUMN "stopPrice" DECIMAL,
+  ADD COLUMN "percent" DECIMAL;
+
+  ALTER TABLE "public"."Order"
+  ADD COLUMN "orderType" ORDER_TYPE,
+  ADD COLUMN "price" DECIMAL,
+  ADD COLUMN "stopPrice" DECIMAL,
+  ADD COLUMN "quantity" DECIMAL;
