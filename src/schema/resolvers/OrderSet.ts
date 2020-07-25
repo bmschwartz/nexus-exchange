@@ -45,18 +45,6 @@ export const OrderSetMutations = {
 
     return orderSet
   },
-
-  async deleteOrderSet(parent: any, args: any, ctx: Context) {
-    const { input: { orderSetId } } = args
-
-    const orderSet = ctx.prisma.orderSet.delete({
-      where: { id: Number(orderSetId) }
-    })
-
-    console.log(`deleted order set ${(await orderSet).id}`)
-
-    return orderSet
-  }
 }
 
 export const OrderSetResolvers = {

@@ -32,3 +32,17 @@ export const OrderResolvers = {
     }
   },
 }
+
+export const OrderMutations = {
+  async cancelOrder(parent: any, args: any, ctx: Context) {
+    const { input: { orderId } } = args
+    const order = await ctx.prisma.order.findOne({ where: { id: Number(orderId) } })
+    if (!order) {
+      throw new Error("Order not found")
+    }
+
+    // emit cancel order message
+
+    return order
+  }
+}

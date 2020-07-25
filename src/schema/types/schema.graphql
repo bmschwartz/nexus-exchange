@@ -8,7 +8,8 @@ extend type Query {
 extend type Mutation {
   createOrderSet(input: CreateOrderSetInput!): OrderSet
   updateOrderSet(input: UpdateOrderSetInput!): OrderSet
-  deleteOrderSet(input: DeleteOrderSetInput!): OrderSet
+
+  cancelOrder(input: CancelOrderInput!): Order
 }
 
 ###################
@@ -26,6 +27,10 @@ type Order @key(fields: "id") {
   stopPrice: Float
   symbol: String!
   lastTimestamp: DateTime!
+}
+
+input CancelOrderInput {
+  orderId: String!
 }
 
 ###################
@@ -50,19 +55,18 @@ input OrderSetInput {
 input CreateOrderSetInput {
   groupId: ID!
   description: String
-
-  # TODO: What else?
+  side: OrderSide!
+  orderType: OrderType!
+  price: Float
+  stopPrice: Float
+  percent: Float
 }
 
 input UpdateOrderSetInput {
   orderSetId: ID!
   description: String!
-
-  # TODO: What else?
-}
-
-input DeleteOrderSetInput {
-  orderSetId: ID!
+  price: Float
+  stopPrice: Float
 }
 
 input GroupOrderSetsInput {
