@@ -13,7 +13,8 @@ const server = new ApolloServer({
     }
   ]),
   engine: {
-    graphVariant: "current"
+    graphVariant: "current",
+    reportSchema: true
   },
   context: createContext
 });
