@@ -3,6 +3,9 @@ scalar DateTime
 extend type Query {
   orderSet(input: OrderSetInput!): OrderSet
   groupOrderSets(input: GroupOrderSetsInput!): [OrderSet!]
+
+  binanceCurrencies: [BinanceCurrency!]!
+  bitmexCurrencies: [BitmexCurrency!]!
 }
 
 extend type Mutation {
@@ -71,6 +74,36 @@ input UpdateOrderSetInput {
 
 input GroupOrderSetsInput {
   groupId: ID!
+}
+
+###########################
+# BitmexCurrency
+###########################
+
+type BitmexCurrency @key(fields: "id") {
+  id: ID!
+  symbol: String!
+  underlying: String!
+  active: Boolean!
+  fractionalDigits: Int
+  lastPrice: Float
+  markPrice: Float
+  tickSize: Float
+}
+
+###########################
+# BinanceCurrency
+###########################
+
+type BinanceCurrency @key(fields: "id") {
+  id: ID!
+  symbol: String!
+  lastPrice: String
+  openPrice: String
+  highPrice: String
+  lowPrice: String
+  priceChange: String
+  priceChangePercent: String
 }
 
 ###########################
