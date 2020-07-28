@@ -103,7 +103,7 @@ VALUES ('XRPUSD', 'XRP', TRUE, 4, 0.2189, 0.2192, 0.0001);
 
 
 
-/** BitmexCurrency */
+/** BinanceCurrency */
 INSERT INTO "BinanceCurrency" ("symbol", "lastPrice", "openPrice", "highPrice", "lowPrice", "priceChange", "priceChangePercent")
 VALUES ('BTCUSD', '10439', '10400', '10500', '10400', '500', '0.0096');
 
