@@ -22,6 +22,28 @@ CREATE TABLE "public"."Order" (
   FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id)
 );
 
+CREATE TABLE "public"."BitmexCurrency" (
+  id SERIAL PRIMARY KEY NOT NULL,
+  symbol VARCHAR(255) UNIQUE NOT NULL,
+  underlying VARCHAR(255) UNIQUE NOT NULL,
+  active BOOLEAN DEFAULT false,
+  "fractionalDigits" INTEGER,
+  "lastPrice" DECIMAL,
+  "markPrice" DECIMAL,
+  "tickSize" DECIMAL
+);
+
+CREATE TABLE "public"."BinanceCurrency" (
+  id SERIAL PRIMARY KEY NOT NULL,
+  symbol VARCHAR(255) UNIQUE NOT NULL,
+  "lastPrice" VARCHAR(255),
+  "openPrice" VARCHAR(255),
+  "highPrice" VARCHAR(255),
+  "lowPrice" VARCHAR(255),
+  "priceChange" VARCHAR(255),
+  "priceChangePercent" VARCHAR(255)
+);
+
 ALTER TABLE "public"."OrderSet"
   ADD COLUMN "orderType" ORDER_TYPE,
   ADD COLUMN "price" DECIMAL,

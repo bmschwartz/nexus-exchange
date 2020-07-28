@@ -7,6 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BinanceCurrency {
+  id                 Int     @default(autoincrement()) @id
+  symbol             String  @unique
+  lastPrice          String?
+  openPrice          String?
+  highPrice          String?
+  lowPrice           String?
+  priceChange        String?
+  priceChangePercent String?
+}
+
+model BitmexCurrency {
+  id               Int      @default(autoincrement()) @id
+  symbol           String   @unique
+  underlying       String   @unique
+  active           Boolean? @default(false)
+  fractionalDigits Int?
+  lastPrice        Float?
+  markPrice        Float?
+  tickSize         Float?
+}
+
 model Order {
   id            Int        @default(autoincrement()) @id
   orderSetId    Int
