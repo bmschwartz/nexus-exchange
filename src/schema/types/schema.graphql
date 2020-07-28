@@ -98,12 +98,12 @@ type BitmexCurrency @key(fields: "id") {
 type BinanceCurrency @key(fields: "id") {
   id: ID!
   symbol: String!
-  lastPrice: String
-  openPrice: String
-  highPrice: String
-  lowPrice: String
-  priceChange: String
-  priceChangePercent: String
+  lastPrice: Float
+  openPrice: Float
+  highPrice: Float
+  lowPrice: Float
+  priceChange: Float
+  priceChangePercent: Float
 }
 
 ###########################
