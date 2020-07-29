@@ -4,13 +4,19 @@ const prisma = new PrismaClient()
 
 export interface Context {
   userId?: number
+  permissions: string[]
   prisma: PrismaClient
 }
 
 export function createContext({ req }: any): Context {
-  const { userid: userId } = req.headers
+  let { userid, permissions } = req.headers
+
+  const userId = userid !== 'undefined' ? Number(userid) : undefined
+  permissions = permissions !== 'undefined' ? JSON.parse(permissions) : []
+
   return {
     prisma,
-    userId: Number(userId),
+    userId,
+    permissions,
   }
 }

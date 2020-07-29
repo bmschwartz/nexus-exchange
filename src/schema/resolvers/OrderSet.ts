@@ -71,7 +71,6 @@ export const OrderSetResolvers = {
 
   async orderSide({ id }: any, args: any, ctx: Context) {
     const orderSet = await ctx.prisma.orderSet.findOne({ where: { id } })
-    console.log(orderSet)
     return orderSet && orderSet.side
   },
 }
