@@ -8,7 +8,7 @@ export const OrderResolvers = {
     const order = await ctx.prisma.order.findOne({ where: { id: Number(orderId) } })
 
     if (!order) {
-      throw new Error("Could not find order!")
+      return new Error("Could not find order!")
     }
 
     return ctx.prisma.orderSet.findOne({
@@ -38,7 +38,7 @@ export const OrderMutations = {
     const { input: { orderId } } = args
     const order = await ctx.prisma.order.findOne({ where: { id: Number(orderId) } })
     if (!order) {
-      throw new Error("Order not found")
+      return new Error("Order not found")
     }
 
     // emit cancel order message

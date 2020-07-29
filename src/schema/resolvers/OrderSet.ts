@@ -19,13 +19,13 @@ export const OrderSetMutations = {
     } = args
 
     if (percent < 1 || percent > 100) {
-      throw new Error("Percent must be between 1 and 100")
+      return new Error("Percent must be between 1 and 100")
     }
     if (stopPrice) {
       if (side == "BUY" && stopPrice >= price) {
-        throw new Error("Stop price must be lower than entry price for BUY orders")
+        return new Error("Stop price must be lower than entry price for BUY orders")
       } else if (side == "SELL") {
-        throw new Error("Stop price must be higher than entry price for SELL orders")
+        return new Error("Stop price must be higher than entry price for SELL orders")
       }
     }
 
@@ -34,7 +34,7 @@ export const OrderSetMutations = {
     })
 
     if (!orderSet) {
-      throw new Error("Unable to create the OrderSet")
+      return new Error("Unable to create the OrderSet")
     }
 
     // emit orderset created message
