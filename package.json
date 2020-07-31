@@ -1,5 +1,5 @@
 {
-  "name": "monest-exchange-service",
+  "name": "nexus-exchange",
   "scripts": {
     "start": "node dist/server",
     "clean": "rm -rf dist",
