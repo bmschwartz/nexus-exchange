@@ -1,4 +1,4 @@
-import { Context } from "../../context";
+import { Context } from '../../context'
 
 export const BinanceQueries = {
   async binanceCurrencies(parent: any, args: any, ctx: Context) {
@@ -8,6 +8,8 @@ export const BinanceQueries = {
 
 export const BinanceResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return ctx.prisma.binanceCurrency.findOne({ where: { id: Number(parent.id) } })
+    return ctx.prisma.binanceCurrency.findOne({
+      where: { id: Number(parent.id) },
+    })
   },
 }
