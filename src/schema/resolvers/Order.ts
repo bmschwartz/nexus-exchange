@@ -1,4 +1,4 @@
-import { Context } from '../../context'
+import { Context } from "../../context"
 
 export const OrderResolvers = {
   async __resolveReference(order: any, args: any, ctx: Context) {
@@ -10,7 +10,7 @@ export const OrderResolvers = {
     })
 
     if (!order) {
-      return new Error('Could not find order!')
+      return new Error("Could not find order!")
     }
 
     return ctx.prisma.orderSet.findOne({
@@ -44,7 +44,7 @@ export const OrderMutations = {
       where: { id: Number(orderId) },
     })
     if (!order) {
-      return new Error('Order not found')
+      return new Error("Order not found")
     }
 
     // emit cancel order message

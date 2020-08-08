@@ -1,4 +1,4 @@
-import { rule, shield } from 'graphql-shield'
+import { rule, shield } from "graphql-shield"
 
 const isAuthenticated = rule()((parent, args, { userId }) => {
   return !!userId

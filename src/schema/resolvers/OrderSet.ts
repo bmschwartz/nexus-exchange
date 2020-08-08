@@ -1,4 +1,4 @@
-import { Context } from '../../context'
+import { Context } from "../../context"
 
 export const OrderSetQueries = {
   async orderSet(parent: any, args: any, ctx: Context) {
@@ -31,16 +31,16 @@ export const OrderSetMutations = {
     } = args
 
     if (percent < 1 || percent > 100) {
-      return new Error('Percent must be between 1 and 100')
+      return new Error("Percent must be between 1 and 100")
     }
     if (stopPrice) {
-      if (side == 'BUY' && stopPrice >= price) {
+      if (side == "BUY" && stopPrice >= price) {
         return new Error(
-          'Stop price must be lower than entry price for BUY orders',
+          "Stop price must be lower than entry price for BUY orders",
         )
-      } else if (side == 'SELL') {
+      } else if (side == "SELL") {
         return new Error(
-          'Stop price must be higher than entry price for SELL orders',
+          "Stop price must be higher than entry price for SELL orders",
         )
       }
     }
@@ -58,7 +58,7 @@ export const OrderSetMutations = {
     })
 
     if (!orderSet) {
-      return new Error('Unable to create the OrderSet')
+      return new Error("Unable to create the OrderSet")
     }
 
     // emit orderset created message

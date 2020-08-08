@@ -1,11 +1,11 @@
-import { ApolloServer } from 'apollo-server'
-import { buildFederatedSchema } from '@apollo/federation'
-import { applyMiddleware } from 'graphql-middleware'
+import { ApolloServer } from "apollo-server"
+import { buildFederatedSchema } from "@apollo/federation"
+import { applyMiddleware } from "graphql-middleware"
 
-import { typeDefs } from './schema/types'
-import { resolvers } from './schema/resolvers'
-import { createContext } from './context'
-import { permissions } from './permissions'
+import { typeDefs } from "./schema/types"
+import { resolvers } from "./schema/resolvers"
+import { createContext } from "./context"
+import { permissions } from "./permissions"
 
 const server = new ApolloServer({
   schema: applyMiddleware(
@@ -13,7 +13,7 @@ const server = new ApolloServer({
     permissions,
   ),
   engine: {
-    graphVariant: 'current',
+    graphVariant: "current",
     reportSchema: true,
   },
   context: createContext,

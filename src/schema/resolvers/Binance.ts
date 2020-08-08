@@ -1,4 +1,4 @@
-import { Context } from '../../context'
+import { Context } from "../../context"
 
 export const BinanceQueries = {
   async binanceCurrencies(parent: any, args: any, ctx: Context) {
