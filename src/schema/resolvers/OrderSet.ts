@@ -34,11 +34,11 @@ export const OrderSetMutations = {
       return new Error("Percent must be between 1 and 100")
     }
     if (stopPrice) {
-      if (side == "BUY" && stopPrice >= price) {
+      if (side === "BUY" && stopPrice >= price) {
         return new Error(
           "Stop price must be lower than entry price for BUY orders",
         )
-      } else if (side == "SELL") {
+      } else if (side === "SELL") {
         return new Error(
           "Stop price must be higher than entry price for SELL orders",
         )

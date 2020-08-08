@@ -9,9 +9,9 @@ export interface Context {
 }
 
 export function createContext({ req }: any): Context {
-  let { userid, permissions } = req.headers
+  let { userid: userId, permissions } = req.headers
 
-  const userId = userid !== "undefined" ? Number(userid) : undefined
+  userId = userId !== "undefined" ? Number(userId) : undefined
   permissions = permissions !== "undefined" ? JSON.parse(permissions) : []
 
   return {
