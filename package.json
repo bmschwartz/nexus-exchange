@@ -20,7 +20,7 @@
     "graphql-shield": "^7.3.3"
   },
   "devDependencies": {
-    "@prisma/cli": "^2.4.0",
+    "@prisma/cli": "^2.6.0",
     "@types/node": "12.12.50",
     "fs": "0.0.1-security",
     "path": "^0.12.7",
