@@ -8,14 +8,16 @@ datasource db {
 }
 
 model BinanceCurrency {
-  id                 Int     @default(autoincrement()) @id
-  symbol             String  @unique
+  id                 Int      @default(autoincrement()) @id
+  symbol             String   @unique
   lastPrice          String?
   openPrice          String?
   highPrice          String?
   lowPrice           String?
   priceChange        String?
   priceChangePercent String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
 }
 
 model BitmexCurrency {
@@ -27,6 +29,8 @@ model BitmexCurrency {
   lastPrice        Float?
   markPrice        Float?
   tickSize         Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
 }
 
 model Order {
@@ -36,11 +40,12 @@ model Order {
   symbol        String
   side          OrderSide
   lastTimestamp DateTime?
-  createdAt     DateTime   @default(now())
   orderType     OrderType?
   price         Float?
   stopPrice     Float?
   quantity      Float?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now())
   orderSet      OrderSet   @relation(fields: [orderSetId], references: [id])
 }
 
@@ -48,13 +53,14 @@ model OrderSet {
   id          Int        @default(autoincrement()) @id
   description String?
   groupId     Int
-  createdAt   DateTime   @default(now())
   orderType   OrderType?
   price       Float?
   stopPrice   Float?
   percent     Float?
   side        OrderSide?
   orders      Order[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
 }
 
 enum OrderSide {

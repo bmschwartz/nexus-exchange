@@ -58,3 +58,19 @@ ALTER TABLE "public"."Order"
 
 ALTER TABLE "public"."OrderSet"
   ADD COLUMN "side" ORDER_SIDE;
+-------------------------------
+
+------- ADD DATE FIELDS -------
+ALTER TABLE "public"."OrderSet"
+  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
+
+ALTER TABLE "public"."Order"
+  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
+
+ALTER TABLE "public"."BitmexCurrency"
+  ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
+
+ALTER TABLE "public"."BinanceCurrency"
+  ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
