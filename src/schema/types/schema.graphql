@@ -21,6 +21,7 @@ extend type Mutation {
 type Order @key(fields: "id") {
   id: ID!
   createdAt: DateTime!
+  updatedAt: DateTime!
   membership: GroupMembership!
   orderSet: OrderSet!
   side: OrderSide
@@ -42,6 +43,7 @@ input CancelOrderInput {
 type OrderSet @key(fields: "id") {
   id: ID!
   createdAt: DateTime!
+  updatedAt: DateTime!
   description: String!
   orders: [Order!]!
   orderSide: OrderSide
@@ -82,6 +84,8 @@ input GroupOrderSetsInput {
 
 type BitmexCurrency @key(fields: "id") {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   symbol: String!
   underlying: String!
   active: Boolean!
@@ -97,6 +101,8 @@ type BitmexCurrency @key(fields: "id") {
 
 type BinanceCurrency @key(fields: "id") {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   symbol: String!
   lastPrice: Float
   openPrice: Float
