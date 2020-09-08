@@ -8,7 +8,13 @@ CREATE TABLE "public"."OrderSet" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   "description" TEXT,
   "groupId" INTEGER NOT NULL,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT now()
+  "orderType" ORDER_TYPE NOT NULL,
+  "price" DECIMAL,
+  "stopPrice" DECIMAL,
+  "percent" DECIMAL NOT NULL,
+  "side" ORDER_SIDE NOT NULL,
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."Order" (
@@ -18,7 +24,12 @@ CREATE TABLE "public"."Order" (
   "symbol" VARCHAR(255) NOT NULL,
   "side" ORDER_SIDE NOT NULL,
   "lastTimestamp" TIMESTAMP,
+  "orderType" ORDER_TYPE,
+  "price" DECIMAL,
+  "stopPrice" DECIMAL,
+  "quantity" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
   FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id)
 );
 
@@ -30,7 +41,9 @@ CREATE TABLE "public"."BitmexCurrency" (
   "fractionalDigits" INTEGER,
   "lastPrice" DECIMAL,
   "markPrice" DECIMAL,
-  "tickSize" DECIMAL
+  "tickSize" DECIMAL,
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
 
 CREATE TABLE "public"."BinanceCurrency" (
@@ -41,36 +54,7 @@ CREATE TABLE "public"."BinanceCurrency" (
   "highPrice" VARCHAR(255),
   "lowPrice" VARCHAR(255),
   "priceChange" VARCHAR(255),
-  "priceChangePercent" VARCHAR(255)
+  "priceChangePercent" VARCHAR(255),
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
-
-ALTER TABLE "public"."OrderSet"
-  ADD COLUMN "orderType" ORDER_TYPE,
-  ADD COLUMN "price" DECIMAL,
-  ADD COLUMN "stopPrice" DECIMAL,
-  ADD COLUMN "percent" DECIMAL;
-
-ALTER TABLE "public"."Order"
-  ADD COLUMN "orderType" ORDER_TYPE,
-  ADD COLUMN "price" DECIMAL,
-  ADD COLUMN "stopPrice" DECIMAL,
-  ADD COLUMN "quantity" DECIMAL;
-
-ALTER TABLE "public"."OrderSet"
-  ADD COLUMN "side" ORDER_SIDE;
--------------------------------
-
-------- ADD DATE FIELDS -------
-ALTER TABLE "public"."OrderSet"
-  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
-
-ALTER TABLE "public"."Order"
-  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
-
-ALTER TABLE "public"."BitmexCurrency"
-  ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();
-
-ALTER TABLE "public"."BinanceCurrency"
-  ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-  ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now();

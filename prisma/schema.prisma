@@ -50,17 +50,17 @@ model Order {
 }
 
 model OrderSet {
-  id          Int        @default(autoincrement()) @id
+  id          Int       @default(autoincrement()) @id
   description String?
   groupId     Int
-  orderType   OrderType?
+  orderType   OrderType
   price       Float?
   stopPrice   Float?
-  percent     Float?
-  side        OrderSide?
+  percent     Float
+  side        OrderSide
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
   orders      Order[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
 }
 
 enum OrderSide {
