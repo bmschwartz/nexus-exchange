@@ -1,15 +1,14 @@
+import { getBinanceCurrencies, getBinanceCurrency } from "src/controllers/BinanceController"
 import { Context } from "../../context"
 
 export const BinanceQueries = {
   async binanceCurrencies(parent: any, args: any, ctx: Context) {
-    return ctx.prisma.binanceCurrency.findMany()
+    return getBinanceCurrencies(ctx)
   },
 }
 
 export const BinanceResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return ctx.prisma.binanceCurrency.findOne({
-      where: { id: Number(parent.id) },
-    })
+    return getBinanceCurrency(ctx, Number(parent.id))
   },
 }

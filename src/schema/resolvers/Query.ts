@@ -1,6 +1,6 @@
-import { OrderSetQueries } from "./OrderSet"
-import { BinanceQueries } from "./Binance"
-import { BitmexQueries } from "./Bitmex"
+import { OrderSetQueries } from "./OrderSetResolvers"
+import { BinanceQueries } from "./BinanceResolvers"
+import { BitmexQueries } from "./BitmexResolvers"
 
 export const Query = {
   ...BitmexQueries,

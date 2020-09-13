@@ -1,10 +1,10 @@
 import { Query } from "./Query"
 import { Mutation } from "./Mutation"
-import { OrderSetResolvers } from "./OrderSet"
-import { OrderResolvers } from "./Order"
-import { GroupMembershipResolvers } from "./GroupMembership"
-import { BinanceResolvers } from "./Binance"
-import { BitmexResolvers } from "./Bitmex"
+import { OrderSetResolvers } from "./OrderSetResolvers"
+import { OrderResolvers } from "./OrderResolvers"
+import { GroupMembershipResolvers } from "./GroupMembershipResolvers"
+import { BinanceResolvers } from "./BinanceResolvers"
+import { BitmexResolvers } from "./BitmexResolvers"
 
 export const resolvers: any = {
   Query,
