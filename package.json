@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@apollo/federation": "^0.18.0",
-    "@prisma/client": "2.6.2",
+    "@prisma/client": "^2.7.1",
     "apollo": "^2.30.2",
     "apollo-server": "2.15.1",
     "graphql": "15.3.0",
@@ -20,7 +20,7 @@
     "graphql-shield": "^7.3.3"
   },
   "devDependencies": {
-    "@prisma/cli": "^2.6.2",
+    "@prisma/cli": "^2.7.1",
     "@types/node": "12.12.50",
     "fs": "0.0.1-security",
     "path": "^0.12.7",
