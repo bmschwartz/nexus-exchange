@@ -57,6 +57,8 @@ model OrderSet {
   price       Float?
   stopPrice   Float?
   percent     Float
+  exchange    Exchange
+  symbol      String
   side        OrderSide
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
@@ -71,4 +73,9 @@ enum OrderSide {
 enum OrderType {
   LIMIT
   MARKET
+}
+
+enum Exchange {
+  BINANCE
+  BITMEX
 }

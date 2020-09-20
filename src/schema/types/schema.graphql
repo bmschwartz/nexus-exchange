@@ -59,6 +59,7 @@ input OrderSetInput {
 
 input CreateOrderSetInput {
   groupId: ID!
+  currency: Currency!
   description: String
   side: OrderSide!
   orderType: OrderType!
@@ -131,4 +132,9 @@ enum OrderSide {
 enum OrderType {
   MARKET
   LIMIT
+}
+
+enum Exchange {
+  BINANCE
+  BITMEX
 }
