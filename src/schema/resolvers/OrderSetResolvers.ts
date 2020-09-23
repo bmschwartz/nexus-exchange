@@ -1,4 +1,4 @@
-import { getOrderSet, getGroupOrderSets, createOrderSet } from "src/controllers/OrderSetController"
+import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "src/controllers/OrderSetController"
 import { Context } from "../../context"
 
 export const OrderSetQueries = {
@@ -41,18 +41,7 @@ export const OrderSetMutations = {
       input: { orderSetId, description },
     } = args
 
-    const orderSet = ctx.prisma.orderSet.update({
-      where: { id: Number(orderSetId) },
-      data: { description },
-    })
-
-    if (!orderSet) {
-      return null
-    }
-
-    // emit orderset updated message
-
-    return orderSet
+    return updateOrderSet(ctx, { orderSetId, description })
   },
 }
 
@@ -62,13 +51,10 @@ export const OrderSetResolvers = {
   },
 
   async orders({ id: orderSetId }: any, args: any, ctx: Context) {
-    return ctx.prisma.order.findMany({
-      where: { orderSetId: Number(orderSetId) },
-    })
+    return getOrders(ctx, orderSetId)
   },
 
-  async orderSide({ id }: any, args: any, ctx: Context) {
-    const orderSet = await ctx.prisma.orderSet.findOne({ where: { id } })
-    return orderSet && orderSet.side
+  async orderSide({ id: orderSetId }: any, args: any, ctx: Context) {
+    return getOrderSide(ctx, orderSetId)
   },
 }
