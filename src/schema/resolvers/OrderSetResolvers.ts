@@ -1,5 +1,5 @@
-import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "src/controllers/OrderSetController"
-import { Context } from "../../context"
+import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../controllers/OrderSetController"
+import { Context } from "src/context"
 
 export const OrderSetQueries = {
   async orderSet(parent: any, args: any, ctx: Context) {

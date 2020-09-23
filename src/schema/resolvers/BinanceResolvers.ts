@@ -1,4 +1,4 @@
-import { getBinanceCurrencies, getBinanceCurrency } from "src/controllers/BinanceController"
+import { getBinanceCurrencies, getBinanceCurrency } from "../../controllers/BinanceController"
 import { Context } from "../../context"
 
 export const BinanceQueries = {

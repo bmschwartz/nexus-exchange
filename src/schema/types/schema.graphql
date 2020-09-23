@@ -59,7 +59,8 @@ input OrderSetInput {
 
 input CreateOrderSetInput {
   groupId: ID!
-  currency: Currency!
+  symbol: String!
+  exchange: Exchange!
   description: String
   side: OrderSide!
   orderType: OrderType!
