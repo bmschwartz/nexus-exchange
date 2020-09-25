@@ -1,4 +1,4 @@
-import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../controllers/OrderSetController"
+import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
 import { Context } from "src/context"
 
 export const OrderSetQueries = {

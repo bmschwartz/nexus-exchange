@@ -1,4 +1,4 @@
-import { getBitmexCurrencies, getBitmexCurrency } from "../../controllers/BitmexController"
+import { getBitmexCurrencies, getBitmexCurrency } from "../../repository/BitmexRepository"
 import { Context } from "../../context"
 
 export const BitmexQueries = {

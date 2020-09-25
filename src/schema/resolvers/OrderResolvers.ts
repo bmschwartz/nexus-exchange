@@ -1,4 +1,4 @@
-import { cancelOrder, getOrder, getOrderSet, getOrderSide, getOrderType } from "../../controllers/OrderController"
+import { cancelOrder, getOrder, getOrderSet, getOrderSide, getOrderType } from "../../repository/OrderRepository"
 import { Context } from "../../context"
 
 export const OrderResolvers = {

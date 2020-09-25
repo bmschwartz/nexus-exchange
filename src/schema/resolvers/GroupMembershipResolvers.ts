@@ -1,4 +1,4 @@
-import { getOrders } from "../../controllers/GroupMembershipController"
+import { getOrders } from "../../repository/GroupMembershipRepository"
 import { Context } from "../../context"
 
 export const GroupMembershipResolvers = {
