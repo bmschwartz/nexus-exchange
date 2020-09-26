@@ -23,9 +23,9 @@ type Order @key(fields: "id") {
   createdAt: DateTime!
   updatedAt: DateTime!
   membership: GroupMembership!
-  side: OrderSide!
-  orderType: OrderType!
-  exchange: Exchange!
+  orderSet: OrderSet!
+  side: OrderSide
+  orderType: OrderType
   price: Float
   quantity: Float
   stopPrice: Float
@@ -42,7 +42,6 @@ input CancelOrderInput {
 ###################
 type OrderSet @key(fields: "id") {
   id: ID!
-  exchange: Exchange!
   createdAt: DateTime!
   updatedAt: DateTime!
   description: String!
@@ -79,31 +78,6 @@ input UpdateOrderSetInput {
 
 input GroupOrderSetsInput {
   groupId: ID!
-  exchange: Exchange
-}
-
-###################
-# ExchangeAccount
-###################
-type ExchangeAccount @key(fields: "id") {
-  id: ID!
-  exchange: Exchange!
-  active: Boolean!
-  apiKey: String!
-  apiSecret: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-input CreateExchangeAccount {
-  membershipId: ID!
-  exchange: Exchange!
-}
-
-input UpdateExchangeAccount {
-  exchangeAccountId: String!
-  apiKey: String!
-  apiSecet: String!
 }
 
 ###########################
@@ -145,8 +119,7 @@ type BinanceCurrency @key(fields: "id") {
 ###########################
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
-  exchangeAccounts: [ExchangeAccount!]!
-  orders(exchange: Exchange): [Order!]!
+  orders: [Order!]!
 }
 
 ###########################

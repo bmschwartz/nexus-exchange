@@ -3,7 +3,6 @@ import { Context } from "../../context"
 
 export const GroupMembershipResolvers = {
   async orders(membership: any, args: any, ctx: Context) {
-    const { exchange } = args
-    return getOrders(ctx, Number(membership.id), exchange)
+    return getOrders(ctx, Number(membership.id))
   },
 }

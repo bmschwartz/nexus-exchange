@@ -65,17 +65,6 @@ model OrderSet {
   orders      Order[]
 }
 
-model ExchangeAccount {
-  id           Int      @default(autoincrement()) @id
-  membershipId Int
-  active       Boolean
-  exchange     Exchange
-  apiKey       String
-  apiSecret    String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
-}
-
 enum OrderSide {
   BUY
   SELL
