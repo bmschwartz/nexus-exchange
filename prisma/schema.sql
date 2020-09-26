@@ -60,6 +60,17 @@ CREATE TABLE "public"."BinanceCurrency" (
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
 
+CREATE TABLE "public"."ExchangeAccount" (
+  id BIGSERIAL PRIMARY KEY NOT NULL,
+  active BOOLEAN DEFAULT false,
+  exchange EXCHANGE NOT NULL,
+  "membershipId" INTEGER NOT NULL,
+  "apiKey" VARCHAR(255) NOT NULL,
+  "apiSecret" VARCHAR(255) NOT NULL,
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
+);
+
 ALTER TABLE "public"."OrderSet"
 ADD COLUMN exchange EXCHANGE NOT NULL,
 ADD COLUMN symbol VARCHAR(255) NOT NULL;
