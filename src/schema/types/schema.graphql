@@ -80,11 +80,13 @@ input GroupOrderSetsInput {
   groupId: ID!
 }
 
-###################
+###########################
 # ExchangeAccount
-###################
+###########################
+
 type ExchangeAccount @key(fields: "id") {
   id: ID!
+  active: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
   exchange: Exchange!

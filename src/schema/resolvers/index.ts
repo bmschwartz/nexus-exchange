@@ -5,6 +5,7 @@ import { OrderResolvers } from "./OrderResolvers"
 import { GroupMembershipResolvers } from "./GroupMembershipResolvers"
 import { BinanceResolvers } from "./BinanceResolvers"
 import { BitmexResolvers } from "./BitmexResolvers"
+import { ExchangeAccountResolvers } from "./ExchangeAccountResolvers";
 
 export const resolvers: any = {
   Query,
@@ -14,4 +15,5 @@ export const resolvers: any = {
   BitmexCurrency: BitmexResolvers,
   BinanceCurrency: BinanceResolvers,
   GroupMembership: GroupMembershipResolvers,
+  ExchangeAccount: ExchangeAccountResolvers,
 }
