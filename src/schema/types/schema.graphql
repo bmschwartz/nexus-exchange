@@ -13,6 +13,8 @@ extend type Mutation {
   updateOrderSet(input: UpdateOrderSetInput!): OrderSet
 
   cancelOrder(input: CancelOrderInput!): Order
+
+  createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
 }
 
 ###################
@@ -91,6 +93,13 @@ type ExchangeAccount @key(fields: "id") {
   updatedAt: DateTime!
   exchange: Exchange!
   membership: GroupMembership!
+  apiKey: String!
+  apiSecret: String!
+}
+
+input CreateExchangeAccountInput {
+  exchange: Exchange!
+  membershipId: ID!
   apiKey: String!
   apiSecret: String!
 }
