@@ -57,12 +57,30 @@ model OrderSet {
   price       Float?
   stopPrice   Float?
   percent     Float
-  exchange    Exchange
-  symbol      String
   side        OrderSide
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
+  exchange    Exchange
+  symbol      String
   orders      Order[]
+}
+
+model ExchangeAccount {
+  id           Int      @default(autoincrement()) @id
+  active       Boolean  @default(false)
+  exchange     Exchange
+  membershipId Int
+  apiKey       String
+  apiSecret    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
+}
+
+enum Exchange {
+  BINANCE
+  BITMEX
 }
 
 enum OrderSide {
@@ -73,9 +91,4 @@ enum OrderSide {
 enum OrderType {
   LIMIT
   MARKET
-}
-
-enum Exchange {
-  BINANCE
-  BITMEX
 }
