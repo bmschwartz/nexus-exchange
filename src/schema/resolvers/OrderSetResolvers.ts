@@ -22,10 +22,11 @@ export const OrderSetMutations = {
     const {
       input: {
         groupId,
-        description,
-        side,
+        exchangeAccountIds,
         symbol,
         exchange,
+        description,
+        side,
         orderType,
         price,
         stopPrice,
@@ -33,7 +34,7 @@ export const OrderSetMutations = {
       },
     } = args
 
-    return createOrderSet(ctx, { groupId, symbol, exchange, description, side, orderType, price, stopPrice, percent })
+    return createOrderSet(ctx, { groupId, exchangeAccountIds, symbol, exchange, description, side, orderType, price, stopPrice, percent })
   },
 
   async updateOrderSet(parent: any, args: any, ctx: Context) {

@@ -1,4 +1,4 @@
-import { getBitmexCurrencies, getBitmexCurrency } from "../../repository/BitmexRepository"
+import { getBitmexCurrencies, getBitmexCurrencyById } from "../../repository/BitmexRepository"
 import { Context } from "../../context"
 
 export const BitmexQueries = {
@@ -9,6 +9,6 @@ export const BitmexQueries = {
 
 export const BitmexResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return getBitmexCurrency(ctx, Number(parent.id))
+    return getBitmexCurrencyById(ctx, Number(parent.id))
   },
 }

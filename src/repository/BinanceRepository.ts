@@ -5,12 +5,12 @@ export const getBinanceCurrencies = async (ctx: Context): Promise<BinanceCurrenc
   return ctx.prisma.binanceCurrency.findMany()
 }
 
-export const getBinanceCurrency = async (ctx: Context, id: number): Promise<BinanceCurrency | null> => {
+export const getBinanceCurrencyById = async (ctx: Context, id: number): Promise<BinanceCurrency | null> => {
   return ctx.prisma.binanceCurrency.findOne({
     where: { id },
   })
 }
 
-export const getCurrency = async (ctx: Context, symbol: String, exchange: Exchange): Promise<BinanceCurrency | BitmexCurrency | null> => {
-  return null
+export const getBinanceCurrency = async (ctx: Context, symbol: string): Promise<BinanceCurrency | null> => {
+  return ctx.prisma.binanceCurrency.findOne({ where: { symbol } })
 }

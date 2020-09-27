@@ -1,4 +1,4 @@
-import { getBinanceCurrencies, getBinanceCurrency } from "../../repository/BinanceRepository"
+import { getBinanceCurrencies, getBinanceCurrencyById } from "../../repository/BinanceRepository"
 import { Context } from "../../context"
 
 export const BinanceQueries = {
@@ -9,6 +9,6 @@ export const BinanceQueries = {
 
 export const BinanceResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return getBinanceCurrency(ctx, Number(parent.id))
+    return getBinanceCurrencyById(ctx, Number(parent.id))
   },
 }

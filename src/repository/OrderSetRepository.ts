@@ -3,6 +3,7 @@ import { Context } from "src/context";
 
 interface CreateOrderSetInput {
   groupId: number;
+  exchangeAccountIds: number[]
   percent: number;
   side: OrderSide;
   symbol: string;
@@ -33,6 +34,7 @@ export const getGroupOrderSets = async (ctx: Context, groupId: number): Promise<
 export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): Promise<OrderSet | null | Error> => {
   const {
     groupId,
+    exchangeAccountIds,
     description,
     side,
     exchange,
@@ -49,6 +51,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     exchange,
     percent,
     side,
+    exchangeAccountIds,
     price,
     stopPrice
   )
@@ -107,9 +110,18 @@ export const getOrderSide = async (ctx: Context, orderSetId: number): Promise<Or
   return orderSet && orderSet.side
 }
 
-export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, price?: number, stopPrice?: number): Promise<Error | undefined> => {
+export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: number[], price?: number, stopPrice?: number): Promise<Error | undefined> => {
   if (!exchangeExists(exchange)) {
     return new Error("Exchange does not exist")
+  }
+
+  if (exchangeAccountIds.length === 0) {
+    return new Error("Must have at least one member selected")
+  }
+
+  const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({ where: { id: { in: exchangeAccountIds } } })
+  if (exchangeAccounts.filter(account => !account.active).length > 0) {
+    return new Error("One or more accounts is inactive")
   }
 
   const currency = await getCurrency(ctx, exchange, symbol)

@@ -61,6 +61,7 @@ input OrderSetInput {
 
 input CreateOrderSetInput {
   groupId: ID!
+  exchangeAccountIds: [ID!]!
   symbol: String!
   exchange: Exchange!
   description: String
