@@ -47,7 +47,7 @@ export const OrderSetMutations = {
 
 export const OrderSetResolvers = {
   async __resolveReference(orderSet: any, args: any, ctx: Context) {
-    return ctx.prisma.orderSet.findOne({ where: { id: Number(orderSet.id) } })
+    return getOrderSet(ctx, Number(orderSet.id))
   },
 
   async orders({ id: orderSetId }: any, args: any, ctx: Context) {
