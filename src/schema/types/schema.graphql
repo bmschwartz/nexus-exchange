@@ -80,6 +80,19 @@ input GroupOrderSetsInput {
   groupId: ID!
 }
 
+###################
+# ExchangeAccount
+###################
+type ExchangeAccount @key(fields: "id") {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  exchange: Exchange!
+  membership: GroupMembership!
+  apiKey: String!
+  apiSecret: String!
+}
+
 ###########################
 # BitmexCurrency
 ###########################
@@ -120,6 +133,7 @@ type BinanceCurrency @key(fields: "id") {
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
   orders: [Order!]!
+  exchangeAccounts: [ExchangeAccount!]!
 }
 
 ###########################
