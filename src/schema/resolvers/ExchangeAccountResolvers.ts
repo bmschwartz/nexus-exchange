@@ -1,4 +1,4 @@
-import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
+import { getExchangeAccount, createExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { Context } from "../../context"
 
 export const ExchangeAccountResolvers = {
@@ -12,9 +12,14 @@ export const ExchangeAccountResolvers = {
   },
 }
 
-// export const ExchangeAccountMutations = {
-//   async createExchangeAccount(parent: any, args: any, ctx: Context) {
-//     const { membershipId, apiKey, apiSecret, exchange } = args
-//     return createExchangeAccount(ctx, membershipId, apiKey, apiSecret, exchange)
-//   },
-// }
+export const ExchangeAccountMutations = {
+  async createExchangeAccount(parent: any, args: any, ctx: Context) {
+    const {
+      input: {
+        membershipId, apiKey, apiSecret, exchange
+      }
+    } = args
+
+    return createExchangeAccount(ctx, Number(membershipId), apiKey, apiSecret, exchange)
+  },
+}
