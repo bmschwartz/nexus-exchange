@@ -6,7 +6,7 @@ const VALID_QUOTE_ASSETS = [
   'XRP', 'TRX', 'BUSD', 'DAI'
 ]
 
-const CURRENCY_UPDATE_DELAY_MS = 15000
+const CURRENCY_UPDATE_DELAY_MS = 10000
 
 export async function initBinance(prisma: PrismaClient) {
   const binanceClient = new BinanceClient(Binance(), prisma)
