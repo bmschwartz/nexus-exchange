@@ -67,10 +67,10 @@ class BinanceClient {
           return
         }
 
-        const { symbol, priceChange, open: openPrice, low: lowPrice, high: highPrice, priceChangePercent } = ticker
+        const { symbol, priceChange, open: openPrice, low: lowPrice, high: highPrice, curDayClose: lastPrice, priceChangePercent } = ticker
 
         const data: BinanceCurrencyUpdateInput = {
-          priceChange, priceChangePercent, lowPrice, highPrice, openPrice
+          priceChange, priceChangePercent, lowPrice, highPrice, openPrice, lastPrice
         }
 
         await this.prisma.binanceCurrency.update({ where: { symbol }, data })
