@@ -6,6 +6,7 @@ import { typeDefs } from "./schema/types"
 import { resolvers } from "./schema/resolvers"
 import { createContext } from "./context"
 import { permissions } from "./permissions"
+import { bootstrap } from "./bootstrap"
 
 const server = new ApolloServer({
   schema: applyMiddleware(
@@ -21,4 +22,5 @@ const server = new ApolloServer({
 
 server.listen({ port: 4001 }).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`)
+  bootstrap()
 })

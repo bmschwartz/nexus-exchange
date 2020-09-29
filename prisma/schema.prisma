@@ -8,16 +8,57 @@ datasource db {
 }
 
 model BinanceCurrency {
-  id                 Int      @default(autoincrement()) @id
-  symbol             String   @unique
-  lastPrice          String?
-  openPrice          String?
-  highPrice          String?
-  lowPrice           String?
-  priceChange        String?
-  priceChangePercent String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @default(now())
+  id                         Int                 @default(autoincrement()) @id
+  symbol                     String              @unique
+  status                     BinanceSymbolStatus
+  baseAsset                  String?
+  baseAssetPrecision         Int?
+  quoteAsset                 String?
+  quotePrecision             Int?
+  quoteAssetPrecision        Int?
+  baseCommissionPrecision    Int?
+  quoteCommissionPrecision   Int?
+  allowsLimit                Boolean?            @default(false)
+  allowsMarket               Boolean?            @default(false)
+  allowsStopLoss             Boolean?            @default(false)
+  allowsStopLossLimit        Boolean?            @default(false)
+  allowsTakeProfit           Boolean?            @default(false)
+  allowsTakeProfitLimit      Boolean?            @default(false)
+  allowsLimitMaker           Boolean?            @default(false)
+  icebergAllowed             Boolean?            @default(false)
+  ocoAllowed                 Boolean?            @default(false)
+  quoteOrderQtyMarketAllowed Boolean?            @default(false)
+  isSpotTradingAllowed       Boolean?            @default(false)
+  isMarginTradingAllowed     Boolean?            @default(false)
+  spotPermission             Boolean?            @default(false)
+  leveragedPermission        Boolean?            @default(false)
+  marginPermission           Boolean?            @default(false)
+  lastPrice                  String?
+  openPrice                  String?
+  highPrice                  String?
+  lowPrice                   String?
+  priceChange                String?
+  priceChangePercent         String?
+  minPrice                   String?
+  maxPrice                   String?
+  tickSize                   String?
+  multiplierUp               String?
+  multiplierDown             String?
+  percentAvgPriceMins        Float?
+  minQty                     String?
+  maxQty                     String?
+  stepSize                   String?
+  minNotional                String?
+  applyToMarket              Boolean?            @default(false)
+  minNotionalAvgPriceMins    Float?
+  icebergLimit               Float?
+  marketMinQty               String?
+  marketMaxQty               String?
+  marketStepSize             String?
+  maxNumOrders               Int?
+  maxNumAlgoOrders           Int?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @default(now())
 }
 
 model BitmexCurrency {
@@ -76,6 +117,16 @@ model ExchangeAccount {
   updatedAt    DateTime @default(now())
 
   @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
+}
+
+enum BinanceSymbolStatus {
+  AUCTION_MATCH
+  BREAK
+  END_OF_DAY
+  HALT
+  POST_TRADING
+  PRE_TRADING
+  TRADING
 }
 
 enum Exchange {

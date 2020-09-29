@@ -4,6 +4,11 @@ CREATE DATABASE "nexus_exchange";
 CREATE TYPE ORDER_SIDE AS ENUM('BUY', 'SELL');
 CREATE TYPE ORDER_TYPE AS ENUM('MARKET', 'LIMIT');
 CREATE TYPE EXCHANGE AS ENUM('BINANCE', 'BITMEX');
+CREATE TYPE BINANCE_SYMBOL_STATUS AS ENUM(
+  'PRE_TRADING', 'TRADING', 'POST_TRADING',
+  'END_OF_DAY', 'HALT', 'AUCTION_MATCH', 'BREAK'
+);
+
 
 CREATE TABLE "public"."OrderSet" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
@@ -50,12 +55,53 @@ CREATE TABLE "public"."BitmexCurrency" (
 CREATE TABLE "public"."BinanceCurrency" (
   id SERIAL PRIMARY KEY NOT NULL,
   symbol VARCHAR(255) UNIQUE NOT NULL,
+  "status" BINANCE_SYMBOL_STATUS NOT NULL,
+  "baseAsset" VARCHAR(255) NOT NULL,
+  "baseAssetPrecision" INTEGER,
+  "quoteAsset" VARCHAR(255) NOT NULL,
+  "quotePrecision" INTEGER,
+  "quoteAssetPrecision" INTEGER,
+  "baseCommissionPrecision" INTEGER,
+  "quoteCommissionPrecision" INTEGER,
+  "allowsLimit" BOOLEAN DEFAULT false,
+  "allowsMarket" BOOLEAN DEFAULT false,
+  "allowsStopLoss" BOOLEAN DEFAULT false,
+  "allowsStopLossLimit" BOOLEAN DEFAULT false,
+  "allowsTakeProfit" BOOLEAN DEFAULT false,
+  "allowsTakeProfitLimit" BOOLEAN DEFAULT false,
+  "allowsLimitMaker" BOOLEAN DEFAULT false,
+  "icebergAllowed" BOOLEAN DEFAULT false,
+  "ocoAllowed" BOOLEAN DEFAULT false,
+  "quoteOrderQtyMarketAllowed" BOOLEAN DEFAULT false,
+  "isSpotTradingAllowed" BOOLEAN DEFAULT false,
+  "isMarginTradingAllowed" BOOLEAN DEFAULT false,
+  "spotPermission" BOOLEAN DEFAULT false,
+  "leveragedPermission" BOOLEAN DEFAULT false,
+  "marginPermission" BOOLEAN DEFAULT false,
   "lastPrice" VARCHAR(255),
   "openPrice" VARCHAR(255),
   "highPrice" VARCHAR(255),
   "lowPrice" VARCHAR(255),
   "priceChange" VARCHAR(255),
   "priceChangePercent" VARCHAR(255),
+  "minPrice" VARCHAR(255),
+  "maxPrice" VARCHAR(255),
+  "tickSize" VARCHAR(255),
+  "multiplierUp" VARCHAR(255),
+  "multiplierDown" VARCHAR(255),
+  "percentAvgPriceMins" DECIMAL,
+  "minQty" VARCHAR(255),
+  "maxQty" VARCHAR(255),
+  "stepSize" VARCHAR(255),
+  "minNotional" VARCHAR(255),
+  "applyToMarket" BOOLEAN DEFAULT false,
+  "minNotionalAvgPriceMins" DECIMAL,
+  "icebergLimit" DECIMAL,
+  "marketMinQty" VARCHAR(255),
+  "marketMaxQty" VARCHAR(255),
+  "marketStepSize" VARCHAR(255),
+  "maxNumOrders" INTEGER,
+  "maxNumAlgoOrders" INTEGER,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
