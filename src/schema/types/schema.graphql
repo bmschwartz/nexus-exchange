@@ -131,12 +131,29 @@ type BinanceCurrency @key(fields: "id") {
   createdAt: DateTime!
   updatedAt: DateTime!
   symbol: String!
+  status: BinanceSymbolStatus!
   lastPrice: Float
   openPrice: Float
   highPrice: Float
   lowPrice: Float
   priceChange: Float
   priceChangePercent: Float
+  minPrice: String!
+  maxPrice: String!
+  tickSize: String!
+  baseAsset: String!
+  quoteAsset: String!
+  baseAssetPrecision: Int!
+  quotePrecision: Int!
+  quoteAssetPrecision: Int!
+  baseCommissionPrecision: Int!
+  quoteCommissionPrecision: Int!
+  allowsLimit: Boolean!
+  allowsMarket: Boolean!
+  allowsStopLoss: Boolean!
+  allowsStopLossLimit: Boolean!
+  allowsTakeProfit: Boolean!
+  allowsTakeProfitLimit: Boolean!
 }
 
 ###########################
@@ -164,4 +181,14 @@ enum OrderType {
 enum Exchange {
   BINANCE
   BITMEX
+}
+
+enum BinanceSymbolStatus {
+  AUCTION_MATCH
+  BREAK
+  END_OF_DAY
+  HALT
+  POST_TRADING
+  PRE_TRADING
+  TRADING
 }

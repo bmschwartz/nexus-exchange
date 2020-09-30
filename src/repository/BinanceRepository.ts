@@ -1,4 +1,4 @@
-import { BinanceCurrency, BitmexCurrency, Exchange } from "@prisma/client"
+import { BinanceCurrency } from "@prisma/client"
 import { Context } from "src/context"
 
 export const getBinanceCurrencies = async (ctx: Context): Promise<BinanceCurrency[]> => {
