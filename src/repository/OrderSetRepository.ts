@@ -34,7 +34,6 @@ export const getGroupOrderSets = async (ctx: Context, groupId: number): Promise<
 export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): Promise<OrderSet | null | Error> => {
   const {
     groupId,
-    exchangeAccountIds,
     description,
     side,
     exchange,
@@ -45,6 +44,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     percent
   } = data
 
+  const exchangeAccountIds = data.exchangeAccountIds.map(Number)
   const error = await getOrderSetInputError(
     ctx,
     symbol,
@@ -60,7 +60,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     return error
   }
 
-  const orderSet = ctx.prisma.orderSet.create({
+  const orderSet = await ctx.prisma.orderSet.create({
     data: {
       groupId: Number(groupId),
       description,
@@ -153,7 +153,6 @@ export const getOrderSetInputError = async (ctx: Context, symbol: string, exchan
         currency.lastPrice
     }
   }
-
   return
 }
 
