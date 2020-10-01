@@ -2,7 +2,6 @@ scalar DateTime
 
 extend type Query {
   orderSet(input: OrderSetInput!): OrderSet
-  groupOrderSets(input: GroupOrderSetsInput!): [OrderSet!]
 
   binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
@@ -79,10 +78,6 @@ input UpdateOrderSetInput {
   stopPrice: Float
 }
 
-input GroupOrderSetsInput {
-  groupId: ID!
-}
-
 ###########################
 # ExchangeAccount
 ###########################
@@ -154,6 +149,14 @@ type BinanceCurrency @key(fields: "id") {
   allowsStopLossLimit: Boolean!
   allowsTakeProfit: Boolean!
   allowsTakeProfitLimit: Boolean!
+}
+
+###########################
+# Group extension
+###########################
+extend type Group @key(fields: "id") {
+  id: ID! @external
+  orderSets: [OrderSet!]!
 }
 
 ###########################

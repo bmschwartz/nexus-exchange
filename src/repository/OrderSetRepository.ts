@@ -27,10 +27,6 @@ export const getOrderSet = async (ctx: Context, orderSetId: number): Promise<Ord
   return ctx.prisma.orderSet.findOne({ where: { id: orderSetId } })
 }
 
-export const getGroupOrderSets = async (ctx: Context, groupId: number): Promise<OrderSet[] | null> => {
-  return ctx.prisma.orderSet.findMany({ where: { groupId } })
-}
-
 export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): Promise<OrderSet | null | Error> => {
   const {
     groupId,

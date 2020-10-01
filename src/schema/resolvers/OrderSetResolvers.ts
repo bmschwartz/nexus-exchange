@@ -1,4 +1,4 @@
-import { getOrderSet, getGroupOrderSets, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
+import { getOrderSet, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
 import { Context } from "src/context"
 
 export const OrderSetQueries = {
@@ -7,13 +7,6 @@ export const OrderSetQueries = {
       input: { id: orderSetId },
     } = args
     return getOrderSet(ctx, Number(orderSetId))
-  },
-
-  async groupOrderSets(parent: any, args: any, ctx: Context) {
-    const {
-      input: { groupId },
-    } = args
-    return getGroupOrderSets(ctx, Number(groupId))
   },
 }
 
