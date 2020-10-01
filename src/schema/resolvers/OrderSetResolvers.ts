@@ -48,7 +48,7 @@ export const OrderSetResolvers = {
     return getOrders(ctx, orderSetId)
   },
 
-  async orderSide({ id: orderSetId }: any, args: any, ctx: Context) {
+  async side({ id: orderSetId }: any, args: any, ctx: Context) {
     return getOrderSide(ctx, orderSetId)
   },
 }

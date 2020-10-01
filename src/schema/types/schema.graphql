@@ -51,7 +51,7 @@ type OrderSet @key(fields: "id") {
   orders: [Order!]!
   percent: Float!
   stopPrice: Float
-  description: String!
+  description: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
