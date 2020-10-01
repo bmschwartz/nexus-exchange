@@ -8,7 +8,6 @@ export const permissions = shield({
   Query: {
     // OrderSet Queries
     orderSet: isAuthenticated,
-    groupOrderSets: isAuthenticated,
   },
   Mutation: {
     // OrderSet Mutations
