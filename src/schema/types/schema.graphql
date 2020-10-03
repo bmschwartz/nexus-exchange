@@ -159,6 +159,7 @@ type BinanceCurrency @key(fields: "id") {
 extend type Group @key(fields: "id") {
   id: ID! @external
   orderSets(limit: Int, offset: Int): GroupOrderSets!
+  orderSet(input: OrderSetInput!): OrderSet
 }
 
 type GroupOrderSets {
