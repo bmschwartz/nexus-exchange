@@ -1,42 +1,32 @@
-import { FindManyOrderSetArgs, OrderSet } from "@prisma/client";
+import { OrderSet } from "@prisma/client";
 import { Context } from "src/context";
 
-export interface IOrderSetsResult {
-  orderSets: OrderSet[]
-  hasMore: Boolean
-}
 
 export interface IOrderSetsInput {
   groupId: number
-  pageSize?: number
-  after?: string
+  limit?: number
+  offset?: number
 }
 
-const DEFAULT_PAGE_SIZE = 25
+export interface IOrderSetResult {
+  totalCount: number
+  orderSets: OrderSet[]
+}
 
-export const getGroupOrderSets = async (ctx: Context, { groupId, pageSize, after }: IOrderSetsInput): Promise<IOrderSetsResult> => {
-  pageSize = pageSize || DEFAULT_PAGE_SIZE
 
-  const findArgs: FindManyOrderSetArgs = {
-    take: pageSize,
+export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }: IOrderSetsInput): Promise<IOrderSetResult> => {
+  const orderSets = await ctx.prisma.orderSet.findMany({
+    take: limit,
+    skip: offset,
     where: { groupId },
-    orderBy: { id: "desc" }
-  }
-
-  if (after) {
-    findArgs.skip = 1
-    findArgs.cursor = { id: Number(after) }
-  }
-
-  const orderSets = await ctx.prisma.orderSet.findMany(findArgs)
-
-  const lastOrderSet = await ctx.prisma.orderSet.findFirst({
-    where: { groupId },
-    orderBy: { id: "asc" }
+    orderBy: { createdAt: "desc" },
+  })
+  const orderSetCount = await ctx.prisma.orderSet.count({
+    where: { groupId }
   })
 
   return {
     orderSets,
-    hasMore: lastOrderSet.id !== orderSets[orderSets.length - 1].id,
+    totalCount: orderSetCount
   }
 }

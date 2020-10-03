@@ -2,13 +2,7 @@ import { Context } from "../../context"
 import { getGroupOrderSets } from "../../repository/GroupRepository"
 
 export const GroupResolvers = {
-  async orderSets(group: any, { pageSize, after }: any, ctx: Context) {
-    const { orderSets, hasMore } = await getGroupOrderSets(ctx, { after, pageSize, groupId: Number(group.id) })
-
-    return {
-      hasMore,
-      orderSets,
-      cursor: orderSets.length ? orderSets[orderSets.length - 1].id : null,
-    }
+  async orderSets(group: any, { limit, offset }: any, ctx: Context) {
+    return getGroupOrderSets(ctx, { limit, offset, groupId: Number(group.id) })
   },
 }
