@@ -56,6 +56,12 @@ type OrderSet @key(fields: "id") {
   updatedAt: DateTime!
 }
 
+type OrderSetConnection {
+  cursor: String
+  hasMore: Boolean!
+  orderSets: [OrderSet!]!
+}
+
 input OrderSetInput {
   id: ID!
 }
@@ -158,7 +164,7 @@ type BinanceCurrency @key(fields: "id") {
 ###########################
 extend type Group @key(fields: "id") {
   id: ID! @external
-  orderSets: [OrderSet!]!
+  orderSets(pageSize: Int, after: ID): OrderSetConnection!
 }
 
 ###########################
