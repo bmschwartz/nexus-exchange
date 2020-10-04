@@ -93,6 +93,7 @@ type ExchangeAccount @key(fields: "id") {
   membership: GroupMembership!
   apiKey: String!
   apiSecret: String!
+  orders: [Order!]!
 }
 
 input CreateExchangeAccountInput {
@@ -172,7 +173,6 @@ type GroupOrderSets {
 ###########################
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
-  orders: [Order!]!
   exchangeAccounts: [ExchangeAccount!]!
 }
 

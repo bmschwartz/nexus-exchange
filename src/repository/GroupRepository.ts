@@ -2,19 +2,19 @@ import { OrderSet } from "@prisma/client";
 import { Context } from "src/context";
 
 
-export interface IOrderSetsInput {
+export interface OrderSetsInput {
   groupId: number
   limit?: number
   offset?: number
 }
 
-export interface IOrderSetResult {
+export interface OrderSetResult {
   totalCount: number
   orderSets: OrderSet[]
 }
 
 
-export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }: IOrderSetsInput): Promise<IOrderSetResult> => {
+export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }: OrderSetsInput): Promise<OrderSetResult> => {
   const orderSets = await ctx.prisma.orderSet.findMany({
     take: limit,
     skip: offset,
