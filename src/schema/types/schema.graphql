@@ -5,6 +5,8 @@ extend type Query {
 
   binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
+
+  exchanges: [Exchange!]!
 }
 
 extend type Mutation {
