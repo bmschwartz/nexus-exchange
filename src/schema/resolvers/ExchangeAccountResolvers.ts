@@ -1,6 +1,12 @@
 import { Context } from "../../context"
 import { getOrders } from "../../repository/OrderSetRepository"
-import { getExchangeAccount, createExchangeAccount, getExchangeAccounts } from "../../repository/ExchangeAccountRepository"
+import {
+  getExchangeAccount,
+  getExchangeAccounts,
+  createExchangeAccount,
+  deleteExchangeAccount as runDeleteExchangeAccount,
+  toggleExchangeAccountActive as runToggleExchangeAccountActive
+} from "../../repository/ExchangeAccountRepository"
 
 export const ExchangeAccountQueries = {
   async exchangeAccounts(parent: any, args: any, ctx: Context) {
@@ -37,8 +43,12 @@ export const ExchangeAccountMutations = {
   async deleteExchangeAccount(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
 
-    const deletedAccount = await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
+    return { success: runDeleteExchangeAccount(ctx, Number(accountId)) }
+  },
 
-    return deletedAccount && deletedAccount.id === accountId
+  async toggleExchangeAccountActive(parent: any, args: any, ctx: Context) {
+    const { input: { id: accountId } } = args
+
+    return { success: runToggleExchangeAccountActive(ctx, Number(accountId)) }
   }
 }

@@ -17,6 +17,7 @@ extend type Mutation {
 
   createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
+  toggleExchangeAccountActive(input: ToggleExchangeAccountActiveInput!): ToggleExchangeAccountActiveResult!
 }
 
 ###################
@@ -115,6 +116,14 @@ input DeleteExchangeAccountInput {
 }
 
 type DeleteExchangeAccountResult {
+  success: Boolean!
+}
+
+input ToggleExchangeAccountActiveInput {
+  id: ID!
+}
+
+type ToggleExchangeAccountActiveResult {
   success: Boolean!
 }
 

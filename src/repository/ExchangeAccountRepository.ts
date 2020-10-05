@@ -6,7 +6,7 @@ export const getExchangeAccount = async (ctx: Context, accountId: number) => {
 }
 
 export const getExchangeAccounts = async (ctx: Context, membershipId: number) => {
-  return ctx.prisma.exchangeAccount.findMany({ where: { membershipId } })
+  return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
 }
 
 export const createExchangeAccount = async (ctx: Context, membershipId: number, apiKey: string, apiSecret: string, exchange: Exchange) => {
@@ -42,5 +42,21 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
 }
 
 const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSecret: string): Promise<boolean> => {
+  return true
+}
+
+export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => {
+  const deletedAccount = await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
+  return deletedAccount && deletedAccount.id === accountId
+}
+
+export const toggleExchangeAccountActive = async (ctx: Context, accountId: Number): Promise<any> => {
+  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) }, select: { active: true } })
+  if (!account) {
+    return false
+  }
+
+  await ctx.prisma.exchangeAccount.update({ where: { id: Number(accountId) }, data: { active: !account.active } })
+
   return true
 }
