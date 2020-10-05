@@ -16,6 +16,7 @@ extend type Mutation {
   cancelOrder(input: CancelOrderInput!): Order
 
   createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
+  deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
 }
 
 ###################
@@ -107,6 +108,14 @@ input CreateExchangeAccountInput {
   membershipId: ID!
   apiKey: String!
   apiSecret: String!
+}
+
+input DeleteExchangeAccountInput {
+  id: ID!
+}
+
+type DeleteExchangeAccountResult {
+  success: Boolean!
 }
 
 ###########################

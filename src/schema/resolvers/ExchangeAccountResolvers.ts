@@ -33,4 +33,12 @@ export const ExchangeAccountMutations = {
 
     return createExchangeAccount(ctx, Number(membershipId), apiKey, apiSecret, exchange)
   },
+
+  async deleteExchangeAccount(parent: any, args: any, ctx: Context) {
+    const { input: { id: accountId } } = args
+
+    const deletedAccount = await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
+
+    return deletedAccount && deletedAccount.id === accountId
+  }
 }
