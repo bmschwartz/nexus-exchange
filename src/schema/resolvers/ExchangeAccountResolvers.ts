@@ -1,6 +1,13 @@
 import { Context } from "../../context"
 import { getOrders } from "../../repository/OrderSetRepository"
-import { getExchangeAccount, createExchangeAccount } from "../../repository/ExchangeAccountRepository"
+import { getExchangeAccount, createExchangeAccount, getExchangeAccounts } from "../../repository/ExchangeAccountRepository"
+
+export const ExchangeAccountQueries = {
+  async exchangeAccounts(parent: any, args: any, ctx: Context) {
+    const { input: { membershipId } } = args
+    return getExchangeAccounts(ctx, Number(membershipId))
+  },
+}
 
 export const ExchangeAccountResolvers = {
   async __resolveReference({ id: accountId }: any, args: any, ctx: Context) {

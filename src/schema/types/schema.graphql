@@ -6,7 +6,7 @@ extend type Query {
   binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
 
-  exchanges: [Exchange!]!
+  exchangeAccounts(input: ExchangeAccountsInput!): [ExchangeAccount!]!
 }
 
 extend type Mutation {
@@ -96,6 +96,10 @@ type ExchangeAccount @key(fields: "id") {
   apiKey: String!
   apiSecret: String!
   orders: [Order!]!
+}
+
+input ExchangeAccountsInput {
+  membershipId: ID!
 }
 
 input CreateExchangeAccountInput {
