@@ -5,10 +5,15 @@ import {
   getExchangeAccounts,
   createExchangeAccount,
   deleteExchangeAccount as runDeleteExchangeAccount,
+  updateExchangeAccount as runUpdateExchangeAccount,
   toggleExchangeAccountActive as runToggleExchangeAccountActive
 } from "../../repository/ExchangeAccountRepository"
 
 export const ExchangeAccountQueries = {
+  async exchangeAccount(parent: any, args: any, ctx: Context) {
+    const { input: { id: accountId } } = args
+    return getExchangeAccount(ctx, Number(accountId))
+  },
   async exchangeAccounts(parent: any, args: any, ctx: Context) {
     const { input: { membershipId } } = args
     return getExchangeAccounts(ctx, Number(membershipId))
@@ -44,6 +49,12 @@ export const ExchangeAccountMutations = {
     const { input: { id: accountId } } = args
 
     return { success: runDeleteExchangeAccount(ctx, Number(accountId)) }
+  },
+
+  async updateExchangeAccount(parent: any, args: any, ctx: Context) {
+    const { input: { id: accountId, apiKey, apiSecret } } = args
+
+    return runUpdateExchangeAccount(ctx, Number(accountId), apiKey, apiSecret)
   },
 
   async toggleExchangeAccountActive(parent: any, args: any, ctx: Context) {

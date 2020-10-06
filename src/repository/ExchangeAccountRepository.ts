@@ -56,6 +56,34 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
   return deletedAccount && deletedAccount.id === accountId
 }
 
+export const updateExchangeAccount = async (ctx: Context, accountId: number, apiKey: string, apiSecret: string) => {
+  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: accountId } })
+
+  if (!account) {
+    return { success: false, error: new Error("Account not found") }
+  }
+
+  // TODO: Verify the api key and secret are valid with exchange
+  const isValidApiKeyAndSecret = await validateApiKeyAndSecret(account.exchange, apiKey, apiSecret)
+
+  if (!isValidApiKeyAndSecret) {
+    return { success: false, error: new Error(`Invalid API key pair for ${account.exchange}`) }
+  }
+
+  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: Number(accountId) }, data: { apiKey, apiSecret } })
+
+  if (!updatedAccount) {
+    return {
+      success: false, error: new Error(`Unable to update ${account.exchange} account`)
+    }
+  }
+
+  return {
+    success: updatedAccount.apiKey === apiKey && updatedAccount.apiSecret === apiSecret,
+    error: null
+  }
+}
+
 export const toggleExchangeAccountActive = async (ctx: Context, accountId: Number): Promise<any> => {
   const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) }, select: { active: true } })
   if (!account) {

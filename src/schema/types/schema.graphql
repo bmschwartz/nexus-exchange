@@ -6,6 +6,7 @@ extend type Query {
   binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
 
+  exchangeAccount(input: ExchangeAccountInput!): ExchangeAccount
   exchangeAccounts(input: ExchangeAccountsInput!): [ExchangeAccount!]!
 }
 
@@ -17,6 +18,7 @@ extend type Mutation {
 
   createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
+  updateExchangeAccount(input: UpdateExchangeAccountInput!): UpdateExchangeAccountResult!
   toggleExchangeAccountActive(input: ToggleExchangeAccountActiveInput!): ToggleExchangeAccountActiveResult!
 }
 
@@ -100,6 +102,10 @@ type ExchangeAccount @key(fields: "id") {
   orders: [Order!]!
 }
 
+input ExchangeAccountInput {
+  id: ID!
+}
+
 input ExchangeAccountsInput {
   membershipId: ID!
 }
@@ -125,6 +131,17 @@ input ToggleExchangeAccountActiveInput {
 
 type ToggleExchangeAccountActiveResult {
   success: Boolean!
+}
+
+input UpdateExchangeAccountInput {
+  id: ID!
+  apiKey: String!
+  apiSecret: String!
+}
+
+type UpdateExchangeAccountResult {
+  success: Boolean!
+  error: String
 }
 
 ###########################
