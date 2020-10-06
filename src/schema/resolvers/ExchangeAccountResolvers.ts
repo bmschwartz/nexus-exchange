@@ -1,5 +1,5 @@
 import { Context } from "../../context"
-import { getOrders } from "../../repository/OrderSetRepository"
+import { getOrders } from "../../repository/ExchangeAccountRepository"
 import {
   getExchangeAccount,
   getExchangeAccounts,
@@ -25,7 +25,7 @@ export const ExchangeAccountResolvers = {
     }
   },
   async orders(account: any, args: any, ctx: Context) {
-    return getOrders(ctx, Number(account.membershipId))
+    return getOrders(ctx, Number(account.id))
   },
 }
 

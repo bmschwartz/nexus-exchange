@@ -8,7 +8,7 @@ datasource db {
 }
 
 model BinanceCurrency {
-  id                         Int                 @default(autoincrement()) @id
+  id                         Int                 @id @default(autoincrement())
   symbol                     String              @unique
   status                     BinanceSymbolStatus
   baseAsset                  String?
@@ -62,7 +62,7 @@ model BinanceCurrency {
 }
 
 model BitmexCurrency {
-  id               Int      @default(autoincrement()) @id
+  id               Int      @id @default(autoincrement())
   symbol           String   @unique
   underlying       String   @unique
   active           Boolean? @default(false)
@@ -75,23 +75,24 @@ model BitmexCurrency {
 }
 
 model Order {
-  id            Int        @default(autoincrement()) @id
-  orderSetId    Int
-  membershipId  Int
-  symbol        String
-  side          OrderSide
-  lastTimestamp DateTime?
-  orderType     OrderType?
-  price         Float?
-  stopPrice     Float?
-  quantity      Float?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @default(now())
-  orderSet      OrderSet   @relation(fields: [orderSetId], references: [id])
+  id                Int             @id @default(autoincrement())
+  orderSetId        Int
+  exchangeAccountId Int
+  symbol            String
+  side              OrderSide
+  lastTimestamp     DateTime?
+  orderType         OrderType?
+  price             Float?
+  stopPrice         Float?
+  quantity          Float?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now())
+  orderSet          OrderSet        @relation(fields: [orderSetId], references: [id])
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
 }
 
 model OrderSet {
-  id          Int       @default(autoincrement()) @id
+  id          Int       @id @default(autoincrement())
   description String?
   groupId     Int
   orderType   OrderType
@@ -107,7 +108,7 @@ model OrderSet {
 }
 
 model ExchangeAccount {
-  id           Int      @default(autoincrement()) @id
+  id           Int      @id @default(autoincrement())
   active       Boolean  @default(false)
   exchange     Exchange
   membershipId Int
@@ -115,6 +116,7 @@ model ExchangeAccount {
   apiSecret    String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
+  orders       Order[]
 
   @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
 }

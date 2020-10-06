@@ -26,7 +26,7 @@ CREATE TABLE "public"."OrderSet" (
 CREATE TABLE "public"."Order" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   "orderSetId" BIGINT NOT NULL,
-  "membershipId" INTEGER NOT NULL,
+  "exchangeAccountId" INTEGER NOT NULL,
   "symbol" VARCHAR(255) NOT NULL,
   "side" ORDER_SIDE NOT NULL,
   "lastTimestamp" TIMESTAMP,
@@ -36,7 +36,8 @@ CREATE TABLE "public"."Order" (
   "quantity" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id)
+  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id),
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id)
 );
 
 CREATE TABLE "public"."BitmexCurrency" (

@@ -9,6 +9,12 @@ export const getExchangeAccounts = async (ctx: Context, membershipId: number) =>
   return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
 }
 
+export const getOrders = async (ctx: Context, id: number) => {
+  return ctx.prisma.order.findMany({
+    where: { exchangeAccountId: id },
+  })
+}
+
 export const createExchangeAccount = async (ctx: Context, membershipId: number, apiKey: string, apiSecret: string, exchange: Exchange) => {
   const accountCount = await ctx.prisma.exchangeAccount.count({
     where: {
