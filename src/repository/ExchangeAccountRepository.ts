@@ -1,5 +1,7 @@
-import { Exchange } from "@prisma/client";
+import { Exchange, OrderSet } from "@prisma/client";
 import { Context } from "src/context";
+import { asyncForEach } from "../helper"
+import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: number) => {
   return ctx.prisma.exchangeAccount.findOne({ where: { id: accountId } })
@@ -93,4 +95,24 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: Numbe
   await ctx.prisma.exchangeAccount.update({ where: { id: Number(accountId) }, data: { active: !account.active } })
 
   return true
+}
+
+export const createOrderForExchangeAccounts = async (
+  ctx: Context,
+  orderSet: OrderSet,
+  membershipIds: number[],
+): Promise<any> => {
+  const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
+
+  await asyncForEach(membershipIds, async (membershipId: number) => {
+    const exchangeAccount = await ctx.prisma.exchangeAccount.findOne({
+      where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
+    })
+    if (!exchangeAccount) {
+      return
+    }
+    await createOrder(ctx, orderSet.id, exchangeAccount.id, side, exchange, symbol, orderType, price, stopPrice)
+
+    // TODO emit order created message ?
+  })
 }

@@ -1,4 +1,4 @@
-import { Order } from "@prisma/client";
+import { Exchange, Order, OrderSide, OrderType } from "@prisma/client";
 import { Context } from "src/context";
 
 export interface MemberOrdersInput {
@@ -51,6 +51,32 @@ export const cancelOrder = async (ctx: Context, orderId: number) => {
   // emit cancel order message
 
   return order
+}
+
+export const createOrder = async (
+  ctx: Context,
+  orderSetId: number,
+  exchangeAccountId: number,
+  side: OrderSide,
+  exchange: Exchange,
+  symbol: string,
+  orderType: OrderType,
+  price?: number | null,
+  stopPrice?: number | null,
+) => {
+  return ctx.prisma.order.create({
+    data: {
+      exchange,
+      side,
+      symbol,
+      orderType,
+      price,
+      stopPrice,
+      status: "NEW",
+      exchangeAccount: { connect: { id: exchangeAccountId } },
+      orderSet: { connect: { id: orderSetId } }
+    }
+  })
 }
 
 export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {
