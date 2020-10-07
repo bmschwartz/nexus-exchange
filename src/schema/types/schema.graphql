@@ -1,6 +1,7 @@
 scalar DateTime
 
 extend type Query {
+  order(input: OrderInput!): Order
   orderSet(input: OrderSetInput!): OrderSet
 
   binanceCurrencies: [BinanceCurrency!]!
@@ -14,7 +15,7 @@ extend type Mutation {
   createOrderSet(input: CreateOrderSetInput!): OrderSet
   updateOrderSet(input: UpdateOrderSetInput!): OrderSet
 
-  cancelOrder(input: CancelOrderInput!): Order
+  cancelOrder(input: CancelOrderInput!): CancelOrderResponse!
 
   createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
@@ -43,8 +44,17 @@ type Order @key(fields: "id") {
   updatedAt: DateTime!
 }
 
+input OrderInput {
+  id: ID!
+}
+
 input CancelOrderInput {
-  orderId: String!
+  id: String!
+}
+
+type CancelOrderResponse {
+  success: Boolean!
+  error: String
 }
 
 ###################

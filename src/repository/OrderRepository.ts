@@ -1,4 +1,4 @@
-import { Exchange, Order, OrderSide, OrderType } from "@prisma/client";
+import { Exchange, Order, OrderSide, OrderStatus, OrderType } from "@prisma/client";
 import { Context } from "src/context";
 
 export interface MemberOrdersInput {
@@ -45,12 +45,21 @@ export const cancelOrder = async (ctx: Context, orderId: number) => {
     where: { id: orderId },
   })
   if (!order) {
-    return new Error("Order not found")
+    return { success: false, error: "Order not found" }
   }
 
-  // emit cancel order message
+  if (order.status !== OrderStatus.NEW && order.status !== OrderStatus.PARTIALLY_FILLED) {
+    return { success: false, error: "Order can't be canceled" }
+  }
 
-  return order
+  await ctx.prisma.order.update({
+    where: { id: orderId },
+    data: { status: OrderStatus.CANCELED }
+  })
+
+  // todo emit cancel order message
+
+  return { success: true, error: null }
 }
 
 export const createOrder = async (

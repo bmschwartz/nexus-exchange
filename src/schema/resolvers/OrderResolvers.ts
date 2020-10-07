@@ -1,6 +1,16 @@
 import { cancelOrder, getOrder, getOrderSet, getOrderSide, getOrderType } from "../../repository/OrderRepository"
 import { Context } from "../../context"
 
+export const OrderQueries = {
+  async order(parent: any, args: any, ctx: Context) {
+    const {
+      input: { id: orderId },
+    } = args
+
+    return getOrder(ctx, Number(orderId))
+  },
+}
+
 export const OrderResolvers = {
   async __resolveReference({ id: orderId }: any, args: any, ctx: Context) {
     return getOrder(ctx, orderId)
@@ -26,6 +36,8 @@ export const OrderResolvers = {
 
 export const OrderMutations = {
   async cancelOrder(parent: any, args: any, ctx: Context) {
-    return cancelOrder(ctx, Number(parent.orderId))
+    const { input: { id: orderId } } = args
+
+    return cancelOrder(ctx, Number(orderId))
   },
 }
