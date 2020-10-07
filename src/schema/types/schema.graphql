@@ -27,17 +27,20 @@ extend type Mutation {
 ###################
 type Order @key(fields: "id") {
   id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
   membership: GroupMembership!
   orderSet: OrderSet!
-  side: OrderSide
-  orderType: OrderType
+  side: OrderSide!
+  exchange: Exchange!
+  orderType: OrderType!
+  status: OrderStatus!
   price: Float
   quantity: Float
   stopPrice: Float
+  filledQty: Float
   symbol: String!
   lastTimestamp: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 input CancelOrderInput {
@@ -239,6 +242,13 @@ enum OrderType {
 enum Exchange {
   BINANCE
   BITMEX
+}
+
+enum OrderStatus {
+  NEW
+  FILLED
+  PARTIALLY_FILLED
+  CANCELED
 }
 
 enum BinanceSymbolStatus {

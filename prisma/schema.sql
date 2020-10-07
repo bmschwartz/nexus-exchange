@@ -8,6 +8,9 @@ CREATE TYPE BINANCE_SYMBOL_STATUS AS ENUM(
   'PRE_TRADING', 'TRADING', 'POST_TRADING',
   'END_OF_DAY', 'HALT', 'AUCTION_MATCH', 'BREAK'
 );
+CREATE TYPE ORDER_STATUS AS ENUM(
+  'NEW', 'FILLED', 'PARTIALLY_FILLED', 'CANCELED'
+);
 
 
 CREATE TABLE "public"."OrderSet" (
@@ -28,12 +31,15 @@ CREATE TABLE "public"."Order" (
   "orderSetId" BIGINT NOT NULL,
   "exchangeAccountId" INTEGER NOT NULL,
   "symbol" VARCHAR(255) NOT NULL,
+  "exchange" EXCHANGE NOT NULL,
   "side" ORDER_SIDE NOT NULL,
   "lastTimestamp" TIMESTAMP,
   "orderType" ORDER_TYPE,
   "price" DECIMAL,
   "stopPrice" DECIMAL,
   "quantity" DECIMAL,
+  "filledQty" DECIMAL,
+  "status" ORDER_STATUS NOT NULL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
   FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id),

@@ -11,9 +11,9 @@ model BinanceCurrency {
   id                         Int                 @id @default(autoincrement())
   symbol                     String              @unique
   status                     BinanceSymbolStatus
-  baseAsset                  String?
+  baseAsset                  String
   baseAssetPrecision         Int?
-  quoteAsset                 String?
+  quoteAsset                 String
   quotePrecision             Int?
   quoteAssetPrecision        Int?
   baseCommissionPrecision    Int?
@@ -79,16 +79,19 @@ model Order {
   orderSetId        Int
   exchangeAccountId Int
   symbol            String
+  exchange          Exchange
   side              OrderSide
   lastTimestamp     DateTime?
   orderType         OrderType?
   price             Float?
   stopPrice         Float?
   quantity          Float?
+  filledQty         Float?
+  status            OrderStatus
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @default(now())
-  orderSet          OrderSet        @relation(fields: [orderSetId], references: [id])
   exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+  orderSet          OrderSet        @relation(fields: [orderSetId], references: [id])
 }
 
 model OrderSet {
@@ -139,6 +142,13 @@ enum Exchange {
 enum OrderSide {
   BUY
   SELL
+}
+
+enum OrderStatus {
+  CANCELED
+  FILLED
+  NEW
+  PARTIALLY_FILLED
 }
 
 enum OrderType {
