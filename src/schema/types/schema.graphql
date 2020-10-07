@@ -214,7 +214,13 @@ type GroupOrderSets {
 ###########################
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
+  orders(limit: Int, offset: Int): MemberOrders!
   exchangeAccounts: [ExchangeAccount!]!
+}
+
+type MemberOrders {
+  orders: [Order!]!
+  totalCount: Int!
 }
 
 ###########################
