@@ -34,9 +34,7 @@ export const OrderResolvers = {
     }
   },
   async exchangeAccount(order: any, args: any, ctx: Context) {
-    const account = await getExchangeAccount(ctx, Number(order.exchangeAccountId))
-    console.log(account)
-    return account
+    return getExchangeAccount(ctx, Number(order.exchangeAccountId))
   }
 }
 
