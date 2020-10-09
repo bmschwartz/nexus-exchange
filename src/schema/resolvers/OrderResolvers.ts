@@ -1,3 +1,4 @@
+import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { cancelOrder, getOrder, getOrderSet, getOrderSide, getOrderType } from "../../repository/OrderRepository"
 import { Context } from "../../context"
 
@@ -32,6 +33,11 @@ export const OrderResolvers = {
       id: order.membershipId,
     }
   },
+  async exchangeAccount(order: any, args: any, ctx: Context) {
+    const account = await getExchangeAccount(ctx, Number(order.exchangeAccountId))
+    console.log(account)
+    return account
+  }
 }
 
 export const OrderMutations = {

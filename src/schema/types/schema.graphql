@@ -28,7 +28,6 @@ extend type Mutation {
 ###################
 type Order @key(fields: "id") {
   id: ID!
-  membership: GroupMembership!
   orderSet: OrderSet!
   side: OrderSide!
   exchange: Exchange!
@@ -42,6 +41,7 @@ type Order @key(fields: "id") {
   lastTimestamp: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
+  exchangeAccount: ExchangeAccount!
 }
 
 input OrderInput {
@@ -109,10 +109,10 @@ type ExchangeAccount @key(fields: "id") {
   createdAt: DateTime!
   updatedAt: DateTime!
   exchange: Exchange!
-  membership: GroupMembership!
   apiKey: String!
   apiSecret: String!
   orders: [Order!]!
+  membershipId: ID!
 }
 
 input ExchangeAccountInput {
