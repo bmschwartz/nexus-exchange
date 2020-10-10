@@ -1,7 +1,7 @@
-/** Broken right now! **/
-/** TODO: Add support for ExchangeAccount **/
+/* Broken right now! */
+/* TODO: Add support for ExchangeAccount and Position */
 
-/** OrderSet */
+/* OrderSet */
 INSERT INTO "OrderSet" (description, "groupId")
 VALUES ('bottom out for btc', 1);
 
@@ -37,7 +37,7 @@ VALUES ('individual trade', 1);
 
 
 
-/** Orders */
+/* Orders */
 INSERT INTO "Order" ("orderSetId", "exchangeAccountId", symbol, side)
 VALUES (1, 2, 'BTC', 'BUY');
 
@@ -88,7 +88,7 @@ VALUES (11, 5, 'BTC', 'SELL');
 
 
 
-/** BitmexCurrency */
+/* BitmexCurrency */
 INSERT INTO "BitmexCurrency" ("symbol", "underlying", "active", "fractionalDigits", "lastPrice", "markPrice", "tickSize")
 VALUES ('LTCUSD', 'LTC', TRUE, 2, 49.13, 49.155, 0.01);
 
@@ -106,7 +106,7 @@ VALUES ('XRPUSD', 'XRP', TRUE, 4, 0.2189, 0.2192, 0.0001);
 
 
 
-/** BinanceCurrency */
+/* BinanceCurrency */
 INSERT INTO "BinanceCurrency" ("symbol", "lastPrice", "openPrice", "highPrice", "lowPrice", "priceChange", "priceChangePercent")
 VALUES ('BTCUSD', '10439', '10400', '10500', '10400', '500', '0.0096');
 

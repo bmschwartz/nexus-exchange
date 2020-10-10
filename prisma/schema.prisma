@@ -110,16 +110,30 @@ model OrderSet {
   orders      Order[]
 }
 
+model Position {
+  id                Int             @id @default(autoincrement())
+  exchangeAccountId Int
+  symbol            String
+  exchange          Exchange
+  side              PositionSide
+  avgPrice          Float?
+  quantity          Float?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now())
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+}
+
 model ExchangeAccount {
-  id           Int      @id @default(autoincrement())
-  active       Boolean  @default(false)
+  id           Int        @id @default(autoincrement())
+  active       Boolean    @default(false)
   exchange     Exchange
   membershipId Int
   apiKey       String
   apiSecret    String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
   orders       Order[]
+  positions    Position[]
 
   @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
 }
@@ -154,4 +168,9 @@ enum OrderStatus {
 enum OrderType {
   LIMIT
   MARKET
+}
+
+enum PositionSide {
+  LONG
+  SHORT
 }
