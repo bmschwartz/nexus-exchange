@@ -20,6 +20,10 @@ interface UpdateOrderSetInput {
   description?: string;
 }
 
+interface CancelOrderSetInput {
+  orderSetId: number;
+}
+
 interface OrdersInput {
   orderSetId: number
   limit?: number
@@ -108,6 +112,24 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
 
   return orderSet
 }
+
+
+export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput): Promise<OrderSet | null> => {
+  const { orderSetId } = data
+  // const orderSet = ctx.prisma.orderSet.update({
+  //   where: { id: Number(orderSetId) },
+  //   data: { status: OrderSetStatus.CANCELED },
+  // })
+
+  // if (!orderSet) {
+  //   return null
+  // }
+
+  // emit orderset canceled updated message
+
+  return null
+}
+
 
 export const getOrders = async (ctx: Context, { orderSetId, limit, offset }: OrdersInput): Promise<OrdersResult> => {
   const orders = await ctx.prisma.order.findMany({

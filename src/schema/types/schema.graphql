@@ -16,6 +16,7 @@ extend type Query {
 extend type Mutation {
   createOrderSet(input: CreateOrderSetInput!): OrderSet
   updateOrderSet(input: UpdateOrderSetInput!): OrderSet
+  cancelOrderSet(input: CancelOrderSetInput!): OrderSet
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse!
 
@@ -104,6 +105,10 @@ input UpdateOrderSetInput {
   description: String!
   price: Float
   stopPrice: Float
+}
+
+input CancelOrderSetInput {
+  orderSetId: ID!
 }
 
 ###################
