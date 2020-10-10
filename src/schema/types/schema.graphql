@@ -120,6 +120,7 @@ type Position @key(fields: "id") {
   side: OrderSide!
   exchange: Exchange!
   quantity: Float
+  avgPrice: Float
   symbol: String!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -142,6 +143,7 @@ type ExchangeAccount @key(fields: "id") {
   apiKey: String!
   apiSecret: String!
   orders: [Order!]!
+  positions: [Position!]!
   membershipId: ID!
 }
 

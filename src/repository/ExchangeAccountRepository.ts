@@ -17,6 +17,12 @@ export const getOrders = async (ctx: Context, id: number) => {
   })
 }
 
+export const getPositions = async (ctx: Context, id: number) => {
+  return ctx.prisma.position.findMany({
+    where: { exchangeAccountId: id },
+  })
+}
+
 export const createExchangeAccount = async (ctx: Context, membershipId: number, apiKey: string, apiSecret: string, exchange: Exchange) => {
   const accountCount = await ctx.prisma.exchangeAccount.count({
     where: {
