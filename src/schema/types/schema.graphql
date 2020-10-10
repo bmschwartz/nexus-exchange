@@ -117,7 +117,7 @@ input CancelOrderSetInput {
 type Position @key(fields: "id") {
   id: ID!
   exchangeAccount: ExchangeAccount!
-  side: OrderSide!
+  side: PositionSide!
   exchange: Exchange!
   quantity: Float
   avgPrice: Float
@@ -305,6 +305,11 @@ enum OrderStatus {
   FILLED
   PARTIALLY_FILLED
   CANCELED
+}
+
+enum PositionSide {
+  LONG
+  SHORT
 }
 
 enum BinanceSymbolStatus {
