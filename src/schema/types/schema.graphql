@@ -67,7 +67,7 @@ type OrderSet @key(fields: "id") {
   price: Float
   side: OrderSide!
   orderType: OrderType!
-  orders: OrderSetOrders!
+  orders(limit: Int, offset: Int): OrderSetOrders!
   percent: Float!
   stopPrice: Float
   description: String
