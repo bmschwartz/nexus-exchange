@@ -1,4 +1,4 @@
-import { OrderSet } from "@prisma/client";
+import { OrderSet, Position } from "@prisma/client";
 import { Context } from "src/context";
 
 
@@ -11,6 +11,18 @@ export interface OrderSetsInput {
 export interface OrderSetResult {
   totalCount: number
   orderSets: OrderSet[]
+}
+
+export interface GroupPositionsInput {
+  groupId: number
+  symbol: string
+  limit?: number
+  offset?: number
+}
+
+export interface GroupPositionsResult {
+  totalCount: number
+  positions: Position[]
 }
 
 
@@ -28,5 +40,12 @@ export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }
   return {
     orderSets,
     totalCount: orderSetCount
+  }
+}
+
+export const getGroupPositions = async (ctx: Context, { symbol, groupId, limit, offset }: GroupPositionsInput): Promise<GroupPositionsResult> => {
+  return {
+    totalCount: 0,
+    positions: []
   }
 }

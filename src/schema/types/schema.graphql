@@ -248,7 +248,8 @@ extend type Group @key(fields: "id") {
   orderSets(limit: Int, offset: Int): GroupOrderSets!
   orderSet(input: OrderSetInput!): OrderSet
 
-  positions(limit: Int, offset: Int): GroupPositions!
+  symbolsWithPosition: SymbolsWithPositionResult
+  positions(symbol: String, limit: Int, offset: Int): GroupPositions!
   position(input: PositionInput!): Position
 }
 
@@ -260,6 +261,11 @@ type GroupOrderSets {
 type GroupPositions {
   positions: [Position!]!
   totalCount: Int!
+}
+
+type SymbolsWithPositionResult {
+  binance: [BinanceCurrency!]!
+  bitmex: [BitmexCurrency!]! 
 }
 
 ###########################
