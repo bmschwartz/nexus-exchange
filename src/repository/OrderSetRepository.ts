@@ -20,6 +20,17 @@ interface UpdateOrderSetInput {
   description?: string;
 }
 
+interface OrdersInput {
+  orderSetId: number
+  limit?: number
+  offset?: number
+}
+
+export interface OrdersResult {
+  totalCount: number
+  orders: Order[]
+}
+
 type Currency =
   | BinanceCurrency
   | BitmexCurrency
@@ -98,10 +109,21 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
   return orderSet
 }
 
-export const getOrders = async (ctx: Context, orderSetId: number): Promise<Order[] | null> => {
-  return ctx.prisma.order.findMany({
-    where: { orderSetId: Number(orderSetId) },
+export const getOrders = async (ctx: Context, { orderSetId, limit, offset }: OrdersInput): Promise<OrdersResult> => {
+  const orders = await ctx.prisma.order.findMany({
+    take: limit,
+    skip: offset,
+    where: { orderSetId },
+    orderBy: { id: "asc" }
   })
+  const totalCount = await ctx.prisma.order.count({
+    where: { orderSetId }
+  })
+
+  return {
+    orders,
+    totalCount
+  }
 }
 
 export const getOrderSide = async (ctx: Context, orderSetId: number): Promise<OrderSide | null> => {

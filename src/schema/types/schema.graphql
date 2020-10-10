@@ -67,12 +67,17 @@ type OrderSet @key(fields: "id") {
   price: Float
   side: OrderSide!
   orderType: OrderType!
-  orders: [Order!]!
+  orders: OrderSetOrders!
   percent: Float!
   stopPrice: Float
   description: String
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type OrderSetOrders {
+  totalCount: Int!
+  orders: [Order!]!
 }
 
 input OrderSetInput {

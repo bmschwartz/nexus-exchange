@@ -44,8 +44,8 @@ export const OrderSetResolvers = {
     return getOrderSet(ctx, Number(orderSet.id))
   },
 
-  async orders({ id: orderSetId }: any, args: any, ctx: Context) {
-    return getOrders(ctx, orderSetId)
+  async orders({ id: orderSetId }: any, { limit, offset }: any, ctx: Context) {
+    return getOrders(ctx, { limit, offset, orderSetId: Number(orderSetId) })
   },
 
   async side({ id: orderSetId }: any, args: any, ctx: Context) {
