@@ -16,6 +16,7 @@ export const GroupResolvers = {
   },
 
   async symbolsWithPosition(group: any, args: any, ctx: Context) {
+    // TODO This function...
     return {
       binance: [],
       bitmex: []
@@ -23,6 +24,7 @@ export const GroupResolvers = {
   },
 
   async position(group: any, { id: positionId }: any, ctx: Context) {
+    // TODO This function...
     return null
   }
 }

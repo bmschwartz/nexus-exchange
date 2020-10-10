@@ -44,6 +44,7 @@ export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }
 }
 
 export const getGroupPositions = async (ctx: Context, { symbol, groupId, limit, offset }: GroupPositionsInput): Promise<GroupPositionsResult> => {
+  // TODO This function...
   return {
     totalCount: 0,
     positions: []
