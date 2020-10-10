@@ -7,6 +7,8 @@ extend type Query {
   binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
 
+  position(input: PositionInput!): Position
+
   exchangeAccount(input: ExchangeAccountInput!): ExchangeAccount
   exchangeAccounts(input: ExchangeAccountsInput!): [ExchangeAccount!]!
 }
@@ -102,6 +104,24 @@ input UpdateOrderSetInput {
   description: String!
   price: Float
   stopPrice: Float
+}
+
+###################
+# Position
+###################
+type Position @key(fields: "id") {
+  id: ID!
+  exchangeAccount: ExchangeAccount!
+  side: OrderSide!
+  exchange: Exchange!
+  quantity: Float
+  symbol: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input PositionInput {
+  id: ID!
 }
 
 ###########################
@@ -220,10 +240,18 @@ extend type Group @key(fields: "id") {
   id: ID! @external
   orderSets(limit: Int, offset: Int): GroupOrderSets!
   orderSet(input: OrderSetInput!): OrderSet
+
+  positions(limit: Int, offset: Int): GroupPositions!
+  position(input: PositionInput!): Position
 }
 
 type GroupOrderSets {
   orderSets: [OrderSet!]!
+  totalCount: Int!
+}
+
+type GroupPositions {
+  positions: [Position!]!
   totalCount: Int!
 }
 
@@ -233,11 +261,17 @@ type GroupOrderSets {
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
   orders(limit: Int, offset: Int): MemberOrders!
+  positions(limit: Int, offset: Int): MemberPositions!
   exchangeAccounts: [ExchangeAccount!]!
 }
 
 type MemberOrders {
   orders: [Order!]!
+  totalCount: Int!
+}
+
+type MemberPositions {
+  positions: [Position!]!
   totalCount: Int!
 }
 

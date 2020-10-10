@@ -7,12 +7,14 @@ import { GroupMembershipResolvers } from "./GroupMembershipResolvers"
 import { BinanceResolvers } from "./BinanceResolvers"
 import { BitmexResolvers } from "./BitmexResolvers"
 import { ExchangeAccountResolvers } from "./ExchangeAccountResolvers";
+import { PositionResolvers } from "./PositionResolvers";
 
 export const resolvers: any = {
   Query,
   Mutation,
   Order: OrderResolvers,
   Group: GroupResolvers,
+  Position: PositionResolvers,
   OrderSet: OrderSetResolvers,
   BitmexCurrency: BitmexResolvers,
   BinanceCurrency: BinanceResolvers,
