@@ -20,7 +20,7 @@ extend type Mutation {
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse!
 
-  createExchangeAccount(input: CreateExchangeAccountInput!): ExchangeAccount
+  createExchangeAccount(input: CreateExchangeAccountInput!): CreateExchangeAccountResult
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
   updateExchangeAccount(input: UpdateExchangeAccountInput!): UpdateExchangeAccountResult!
   toggleExchangeAccountActive(input: ToggleExchangeAccountActiveInput!): ToggleExchangeAccountActiveResult!
@@ -160,6 +160,10 @@ input CreateExchangeAccountInput {
   membershipId: ID!
   apiKey: String!
   apiSecret: String!
+}
+
+type CreateExchangeAccountResult {
+  operationId: ID!
 }
 
 input DeleteExchangeAccountInput {

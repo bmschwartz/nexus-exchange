@@ -24,6 +24,7 @@ export const getPositions = async (ctx: Context, id: number) => {
 }
 
 export const createExchangeAccount = async (ctx: Context, membershipId: number, apiKey: string, apiSecret: string, exchange: Exchange) => {
+
   const accountCount = await ctx.prisma.exchangeAccount.count({
     where: {
       AND: {
@@ -44,15 +45,39 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     return new Error(`Invalid API key pair for ${exchange}`)
   }
 
-  return ctx.prisma.exchangeAccount.create({
+  const account = await ctx.prisma.exchangeAccount.create({
     data: {
-      active: true,
+      active: false,
       apiKey,
       apiSecret,
       membershipId,
       exchange
     }
   })
+
+  const messageId = await ctx.sqs.sendCreateAccountMessage(account.id, { "apiKey": apiKey, "apiSecret": apiSecret, "accountId": account.id })
+
+  if (!messageId) {
+    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+    return new Error("Unable to connect account")
+  }
+
+  const result = await ctx.redis.set(messageId, JSON.stringify({
+    operation: "createAccount",
+    messageId,
+    complete: false,
+    payload: {
+      apiKey,
+      apiSecret,
+      accountId: account.id,
+    }
+  }))
+
+  // TODO: How to handle an error setting redis value
+
+  return {
+    "operationId": messageId
+  }
 }
 
 const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSecret: string): Promise<boolean> => {
