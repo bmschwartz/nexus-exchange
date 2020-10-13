@@ -6,7 +6,9 @@ import { SendMessageBatchResultEntryList } from "aws-sdk/clients/sqs";
 import { Producer } from "sqs-producer";
 import { Consumer } from "sqs-consumer";
 
-import { redis } from "../context";
+import { PrismaClient } from "@prisma/client";
+import { RedisClient } from "../services";
+import { prisma, redis as redisClient } from "../context";
 
 dotenv.config()
 
@@ -38,7 +40,9 @@ export class SQSClient {
     this._createAccountResultConsumer = Consumer.create({
       sqs: new AWS.SQS(),
       queueUrl: createAccountResultQueue,
-      handleMessage: this.handleCreateAccountResultMessage,
+      handleMessage: async (message: SQS.Types.Message) => {
+        await this.handleCreateAccountResultMessage(message, prisma, redisClient)
+      },
     })
     this._createAccountResultConsumer.start()
   }
@@ -60,7 +64,7 @@ export class SQSClient {
     return result[0].MessageId
   }
 
-  async handleCreateAccountResultMessage(message: SQS.Types.Message) {
+  async handleCreateAccountResultMessage(message: SQS.Types.Message, prisma: PrismaClient, redis: RedisClient) {
     const { Body: body } = message
     if (!body) {
       return
@@ -82,5 +86,17 @@ export class SQSClient {
     currentData.error = error
 
     await redis.set(sourceMessageId, JSON.stringify(currentData))
+
+    const accountId = currentData.payload["accountId"]
+
+    if (!success) {
+      await prisma.exchangeAccount.delete({ where: { id: accountId } })
+      return
+    }
+
+    await prisma.exchangeAccount.update({
+      where: { id: accountId },
+      data: { active: true }
+    })
   }
 }
