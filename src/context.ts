@@ -35,7 +35,7 @@ if (!accessKey || !secretAccessKey) {
 
 export const prisma = new PrismaClient()
 export const redis = new RedisClient(redisHost, redisPort)
-export const sqs = new SQSClient({
+export const sqs = new SQSClient(prisma, redis, {
   accessKey,
   secretKey: secretAccessKey,
   awsRegion,
