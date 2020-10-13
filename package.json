@@ -21,6 +21,7 @@
     "graphql-shield": "^7.3.3",
     "handy-redis": "^2.0.0",
     "redis": "^3.0.2",
+    "sqs-consumer": "^5.4.0",
     "sqs-producer": "git+https://github.com/tradenexus/sqs-producer.git",
     "uuid": "^8.3.1"
   },

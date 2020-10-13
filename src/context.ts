@@ -13,7 +13,7 @@ const accessKey = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const awsRegion = process.env.AWS_DEFAULT_REGION
 const createAccountQueue = process.env.BINANCE_CREATE_ACCOUNT_QUEUE
-
+const createAccountResultQueue = process.env.BINANCE_CREATE_ACCOUNT_RESULT_QUEUE
 
 if (!redisHost || !redisPort) {
   console.error("Redis variables missing!")
@@ -24,7 +24,7 @@ if (!awsRegion) {
   console.error("AWS variables not found!")
   exit(1)
 }
-if (!createAccountQueue) {
+if (!createAccountQueue || !createAccountResultQueue) {
   console.error("Queues missing!")
   exit(1)
 }
@@ -39,7 +39,8 @@ export const sqs = new SQSClient({
   accessKey,
   secretKey: secretAccessKey,
   awsRegion,
-  createAccountQueue
+  createAccountQueue,
+  createAccountResultQueue,
 })
 
 export interface Context {

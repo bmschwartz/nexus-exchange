@@ -6,7 +6,11 @@ export class RedisClient {
     this._client = createNodeRedisClient(Number(port), host)
   }
 
-  async set(key: string, value: string) {
+  async set(key: string, value: string): Promise<"OK" | string | null> {
     return this._client.set(key, value)
+  }
+
+  async get(key: string): Promise<string | null> {
+    return this._client.get(key)
   }
 }

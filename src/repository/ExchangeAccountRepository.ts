@@ -67,8 +67,6 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     messageId,
     complete: false,
     payload: {
-      apiKey,
-      apiSecret,
       accountId: account.id,
     }
   }))
