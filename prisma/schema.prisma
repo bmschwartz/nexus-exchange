@@ -74,6 +74,49 @@ model BitmexCurrency {
   updatedAt        DateTime @default(now())
 }
 
+model OrderSet {
+  id          Int       @id @default(autoincrement())
+  exchange    Exchange
+  symbol      String
+  description String?
+  groupId     Int
+  orderType   OrderType
+  price       Float?
+  stopPrice   Float?
+  percent     Float
+  side        OrderSide
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  orders      Order[]
+}
+
+model ExchangeAccount {
+  id              Int        @id @default(autoincrement())
+  active          Boolean    @default(false)
+  exchange        Exchange
+  membershipId    Int
+  remoteAccountId String?
+  apiKey          String
+  apiSecret       String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now())
+  orders          Order[]
+  positions       Position[]
+
+  @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
+}
+
+model AsyncOperation {
+  id        Int           @id @default(autoincrement())
+  opType    OperationType
+  complete  Boolean       @default(false)
+  success   Boolean?      @default(false)
+  error     String?
+  payload   Json?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now())
+}
+
 model Order {
   id                Int             @id @default(autoincrement())
   orderSetId        Int
@@ -94,22 +137,6 @@ model Order {
   orderSet          OrderSet        @relation(fields: [orderSetId], references: [id])
 }
 
-model OrderSet {
-  id          Int       @id @default(autoincrement())
-  description String?
-  groupId     Int
-  orderType   OrderType
-  price       Float?
-  stopPrice   Float?
-  percent     Float
-  side        OrderSide
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now())
-  exchange    Exchange
-  symbol      String
-  orders      Order[]
-}
-
 model Position {
   id                Int             @id @default(autoincrement())
   exchangeAccountId Int
@@ -121,32 +148,6 @@ model Position {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @default(now())
   exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
-}
-
-model ExchangeAccount {
-  id              Int        @id @default(autoincrement())
-  active          Boolean    @default(false)
-  exchange        Exchange
-  membershipId    Int
-  apiKey          String
-  apiSecret       String
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @default(now())
-  remoteAccountId String?
-  orders          Order[]
-  positions       Position[]
-
-  @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
-}
-
-model AsyncOperation {
-  id        Int      @id @default(autoincrement())
-  complete  Boolean  @default(false)
-  success   Boolean?
-  error     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  payload   Json?
 }
 
 enum BinanceSymbolStatus {
@@ -184,4 +185,13 @@ enum OrderType {
 enum PositionSide {
   LONG
   SHORT
+}
+
+enum OperationType {
+  CANCEL_BINANCE_ORDER
+  CREATE_BINANCE_ACCOUNT
+  CREATE_BINANCE_ORDER
+  DELETE_BINANCE_ACCOUNT
+  UPDATE_BINANCE_ACCOUNT
+  UPDATE_BINANCE_ORDER
 }
