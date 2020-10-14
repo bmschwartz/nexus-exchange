@@ -49,36 +49,28 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     data: {
       active: false,
       apiKey,
+      exchange,
       apiSecret,
       membershipId,
-      exchange
     }
   })
 
-  const messageId = await ctx.sqs.sendCreateAccountMessage(account.id, { "apiKey": apiKey, "apiSecret": apiSecret, "accountId": account.id })
+  // const messageId = await ctx.sqs.sendCreateAccountMessage(account.id, { "apiKey": apiKey, "apiSecret": apiSecret, "accountId": account.id })
 
-  if (!messageId) {
-    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
-    return new Error("Unable to connect account")
-  }
+  // if (!messageId) {
+  //   await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+  //   return new Error("Unable to connect account")
+  // }
 
-  const result = await ctx.redis.set(messageId, JSON.stringify({
-    operation: "createAccount",
-    messageId,
-    complete: false,
-    payload: {
-      accountId: account.id,
-    }
-  }))
-
-  // TODO: How to handle an error setting redis value
+  // TODO: Store operation data
 
   return {
-    "operationId": messageId
+    "operationId": "placeholder"
   }
 }
 
 const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSecret: string): Promise<boolean> => {
+  // TODO: This function
   return true
 }
 
