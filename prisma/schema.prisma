@@ -124,18 +124,29 @@ model Position {
 }
 
 model ExchangeAccount {
-  id           Int        @id @default(autoincrement())
-  active       Boolean    @default(false)
-  exchange     Exchange
-  membershipId Int
-  apiKey       String
-  apiSecret    String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now())
-  orders       Order[]
-  positions    Position[]
+  id              Int        @id @default(autoincrement())
+  active          Boolean    @default(false)
+  exchange        Exchange
+  membershipId    Int
+  apiKey          String
+  apiSecret       String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now())
+  remoteAccountId String?
+  orders          Order[]
+  positions       Position[]
 
   @@unique([exchange, membershipId], name: "ExchangeAccount_exchange_membershipId_key")
+}
+
+model AsyncOperation {
+  id        Int      @id @default(autoincrement())
+  complete  Boolean  @default(false)
+  success   Boolean?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  payload   Json?
 }
 
 enum BinanceSymbolStatus {

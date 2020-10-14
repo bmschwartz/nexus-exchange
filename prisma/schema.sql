@@ -139,6 +139,34 @@ CREATE TABLE "public"."ExchangeAccount" (
   UNIQUE ("exchange", "membershipId")
 );
 
+CREATE TABLE "public"."AsyncOperation" (
+  id BIGSERIAL PRIMARY KEY NOT NULL,
+  complete BOOLEAN NOT NULL DEFAULT false,
+  success BOOLEAN,
+  error VARCHAR(255),
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE FUNCTION delete_old_async_operations() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  DELETE FROM "public"."AsyncOperation" WHERE "createdAt" < NOW() - INTERVAL '3 days';
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER trigger_delete_old_async_operations
+    AFTER INSERT ON "public"."AsyncOperation"
+    EXECUTE PROCEDURE delete_old_async_operations();
+
 ALTER TABLE "public"."OrderSet"
 ADD COLUMN exchange EXCHANGE NOT NULL,
 ADD COLUMN symbol VARCHAR(255) NOT NULL;
+
+ALTER TABLE "public"."ExchangeAccount"
+  ADD COLUMN "remoteAccountId" VARCHAR(255);
+
+ALTER TABLE "public"."AsyncOperation"
+  ADD COLUMN payload JSONB;
