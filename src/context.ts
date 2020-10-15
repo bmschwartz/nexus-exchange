@@ -1,14 +1,19 @@
-import * as dotenv from "dotenv"
 import { PrismaClient } from "@prisma/client"
+import { MessageClient } from "./services/messenger"
+import { initSettings } from "./settings"
 
-dotenv.config()
+
+initSettings()
+
 
 export const prisma = new PrismaClient()
+export const messenger = new MessageClient(prisma)
 
 export interface Context {
   userId?: number
   permissions: string[]
   prisma: PrismaClient
+  messenger: MessageClient
 }
 
 export function createContext({ req }: any): Context {
@@ -20,6 +25,7 @@ export function createContext({ req }: any): Context {
   return {
     prisma,
     userId,
+    messenger,
     permissions,
   }
 }
