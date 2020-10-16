@@ -40,21 +40,21 @@ export class MessageClient {
     this._binanceAccountCreatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_CREATED_QUEUE"], { durable: true })
     await this._binanceAccountCreatedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_ACCOUNT_CREATED_EVENT_KEY"])
     await this._binanceAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.fields.routingKey)
+      console.log(message.content.toString())
       message.ack()
     })
 
     this._binanceAccountUpdatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_UPDATED_QUEUE"], { durable: true })
     await this._binanceAccountUpdatedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_ACCOUNT_UPDATED_EVENT_KEY"])
     await this._binanceAccountUpdatedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.fields.routingKey)
+      console.log(message.content.toString())
       message.ack()
     })
 
     this._binanceAccountDeletedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_DELETED_QUEUE"], { durable: true })
     await this._binanceAccountDeletedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_ACCOUNT_DELETED_EVENT_KEY"])
     await this._binanceAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.fields.routingKey)
+      console.log(message.content.toString())
       message.ack()
     })
 
