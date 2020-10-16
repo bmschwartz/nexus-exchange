@@ -35,13 +35,15 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
   })
 
   if (accountCount > 0) {
-    return new Error(`${exchange} account already exists for that membership`)
+    console.log("found account")
+    return new Error(`${exchange} account already exists for this membership`)
   }
 
   // TODO: Verify the api key and secret are valid with exchange
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
 
   if (!isValidApiKeyAndSecret) {
+    console.log("invalid keys")
     return new Error(`Invalid API key pair for ${exchange}`)
   }
 
@@ -55,17 +57,20 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     }
   })
 
-  // const messageId = await ctx.sqs.sendCreateAccountMessage(account.id, { "apiKey": apiKey, "apiSecret": apiSecret, "accountId": account.id })
+  console.log("created local exch account")
 
-  // if (!messageId) {
-  //   await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
-  //   return new Error("Unable to connect account")
-  // }
+  let opId: number
+  try {
+    opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
+  } catch {
+    console.log("couldnt send")
+    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+    return new Error("Unable to connect to exchange")
+  }
 
-  // TODO: Store operation data
-
+  console.log("returning op id")
   return {
-    "operationId": "placeholder"
+    "operationId": opId
   }
 }
 
