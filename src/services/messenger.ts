@@ -44,8 +44,7 @@ export class MessageClient {
     this._binanceAccountCreatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_CREATED_QUEUE"], { durable: true })
     await this._binanceAccountCreatedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_CREATED_KEY"])
     await this._binanceAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => {
-      message.ack()
-
+      console.log(message.getContent())
       const { success, accountId, error }: AccountCreatedResponse = message.getContent()
       const { correlationId: operationId } = message.properties
 
@@ -58,10 +57,14 @@ export class MessageClient {
         }
       })
 
-      await this._db.exchangeAccount.update({
-        where: { id: accountId },
-        data: { active: success },
-      })
+      if (accountId) {
+        await this._db.exchangeAccount.update({
+          where: { id: accountId },
+          data: { active: success },
+        })
+      }
+
+      message.ack()
     })
 
     this._binanceAccountUpdatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_UPDATED_QUEUE"], { durable: true })
