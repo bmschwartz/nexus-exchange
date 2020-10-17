@@ -8,13 +8,13 @@ export const permissions = shield({
   Query: {
     // OrderSet Queries
     orderSet: isAuthenticated,
+
+    asyncOperationStatus: isAuthenticated,
   },
   Mutation: {
-    // OrderSet Mutations
     createOrderSet: isAuthenticated,
     updateOrderSet: isAuthenticated,
 
-    // Order Mutations
     cancelOrder: isAuthenticated,
   },
 })
