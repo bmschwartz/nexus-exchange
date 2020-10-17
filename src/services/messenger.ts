@@ -79,7 +79,7 @@ export class MessageClient {
     })
   }
 
-  async sendCreateBinanceAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
+  async sendCreateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
 
     if (!this._createBinanceAccountQueue) {
@@ -87,7 +87,7 @@ export class MessageClient {
     }
 
     const op = await this._db.asyncOperation.create({
-      data: { payload, opType: OperationType.CREATE_BINANCE_ACCOUNT }
+      data: { userId, payload, opType: OperationType.CREATE_BINANCE_ACCOUNT }
     })
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
