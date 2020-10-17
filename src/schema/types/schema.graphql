@@ -9,6 +9,8 @@ extend type Query {
 
   position(input: PositionInput!): Position
 
+  asyncOperationStatus(input: AsyncOperationStatusInput!): AsyncOperationStatus
+
   exchangeAccount(input: ExchangeAccountInput!): ExchangeAccount
   exchangeAccounts(input: ExchangeAccountsInput!): [ExchangeAccount!]!
 }
@@ -194,6 +196,25 @@ type UpdateExchangeAccountResult {
 }
 
 ###########################
+# BinanceCurrency
+###########################
+type AsyncOperation {
+  id: ID!
+  opType: OperationType!
+  success: Boolean!
+  complete: Boolean!
+  error: String
+}
+
+input AsyncOperationStatusInput {
+  id: ID!
+}
+
+type AsyncOperationStatus {
+  operation: AsyncOperation!
+}
+
+###########################
 # BitmexCurrency
 ###########################
 
@@ -330,4 +351,13 @@ enum BinanceSymbolStatus {
   POST_TRADING
   PRE_TRADING
   TRADING
+}
+
+enum OperationType {
+  CANCEL_BINANCE_ORDER
+  CREATE_BINANCE_ACCOUNT
+  CREATE_BINANCE_ORDER
+  DELETE_BINANCE_ACCOUNT
+  UPDATE_BINANCE_ACCOUNT
+  UPDATE_BINANCE_ORDER
 }
