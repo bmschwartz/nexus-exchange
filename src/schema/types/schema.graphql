@@ -165,7 +165,8 @@ input CreateExchangeAccountInput {
 }
 
 type CreateExchangeAccountResult {
-  operationId: ID!
+  operationId: ID
+  error: String
 }
 
 input DeleteExchangeAccountInput {
