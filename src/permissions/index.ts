@@ -6,7 +6,6 @@ const isAuthenticated = rule()((parent, args, { userId }) => {
 
 export const permissions = shield({
   Query: {
-    // OrderSet Queries
     orderSet: isAuthenticated,
 
     asyncOperationStatus: isAuthenticated,
