@@ -113,6 +113,7 @@ model AsyncOperation {
   success   Boolean?      @default(false)
   error     String?
   payload   Json?
+  userId    Int
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now())
 }

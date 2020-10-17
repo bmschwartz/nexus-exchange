@@ -169,3 +169,6 @@ $$;
 CREATE TRIGGER trigger_delete_old_async_operations
     AFTER INSERT ON "public"."AsyncOperation"
     EXECUTE PROCEDURE delete_old_async_operations();
+
+ALTER TABLE "public"."AsyncOperation"
+  ADD COLUMN "userId" INTEGER NOT NULL;
