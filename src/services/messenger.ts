@@ -1,6 +1,7 @@
 import * as Amqp from "amqp-ts"
 import { PrismaClient, OperationType } from "@prisma/client";
 import { SETTINGS } from "../settings";
+import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 
 interface AccountCreatedResponse {
   success: boolean
@@ -11,7 +12,8 @@ interface AccountCreatedResponse {
 
 export class MessageClient {
   _db: PrismaClient
-  _conn: Amqp.Connection
+  _recvConn: Amqp.Connection
+  _sendConn: Amqp.Connection
 
   // Command Queues
   _createBinanceAccountQueue?: Amqp.Queue
@@ -24,62 +26,71 @@ export class MessageClient {
   _binanceAccountDeletedQueue?: Amqp.Queue
 
   // Exchanges
-  _binanceExchange?: Amqp.Exchange
+  _recvBinanceExchange?: Amqp.Exchange
+  _sendBinanceExchange?: Amqp.Exchange
 
   constructor(prisma: PrismaClient) {
     this._db = prisma
-    this._conn = new Amqp.Connection(SETTINGS["AMQP_URL"])
+    this._recvConn = new Amqp.Connection(SETTINGS["AMQP_URL"])
+    this._sendConn = new Amqp.Connection(SETTINGS["AMQP_URL"])
 
     this._connectBinanceMessaging()
   }
 
   async _connectBinanceMessaging() {
     // Exchanges
-    this._binanceExchange = this._conn.declareExchange(SETTINGS["BINANCE_EXCHANGE"], "topic", { durable: true })
+    this._recvBinanceExchange = this._recvConn.declareExchange(SETTINGS["BINANCE_EXCHANGE"], "topic", { durable: true })
+    this._sendBinanceExchange = this._sendConn.declareExchange(SETTINGS["BINANCE_EXCHANGE"], "topic", { durable: true })
 
     // Command queues
-    this._createBinanceAccountQueue = this._conn.declareQueue(SETTINGS["BINANCE_CREATE_ACCOUNT_QUEUE"], { durable: true })
+    this._createBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_CREATE_ACCOUNT_QUEUE"], { durable: true })
+    this._updateBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_UPDATE_ACCOUNT_QUEUE"], { durable: true })
+    this._deleteBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_DELETE_ACCOUNT_QUEUE"], { durable: true })
 
     // Event queues
-    this._binanceAccountCreatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_CREATED_QUEUE"], { durable: true })
-    await this._binanceAccountCreatedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_CREATED_KEY"])
-    await this._binanceAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.getContent())
-      const { success, accountId, error }: AccountCreatedResponse = message.getContent()
-      const { correlationId: operationId } = message.properties
+    this._binanceAccountCreatedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_CREATED_QUEUE"], { durable: true })
+    await this._binanceAccountCreatedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_CREATED_KEY"])
+    await this._binanceAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountCreatedConsumer(this._db, message))
 
-      await this._db.asyncOperation.update({
-        where: { id: Number.parseInt(operationId) },
-        data: {
-          complete: true,
-          success,
-          error,
-        }
+    this._binanceAccountUpdatedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_UPDATED_QUEUE"], { durable: true })
+    await this._binanceAccountUpdatedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_UPDATED_KEY"])
+    await this._binanceAccountUpdatedQueue.activateConsumer(this._accountUpdatedConsumer)
+
+    this._binanceAccountDeletedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_DELETED_QUEUE"], { durable: true })
+    await this._binanceAccountDeletedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_DELETED_KEY"])
+    await this._binanceAccountDeletedQueue.activateConsumer(this._accountDeletedConsumer)
+  }
+
+  async _accountCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { success, accountId, error }: AccountCreatedResponse = message.getContent()
+    const { correlationId: operationId } = message.properties
+
+    if (!operationId) {
+      console.error(`Missing Operation ID in accountCreated response [accountId: ${accountId}]`)
+      message.reject(false)
+      return
+    }
+
+    await completeAsyncOperation(prisma, operationId, success, error)
+
+    if (accountId) {
+      await prisma.exchangeAccount.update({
+        where: { id: accountId },
+        data: { active: success },
       })
+    }
 
-      if (accountId) {
-        await this._db.exchangeAccount.update({
-          where: { id: accountId },
-          data: { active: success },
-        })
-      }
+    message.ack()
+  }
 
-      message.ack()
-    })
+  async _accountUpdatedConsumer(message: Amqp.Message) {
+    console.log(message.properties, message.getContent())
+    message.ack()
+  }
 
-    this._binanceAccountUpdatedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_UPDATED_QUEUE"], { durable: true })
-    await this._binanceAccountUpdatedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_UPDATED_KEY"])
-    await this._binanceAccountUpdatedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.properties, message.getContent())
-      message.ack()
-    })
-
-    this._binanceAccountDeletedQueue = this._conn.declareQueue(SETTINGS["BINANCE_ACCOUNT_DELETED_QUEUE"], { durable: true })
-    await this._binanceAccountDeletedQueue.bind(this._binanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_DELETED_KEY"])
-    await this._binanceAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => {
-      console.log(message.properties, message.getContent())
-      message.ack()
-    })
+  async _accountDeletedConsumer(message: Amqp.Message) {
+    console.log(message.properties, message.getContent())
+    message.ack()
   }
 
   async sendCreateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string): Promise<number> {
@@ -89,22 +100,56 @@ export class MessageClient {
       throw new Error()
     }
 
-    const op = await this._db.asyncOperation.create({
-      data: { userId, payload, opType: OperationType.CREATE_BINANCE_ACCOUNT }
-    })
+    const op = await createAsyncOperation(this._db, { userId, payload }, OperationType.CREATE_BINANCE_ACCOUNT)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
 
-    this._createBinanceAccountQueue?.send(message)
+    console.log(`sending create account payload ${JSON.stringify(payload)}`)
+    this._sendBinanceExchange?.send(message, SETTINGS["BINANCE_CREATE_ACCOUNT_CMD_KEY"])
 
     return op.id
   }
 
-  async sendUpdateBinanceAccount(accountId: number, apiKey: string, apiSecret: string) {
+  async sendUpdateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string) {
+    const payload = { accountId, apiKey, apiSecret }
+
+    if (!this._updateBinanceAccountQueue) {
+      throw new Error()
+    }
+
+    const op = await this._db.asyncOperation.create({
+      data: { userId, payload, opType: OperationType.UPDATE_BINANCE_ACCOUNT }
+    })
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+
+    console.log(`sending update account payload ${JSON.stringify(payload)} on ${SETTINGS["BINANCE_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
+    this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
   }
 
-  async sendDeleteBinanceAccount() {
+  async sendDeleteBinanceAccount(userId: number, accountId: number) {
+    const payload = { accountId }
 
+    if (!this._deleteBinanceAccountQueue) {
+      throw new Error()
+    }
+
+    const op = await this._db.asyncOperation.create({
+      data: { userId, payload, opType: OperationType.DELETE_BINANCE_ACCOUNT }
+    })
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+
+    console.log(`sending delete account payload ${JSON.stringify(payload)} on ${SETTINGS["BINANCE_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
+    this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
   }
 
 }

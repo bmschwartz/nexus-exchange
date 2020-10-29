@@ -192,7 +192,7 @@ input UpdateExchangeAccountInput {
 }
 
 type UpdateExchangeAccountResult {
-  success: Boolean!
+  operationId: ID
   error: String
 }
 

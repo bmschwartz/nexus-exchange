@@ -74,6 +74,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     }
   }
 
+  console.log(`operation id: ${opId}`)
   return {
     "operationId": opId
   }
@@ -90,6 +91,12 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
 }
 
 export const updateExchangeAccount = async (ctx: Context, accountId: number, apiKey: string, apiSecret: string) => {
+  if (!ctx.userId) {
+    return {
+      error: "No user found!"
+    }
+  }
+
   const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: accountId } })
 
   if (!account) {
@@ -111,10 +118,21 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     }
   }
 
-  return {
-    success: updatedAccount.apiKey === apiKey && updatedAccount.apiSecret === apiSecret,
-    error: null
+  let opId: number
+  try {
+    opId = await ctx.messenger.sendUpdateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
+  } catch {
+    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+    return {
+      error: "Unable to connect to exchange"
+    }
   }
+
+  console.log(`operation id: ${opId}`)
+  return {
+    "operationId": opId
+  }
+
 }
 
 export const toggleExchangeAccountActive = async (ctx: Context, accountId: Number): Promise<any> => {
