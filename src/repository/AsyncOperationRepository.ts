@@ -1,5 +1,5 @@
 import { AsyncOperation, OperationType, PrismaClient } from "@prisma/client"
-import { Context } from "../context"
+import { Context, prisma } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
   const op = await ctx.prisma.asyncOperation.findOne({
@@ -23,4 +23,13 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
       error,
     }
   })
+}
+
+export const getPendingBinanceAccountOperations = async (prisma: PrismaClient, accountId: number): Promise<AsyncOperation[] | null> => {
+  const query = `
+  SELECT * FROM "AsyncOperation"
+  WHERE
+    payload -> 'accountId' = '${accountId}' AND
+    complete = false;`
+  return prisma.$queryRaw(query)
 }

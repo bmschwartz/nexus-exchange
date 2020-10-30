@@ -1,6 +1,7 @@
 import { Exchange, OrderSet } from "@prisma/client";
-import { Context } from "src/context";
+import { Context } from "../context";
 import { asyncForEach } from "../helper"
+import { getPendingBinanceAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: number) => {
@@ -76,7 +77,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
 
   console.log(`operation id: ${opId}`)
   return {
-    "operationId": opId
+    operationId: opId
   }
 }
 
@@ -130,20 +131,47 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
 
   console.log(`operation id: ${opId}`)
   return {
-    "operationId": opId
+    operationId: opId
   }
 
 }
 
-export const toggleExchangeAccountActive = async (ctx: Context, accountId: Number): Promise<any> => {
-  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) }, select: { active: true } })
-  if (!account) {
-    return false
+export const toggleExchangeAccountActive = async (ctx: Context, accountId: number): Promise<any> => {
+  if (!ctx.userId) {
+    return { error: "No user found!" }
   }
 
-  await ctx.prisma.exchangeAccount.update({ where: { id: Number(accountId) }, data: { active: !account.active } })
+  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) } })
+  if (!account) {
+    return { error: "Account not found" }
+  }
 
-  return true
+  let pendingAccountOperations = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+
+  console.log(pendingAccountOperations)
+  if (pendingAccountOperations) {
+    return { error: "Updating " }
+  }
+
+  const { apiKey, apiSecret } = account
+  let opId: number
+  try {
+    if (account.active) {
+      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id)
+    } else {
+      opId = await ctx.messenger.sendCreateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
+    }
+  } catch {
+    return {
+      error: "Unable to connect to exchange"
+    }
+  }
+
+  pendingAccountOperations = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+
+  console.log(pendingAccountOperations)
+
+  return { operationId: opId }
 }
 
 export const createOrderForExchangeAccounts = async (
