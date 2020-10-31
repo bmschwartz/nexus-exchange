@@ -63,6 +63,6 @@ export const ExchangeAccountMutations = {
   async toggleExchangeAccountActive(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
 
-    return { success: runToggleExchangeAccountActive(ctx, Number(accountId)) }
+    return runToggleExchangeAccountActive(ctx, Number(accountId))
   }
 }
