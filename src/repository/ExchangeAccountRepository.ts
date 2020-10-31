@@ -75,7 +75,6 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     }
   }
 
-  console.log(`operation id: ${opId}`)
   return {
     operationId: opId
   }
@@ -129,7 +128,6 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     }
   }
 
-  console.log(`operation id: ${opId}`)
   return {
     operationId: opId
   }
@@ -146,14 +144,14 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
     return { error: "Account not found" }
   }
 
-  let pendingAccountOperations = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
 
-  console.log(pendingAccountOperations)
-  if (pendingAccountOperations) {
-    return { error: "Updating " }
+  if (pendingAccountOps && pendingAccountOps.length > 0) {
+    return { error: "Already updating account" }
   }
 
   const { apiKey, apiSecret } = account
+
   let opId: number
   try {
     if (account.active) {
@@ -166,10 +164,6 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
       error: "Unable to connect to exchange"
     }
   }
-
-  pendingAccountOperations = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
-
-  console.log(pendingAccountOperations)
 
   return { operationId: opId }
 }
