@@ -1,4 +1,4 @@
-import { Exchange, OrderSet } from "@prisma/client";
+import { Exchange, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
 import { asyncForEach } from "../helper"
 import { getPendingBinanceAccountOperations } from "./AsyncOperationRepository";
@@ -86,8 +86,46 @@ const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSe
 }
 
 export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => {
-  const deletedAccount = await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
-  return deletedAccount && deletedAccount.id === accountId
+  if (!ctx.userId) {
+    return { error: "No user found!" }
+  }
+  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) } })
+
+  if (!account) {
+    return { error: "Could not find the account" }
+  }
+
+  if (!account.active) {
+    await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
+    const operation = await ctx.prisma.asyncOperation.create({
+      data: {
+        payload: { accountId: Number(accountId) },
+        success: true,
+        complete: true,
+        userId: ctx.userId,
+        opType: OperationType.DELETE_BINANCE_ACCOUNT,
+      }
+    })
+    return { operationId: operation.id }
+  }
+
+  let opId: number
+
+  try {
+    if (account.active) {
+      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id)
+    } else {
+      return { error: "Account is inactive" }
+    }
+  } catch {
+    return {
+      error: "Unable to connect to exchange"
+    }
+  }
+
+  return {
+    operationId: opId
+  }
 }
 
 export const updateExchangeAccount = async (ctx: Context, accountId: number, apiKey: string, apiSecret: string) => {

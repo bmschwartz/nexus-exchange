@@ -51,7 +51,7 @@ export const ExchangeAccountMutations = {
   async deleteExchangeAccount(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
 
-    return { success: runDeleteExchangeAccount(ctx, Number(accountId)) }
+    return runDeleteExchangeAccount(ctx, Number(accountId))
   },
 
   async updateExchangeAccount(parent: any, args: any, ctx: Context) {

@@ -3,7 +3,7 @@ import { PrismaClient, OperationType } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 
-interface AccountCreatedResponse {
+interface AccountOperationResponse {
   success: boolean
   error?: string
   accountId: number
@@ -54,15 +54,15 @@ export class MessageClient {
 
     this._binanceAccountUpdatedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_UPDATED_QUEUE"], { durable: true })
     await this._binanceAccountUpdatedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_UPDATED_KEY"])
-    await this._binanceAccountUpdatedQueue.activateConsumer(this._accountUpdatedConsumer)
+    await this._binanceAccountUpdatedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountUpdatedConsumer(this._db, message))
 
     this._binanceAccountDeletedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_DELETED_QUEUE"], { durable: true })
     await this._binanceAccountDeletedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_DELETED_KEY"])
-    await this._binanceAccountDeletedQueue.activateConsumer(this._accountDeletedConsumer)
+    await this._binanceAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountDeletedConsumer(this._db, message))
   }
 
   async _accountCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    const { success, accountId, error }: AccountCreatedResponse = message.getContent()
+    const { success, accountId, error }: AccountOperationResponse = message.getContent()
     const { correlationId: operationId } = message.properties
 
     if (!operationId) {
@@ -71,25 +71,49 @@ export class MessageClient {
       return
     }
 
+    if (!accountId) {
+      console.error(`Missing Account ID in accountCreated response`)
+      message.reject(false)
+      return
+    }
+
     await completeAsyncOperation(prisma, operationId, success, error)
 
-    if (accountId) {
+    if (success) {
       await prisma.exchangeAccount.update({
         where: { id: accountId },
-        data: { active: success },
+        data: { active: true },
+      })
+    } else {
+      await prisma.exchangeAccount.delete({
+        where: { id: accountId }
       })
     }
 
     message.ack()
   }
 
-  async _accountUpdatedConsumer(message: Amqp.Message) {
+  async _accountUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
     console.log(message.properties, message.getContent())
     message.ack()
   }
 
-  async _accountDeletedConsumer(message: Amqp.Message) {
-    console.log(message.properties, message.getContent())
+  async _accountDeletedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { success, accountId, error }: AccountOperationResponse = message.getContent()
+    const { correlationId: operationId } = message.properties
+
+    if (!operationId) {
+      console.error(`Missing Operation ID in accountDeleted response [accountId: ${accountId}]`)
+      message.reject(false)
+      return
+    }
+
+    await completeAsyncOperation(prisma, operationId, success, error)
+
+    if (accountId && success) {
+      await prisma.exchangeAccount.delete({ where: { id: accountId } })
+    }
+
     message.ack()
   }
 
