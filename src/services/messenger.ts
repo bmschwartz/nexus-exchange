@@ -108,10 +108,25 @@ export class MessageClient {
       return
     }
 
-    await completeAsyncOperation(prisma, operationId, success, error)
+    const operation = await completeAsyncOperation(prisma, operationId, success, error)
 
-    if (accountId && success) {
-      await prisma.exchangeAccount.delete({ where: { id: accountId } })
+    if (operation && accountId && success) {
+      switch (operation.opType) {
+        case OperationType.DELETE_BINANCE_ACCOUNT: {
+          await prisma.exchangeAccount.delete({ where: { id: accountId } })
+          break;
+        }
+        case OperationType.DISABLE_BINANCE_ACCOUNT: {
+          await prisma.exchangeAccount.update({
+            where: { id: accountId },
+            data: { active: false }
+          })
+          break;
+        }
+        default: {
+          console.error("Invalid op type")
+        }
+      }
     }
 
     message.ack()
@@ -131,8 +146,6 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
-
-    console.log(`sending create account payload ${JSON.stringify(payload)}`)
     this._sendBinanceExchange?.send(message, SETTINGS["BINANCE_CREATE_ACCOUNT_CMD_KEY"])
 
     return op.id
@@ -145,32 +158,34 @@ export class MessageClient {
       throw new Error()
     }
 
-    const op = await this._db.asyncOperation.create({
-      data: { userId, payload, opType: OperationType.UPDATE_BINANCE_ACCOUNT }
-    })
+    const op = await createAsyncOperation(this._db, { userId, payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
-
-    console.log(`sending update account payload ${JSON.stringify(payload)} on ${SETTINGS["BINANCE_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
     this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
     return op.id
   }
 
-  async sendDeleteBinanceAccount(userId: number, accountId: number) {
+  async sendDeleteBinanceAccount(userId: number, accountId: number, disabling?: boolean) {
     const payload = { accountId }
 
     if (!this._deleteBinanceAccountQueue) {
       throw new Error()
     }
 
-    const op = await this._db.asyncOperation.create({
-      data: { userId, payload, opType: OperationType.DELETE_BINANCE_ACCOUNT }
-    })
+    const opType = disabling ? OperationType.DISABLE_BINANCE_ACCOUNT : OperationType.DELETE_BINANCE_ACCOUNT
+
+    const op = await createAsyncOperation(this._db, { userId, payload }, opType)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
-
-    console.log(`sending delete account payload ${JSON.stringify(payload)} on ${SETTINGS["BINANCE_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
     this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
     return op.id
