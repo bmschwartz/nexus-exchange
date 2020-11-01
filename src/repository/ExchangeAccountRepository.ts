@@ -95,6 +95,12 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
     return { error: "Could not find the account" }
   }
 
+  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, Number(accountId))
+
+  if (pendingAccountOps && pendingAccountOps.length > 0) {
+    return { error: "Already updating account" }
+  }
+
   if (!account.active) {
     await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
     const operation = await ctx.prisma.asyncOperation.create({
@@ -139,6 +145,12 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
 
   if (!account) {
     return { success: false, error: new Error("Account not found") }
+  }
+
+  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+
+  if (pendingAccountOps && pendingAccountOps.length > 0) {
+    return { error: "Already updating account" }
   }
 
   // TODO: Verify the api key and secret are valid with exchange
@@ -193,7 +205,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
   let opId: number
   try {
     if (account.active) {
-      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id)
+      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id, true)
     } else {
       opId = await ctx.messenger.sendCreateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
     }
