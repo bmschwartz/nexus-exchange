@@ -17,8 +17,6 @@ export class MessageClient {
 
   // Command Queues
   _createBinanceAccountQueue?: Amqp.Queue
-  _updateBinanceAccountQueue?: Amqp.Queue
-  _deleteBinanceAccountQueue?: Amqp.Queue
 
   // Event Queues
   _binanceAccountCreatedQueue?: Amqp.Queue
@@ -44,8 +42,6 @@ export class MessageClient {
 
     // Command queues
     this._createBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_CREATE_ACCOUNT_QUEUE"], { durable: true })
-    this._updateBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_UPDATE_ACCOUNT_QUEUE"], { durable: true })
-    this._deleteBinanceAccountQueue = this._sendConn.declareQueue(SETTINGS["BINANCE_DELETE_ACCOUNT_QUEUE"], { durable: true })
 
     // Event queues
     this._binanceAccountCreatedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_CREATED_QUEUE"], { durable: true })
@@ -154,10 +150,6 @@ export class MessageClient {
   async sendUpdateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string) {
     const payload = { accountId, apiKey, apiSecret }
 
-    if (!this._updateBinanceAccountQueue) {
-      throw new Error()
-    }
-
     const op = await createAsyncOperation(this._db, { userId, payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
 
     if (!op) {
@@ -172,10 +164,6 @@ export class MessageClient {
 
   async sendDeleteBinanceAccount(userId: number, accountId: number, disabling?: boolean) {
     const payload = { accountId }
-
-    if (!this._deleteBinanceAccountQueue) {
-      throw new Error()
-    }
 
     const opType = disabling ? OperationType.DISABLE_BINANCE_ACCOUNT : OperationType.DELETE_BINANCE_ACCOUNT
 
