@@ -143,6 +143,7 @@ CREATE TABLE "public"."ExchangeAccount" (
   "remoteAccountId" VARCHAR(255),
   "apiKey" VARCHAR(255) NOT NULL,
   "apiSecret" VARCHAR(255) NOT NULL,
+  "lastHeartbeat" TIMESTAMP NOT NULL DEFAULT now(),
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
 
