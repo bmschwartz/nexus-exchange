@@ -1,5 +1,5 @@
 import { AsyncOperation, OperationType, PrismaClient } from "@prisma/client"
-import { Context, prisma } from "../context"
+import { Context } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
   const op = await ctx.prisma.asyncOperation.findOne({
