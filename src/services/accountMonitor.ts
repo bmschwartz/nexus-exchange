@@ -17,7 +17,6 @@ async function _checkAccountLife(job: Job) {
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
 
-  console.log(`timed out: ${timedOutAccounts.length}`)
   return Promise.all(timedOutAccounts.map(recreateAccount))
 }
 
@@ -41,7 +40,6 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   const pendingCreateOpCount = await _db.$queryRaw(query)
 
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
-    console.log("found pending create account operation")
     return
   }
 
@@ -53,16 +51,13 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   try {
     switch (exchange) {
       case Exchange.BITMEX:
-        console.log("sending bitmex account")
         await _messenger.sendCreateBitmexAccount(accountId, apiKey, apiSecret)
         break
       case Exchange.BINANCE:
-        console.log("sending binance account")
         await _messenger.sendCreateBinanceAccount(accountId, apiKey, apiSecret)
         break
     }
   } catch {
-    console.log("marking account inactive")
     await _db.exchangeAccount.delete({ where: { id: accountId } })
   }
 
