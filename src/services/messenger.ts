@@ -74,6 +74,18 @@ export class MessageClient {
     this._createBitmexAccountQueue = this._sendConn.declareQueue(SETTINGS["BITMEX_CREATE_ACCOUNT_QUEUE"], { durable: true })
 
     /* Event queues */
+    this._bitmexAccountCreatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_CREATED_QUEUE"], { durable: true })
+    await this._bitmexAccountCreatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_CREATED_KEY"])
+    await this._bitmexAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountCreatedConsumer(this._db, message))
+
+    this._bitmexAccountUpdatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_UPDATED_QUEUE"], { durable: true })
+    await this._bitmexAccountUpdatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_UPDATED_KEY"])
+    await this._bitmexAccountUpdatedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountUpdatedConsumer(this._db, message))
+
+    this._bitmexAccountDeletedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_DELETED_QUEUE"], { durable: true })
+    await this._bitmexAccountDeletedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_DELETED_KEY"])
+    await this._bitmexAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountDeletedConsumer(this._db, message))
+
     this._bitmexAccountHeartbeatQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_HEARTBEAT_QUEUE"], { durable: true })
     await this._bitmexAccountHeartbeatQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_HEARTBEAT_KEY"])
     await this._bitmexAccountHeartbeatQueue.activateConsumer(this._accountHeartbeatConsumer)
@@ -99,6 +111,10 @@ export class MessageClient {
     this._binanceAccountDeletedQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_DELETED_QUEUE"], { durable: true })
     await this._binanceAccountDeletedQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_DELETED_KEY"])
     await this._binanceAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountDeletedConsumer(this._db, message))
+
+    this._binanceAccountHeartbeatQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_HEARTBEAT_QUEUE"], { durable: true })
+    await this._binanceAccountHeartbeatQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_HEARTBEAT_KEY"])
+    await this._binanceAccountHeartbeatQueue.activateConsumer(this._accountHeartbeatConsumer)
   }
 
   async _accountHeartbeatConsumer(message: Amqp.Message) {
@@ -132,12 +148,13 @@ export class MessageClient {
       return
     }
 
+    console.log(`completing account creation ${operationId} ${success} ${error}`)
     await completeAsyncOperation(prisma, operationId, success, error)
 
     if (success) {
       await prisma.exchangeAccount.update({
         where: { id: accountId },
-        data: { active: true },
+        data: { active: true, lastHeartbeat: new Date() },
       })
     } else {
       await prisma.exchangeAccount.delete({

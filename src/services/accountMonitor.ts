@@ -38,16 +38,14 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
     "opType" = '${opType}' AND
     payload -> 'accountId' = '${accountId}' AND
     complete = false;`
-  console.log(query)
   const pendingCreateOpCount = await _db.$queryRaw(query)
 
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
     console.log("found pending create account operation")
     return
   }
-  // const pendingCreateOpCount = await _db.asyncOperation.count({ where: { opType, complete: false, payload: {} } })
-  const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
 
+  const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {
     return _db.exchangeAccount.update({ where: { id: accountId }, data: { active: false } })
   }
