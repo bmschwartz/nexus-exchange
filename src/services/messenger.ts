@@ -187,14 +187,33 @@ export class MessageClient {
     message.ack()
   }
 
-  async sendCreateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string): Promise<number> {
+  async sendCreateBitmexAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
+    const payload = { accountId, apiKey, apiSecret }
+
+    if (!this._createBitmexAccountQueue) {
+      throw new Error()
+    }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ACCOUNT)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, SETTINGS["BITMEX_CREATE_ACCOUNT_CMD_KEY"])
+
+    return op.id
+  }
+
+  async sendCreateBinanceAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
 
     if (!this._createBinanceAccountQueue) {
       throw new Error()
     }
 
-    const op = await createAsyncOperation(this._db, { userId, payload }, OperationType.CREATE_BINANCE_ACCOUNT)
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BINANCE_ACCOUNT)
 
     if (!op) {
       throw new Error("Could not create asyncOperation")
@@ -206,10 +225,10 @@ export class MessageClient {
     return op.id
   }
 
-  async sendUpdateBinanceAccount(userId: number, accountId: number, apiKey: string, apiSecret: string) {
+  async sendUpdateBinanceAccount(accountId: number, apiKey: string, apiSecret: string) {
     const payload = { accountId, apiKey, apiSecret }
 
-    const op = await createAsyncOperation(this._db, { userId, payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
 
     if (!op) {
       throw new Error("Could not create asyncOperation")
@@ -221,12 +240,12 @@ export class MessageClient {
     return op.id
   }
 
-  async sendDeleteBinanceAccount(userId: number, accountId: number, disabling?: boolean) {
+  async sendDeleteBinanceAccount(accountId: number, disabling?: boolean) {
     const payload = { accountId }
 
     const opType = disabling ? OperationType.DISABLE_BINANCE_ACCOUNT : OperationType.DELETE_BINANCE_ACCOUNT
 
-    const op = await createAsyncOperation(this._db, { userId, payload }, opType)
+    const op = await createAsyncOperation(this._db, { payload }, opType)
 
     if (!op) {
       throw new Error("Could not create asyncOperation")

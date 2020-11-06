@@ -1,7 +1,7 @@
 import { Exchange, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
 import { asyncForEach } from "../helper"
-import { getPendingBinanceAccountOperations } from "./AsyncOperationRepository";
+import { createAsyncOperation, getPendingBinanceAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: number) => {
@@ -66,8 +66,18 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
   })
 
   let opId: number
+  console.log("about to send create account")
   try {
-    opId = await ctx.messenger.sendCreateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
+    switch (exchange) {
+      case Exchange.BINANCE:
+        console.log("creating binance")
+        opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
+        break
+      case Exchange.BITMEX:
+        console.log("creating bitmex")
+        opId = await ctx.messenger.sendCreateBitmexAccount(account.id, apiKey, apiSecret)
+        break
+    }
   } catch {
     await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
     return {
@@ -80,7 +90,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
   }
 }
 
-const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSecret: string): Promise<boolean> => {
+export const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string, apiSecret: string): Promise<boolean> => {
   // TODO: This function
   return true
 }
@@ -103,15 +113,16 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
 
   if (!account.active) {
     await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
-    const operation = await ctx.prisma.asyncOperation.create({
-      data: {
-        payload: { accountId: Number(accountId) },
-        success: true,
-        complete: true,
-        userId: ctx.userId,
-        opType: OperationType.DELETE_BINANCE_ACCOUNT,
-      }
-    })
+    const operation = await createAsyncOperation(
+      ctx.prisma,
+      { accountId: Number(accountId), success: true, complete: true },
+      OperationType.DELETE_BINANCE_ACCOUNT
+    )
+
+    if (!operation) {
+      return { error: "Could not delete account" }
+    }
+
     return { operationId: operation.id }
   }
 
@@ -119,7 +130,7 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
 
   try {
     if (account.active) {
-      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id)
+      opId = await ctx.messenger.sendDeleteBinanceAccount(account.id)
     } else {
       return { error: "Account is inactive" }
     }
@@ -170,7 +181,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
 
   let opId: number
   try {
-    opId = await ctx.messenger.sendUpdateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
+    opId = await ctx.messenger.sendUpdateBinanceAccount(account.id, apiKey, apiSecret)
   } catch {
     await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
     return {
@@ -205,9 +216,9 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
   let opId: number
   try {
     if (account.active) {
-      opId = await ctx.messenger.sendDeleteBinanceAccount(ctx.userId, account.id, true)
+      opId = await ctx.messenger.sendDeleteBinanceAccount(account.id, true)
     } else {
-      opId = await ctx.messenger.sendCreateBinanceAccount(ctx.userId, account.id, apiKey, apiSecret)
+      opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
     }
   } catch {
     return {

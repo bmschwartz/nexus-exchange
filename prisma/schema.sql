@@ -157,7 +157,6 @@ CREATE TABLE "public"."AsyncOperation" (
   success BOOLEAN DEFAULT false,
   error VARCHAR(255),
   payload JSONB,
-  "userId" INTEGER NOT NULL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );

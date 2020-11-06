@@ -3,7 +3,7 @@ import { getOrders, getPositions } from "../../repository/ExchangeAccountReposit
 import {
   getExchangeAccount,
   getExchangeAccounts,
-  createExchangeAccount,
+  createExchangeAccount as runCreateExchangeAccount,
   deleteExchangeAccount as runDeleteExchangeAccount,
   updateExchangeAccount as runUpdateExchangeAccount,
   toggleExchangeAccountActive as runToggleExchangeAccountActive
@@ -45,7 +45,7 @@ export const ExchangeAccountMutations = {
       }
     } = args
 
-    return createExchangeAccount(ctx, Number(membershipId), apiKey, apiSecret, exchange)
+    return runCreateExchangeAccount(ctx, Number(membershipId), apiKey, apiSecret, exchange)
   },
 
   async deleteExchangeAccount(parent: any, args: any, ctx: Context) {

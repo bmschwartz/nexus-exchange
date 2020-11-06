@@ -2,10 +2,9 @@ import { AsyncOperation, OperationType, PrismaClient } from "@prisma/client"
 import { Context } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
-  const op = await ctx.prisma.asyncOperation.findOne({
+  return ctx.prisma.asyncOperation.findOne({
     where: { id: parseInt(id) }
   })
-  return op?.userId === ctx.userId ? op : null
 }
 
 export const createAsyncOperation = async (prisma: PrismaClient, data: any, opType: OperationType): Promise<AsyncOperation | null> => {
