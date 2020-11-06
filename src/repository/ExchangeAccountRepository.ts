@@ -1,7 +1,7 @@
 import { Exchange, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
 import { asyncForEach } from "../helper"
-import { createAsyncOperation, getPendingBinanceAccountOperations } from "./AsyncOperationRepository";
+import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: number) => {
@@ -105,18 +105,28 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
     return { error: "Could not find the account" }
   }
 
-  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, Number(accountId))
+  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, Number(accountId))
 
   if (pendingAccountOps && pendingAccountOps.length > 0) {
     return { error: "Already updating account" }
   }
 
   if (!account.active) {
+    let opType: OperationType
+    switch (account.exchange) {
+      case Exchange.BINANCE:
+        opType = OperationType.DELETE_BINANCE_ACCOUNT
+        break
+      case Exchange.BITMEX:
+        opType = OperationType.DELETE_BITMEX_ACCOUNT
+        break
+    }
+
     await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
     const operation = await createAsyncOperation(
       ctx.prisma,
       { accountId: Number(accountId), success: true, complete: true },
-      OperationType.DELETE_BINANCE_ACCOUNT
+      opType
     )
 
     if (!operation) {
@@ -130,7 +140,14 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
 
   try {
     if (account.active) {
-      opId = await ctx.messenger.sendDeleteBinanceAccount(account.id)
+      switch (account.exchange) {
+        case Exchange.BINANCE:
+          opId = await ctx.messenger.sendDeleteBinanceAccount(account.id)
+          break
+        case Exchange.BITMEX:
+          opId = await ctx.messenger.sendDeleteBitmexAccount(account.id)
+          break
+      }
     } else {
       return { error: "Account is inactive" }
     }
@@ -158,7 +175,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     return { success: false, error: new Error("Account not found") }
   }
 
-  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, accountId)
 
   if (pendingAccountOps && pendingAccountOps.length > 0) {
     return { error: "Already updating account" }
@@ -181,7 +198,14 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
 
   let opId: number
   try {
-    opId = await ctx.messenger.sendUpdateBinanceAccount(account.id, apiKey, apiSecret)
+    switch (account.exchange) {
+      case Exchange.BINANCE:
+        opId = await ctx.messenger.sendUpdateBinanceAccount(account.id, apiKey, apiSecret)
+        break
+      case Exchange.BITMEX:
+        opId = await ctx.messenger.sendUpdateBitmexAccount(account.id, apiKey, apiSecret)
+        break
+    }
   } catch {
     await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
     return {
@@ -205,7 +229,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
     return { error: "Account not found" }
   }
 
-  const pendingAccountOps = await getPendingBinanceAccountOperations(ctx.prisma, accountId)
+  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, accountId)
 
   if (pendingAccountOps && pendingAccountOps.length > 0) {
     return { error: "Already updating account" }
@@ -215,10 +239,21 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
 
   let opId: number
   try {
-    if (account.active) {
-      opId = await ctx.messenger.sendDeleteBinanceAccount(account.id, true)
-    } else {
-      opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
+    switch (account.exchange) {
+      case Exchange.BINANCE:
+        if (account.active) {
+          opId = await ctx.messenger.sendDeleteBinanceAccount(account.id, true)
+        } else {
+          opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
+        }
+        break
+      case Exchange.BITMEX:
+        if (account.active) {
+          opId = await ctx.messenger.sendDeleteBitmexAccount(account.id, true)
+        } else {
+          opId = await ctx.messenger.sendCreateBitmexAccount(account.id, apiKey, apiSecret)
+        }
+        break
     }
   } catch {
     return {

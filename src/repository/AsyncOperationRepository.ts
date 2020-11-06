@@ -24,7 +24,7 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
   })
 }
 
-export const getPendingBinanceAccountOperations = async (prisma: PrismaClient, accountId: number): Promise<AsyncOperation[] | null> => {
+export const getPendingAccountOperations = async (prisma: PrismaClient, accountId: number): Promise<AsyncOperation[] | null> => {
   const query = `
   SELECT * FROM "AsyncOperation"
   WHERE

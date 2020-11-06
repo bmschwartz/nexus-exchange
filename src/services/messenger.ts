@@ -184,10 +184,12 @@ export class MessageClient {
 
     if (operation && accountId && success) {
       switch (operation.opType) {
+        case OperationType.DELETE_BITMEX_ACCOUNT:
         case OperationType.DELETE_BINANCE_ACCOUNT: {
           await prisma.exchangeAccount.delete({ where: { id: accountId } })
           break;
         }
+        case OperationType.DISABLE_BITMEX_ACCOUNT:
         case OperationType.DISABLE_BINANCE_ACCOUNT: {
           await prisma.exchangeAccount.update({
             where: { id: accountId },
@@ -219,6 +221,38 @@ export class MessageClient {
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
     this._sendBitmexExchange?.send(message, SETTINGS["BITMEX_CREATE_ACCOUNT_CMD_KEY"])
+
+    return op.id
+  }
+
+  async sendUpdateBitmexAccount(accountId: number, apiKey: string, apiSecret: string) {
+    const payload = { accountId, apiKey, apiSecret }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BITMEX_ACCOUNT)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendDeleteBitmexAccount(accountId: number, disabling?: boolean) {
+    const payload = { accountId }
+
+    const opType = disabling ? OperationType.DISABLE_BITMEX_ACCOUNT : OperationType.DELETE_BITMEX_ACCOUNT
+
+    const op = await createAsyncOperation(this._db, { payload }, opType)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
     return op.id
   }
