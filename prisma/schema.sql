@@ -70,9 +70,10 @@ CREATE TABLE "public"."Position" (
 
 CREATE TABLE "public"."BitmexCurrency" (
   id SERIAL PRIMARY KEY NOT NULL,
-  symbol VARCHAR(255) UNIQUE NOT NULL,
-  underlying VARCHAR(255) UNIQUE NOT NULL,
   active BOOLEAN DEFAULT false,
+  symbol VARCHAR(255) UNIQUE NOT NULL,
+  underlying VARCHAR(255) NOT NULL,
+  "quoteCurrency" VARCHAR(255) NOT NULL,
   "fractionalDigits" INTEGER,
   "lastPrice" DECIMAL,
   "markPrice" DECIMAL,
