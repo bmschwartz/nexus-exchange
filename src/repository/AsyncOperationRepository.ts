@@ -14,6 +14,12 @@ export const createAsyncOperation = async (prisma: PrismaClient, data: any, opTy
 }
 
 export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, error?: string): Promise<AsyncOperation | null> => {
+  const exists = await prisma.asyncOperation.count({ where: { id: parseInt(id) } })
+
+  if (!exists) {
+    return null
+  }
+
   return prisma.asyncOperation.update({
     where: { id: parseInt(id) },
     data: {
