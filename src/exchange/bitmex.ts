@@ -2,7 +2,6 @@ import { BitmexCurrencyCreateInput, BitmexCurrencyUpdateInput, PrismaClient } fr
 import Bull, { JobInformation } from "bull";
 import { Market, Ticker } from "ccxt";
 import { bitmex as CcxtBitmex } from "ccxt.pro"
-import { type } from "os";
 
 const LOAD_CURRENCY_JOB = "loadCurrencyJob"
 const LOAD_CURRENCY_INTERVAL = 3600000 // ms
