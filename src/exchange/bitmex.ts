@@ -1,13 +1,14 @@
 import { BitmexCurrencyCreateInput, BitmexCurrencyUpdateInput, PrismaClient } from "@prisma/client"
 import Bull, { JobInformation } from "bull";
-import { Market } from "ccxt";
+import { Market, Ticker } from "ccxt";
 import { bitmex as CcxtBitmex } from "ccxt.pro"
+import { type } from "os";
 
 const LOAD_CURRENCY_JOB = "loadCurrencyJob"
 const LOAD_CURRENCY_INTERVAL = 3600000 // ms
 
-const UPDATE_PRICES_JOB = "updatePricesJob"
-const UPDATE_PRICES_INTERVAL = 10000 // ms
+const FETCH_TICKERERS_JOB = "fetchTickersJob"
+const FETCH_TICKERS_INTERVAL = 10000 // ms
 
 let _bitmexClient: BitmexClient
 
@@ -25,21 +26,21 @@ class BitmexClient {
   client: CcxtBitmex
   prisma: PrismaClient
   _loadMarketsQueue: Bull.Queue
-  _updatePricesQueue: Bull.Queue
+  _fetchTickersQueue: Bull.Queue
 
   constructor(client: CcxtBitmex, prisma: PrismaClient) {
     this.client = client
     this.prisma = prisma
 
     this._loadMarketsQueue = new Bull("loadMarketsQueue")
-    this._updatePricesQueue = new Bull("updatePricesQueue")
+    this._fetchTickersQueue = new Bull("fetchTickersQueue")
 
     this.setupQueues()
   }
 
   setupQueues() {
     this._loadMarketsQueue.process(LOAD_CURRENCY_JOB, _loadCurrencyData)
-    this._updatePricesQueue.process(UPDATE_PRICES_JOB, _updatePrices)
+    this._fetchTickersQueue.process(FETCH_TICKERERS_JOB, _fetchTickers)
   }
 
   async start() {
@@ -51,17 +52,17 @@ class BitmexClient {
 
   async setupJobs() {
     const loadMarketJobs: JobInformation[] = await this._loadMarketsQueue.getRepeatableJobs()
-    const updatePricesJobs: JobInformation[] = await this._updatePricesQueue.getRepeatableJobs()
+    const fetchTickersJobs: JobInformation[] = await this._fetchTickersQueue.getRepeatableJobs()
 
     loadMarketJobs.forEach(async (job: JobInformation) => {
       await this._loadMarketsQueue.removeRepeatableByKey(job.key)
     })
-    updatePricesJobs.forEach(async (job: JobInformation) => {
-      await this._updatePricesQueue.removeRepeatableByKey(job.key)
+    fetchTickersJobs.forEach(async (job: JobInformation) => {
+      await this._fetchTickersQueue.removeRepeatableByKey(job.key)
     })
 
     await this._loadMarketsQueue.add(LOAD_CURRENCY_JOB, {}, { repeat: { every: LOAD_CURRENCY_INTERVAL } })
-    await this._updatePricesQueue.add(UPDATE_PRICES_JOB, {}, { repeat: { every: UPDATE_PRICES_INTERVAL } })
+    await this._fetchTickersQueue.add(FETCH_TICKERERS_JOB, {}, { repeat: { every: FETCH_TICKERS_INTERVAL } })
   }
 }
 
@@ -80,8 +81,19 @@ async function _loadCurrencyData() {
   await _bitmexClient.prisma.$transaction(upserts)
 }
 
-async function _updatePrices() {
-  _bitmexClient.client.watchTickers()
+async function _fetchTickers() {
+  const tickers = await _bitmexClient.client.fetchTickers()
+  const upserts = Object.values(tickers)
+    .filter((ticker: Ticker) => {
+      return ticker.last !== undefined
+    })
+    .map((ticker: Ticker) => {
+      return _bitmexClient.prisma.bitmexCurrency.update({
+        data: { lastPrice: Number(ticker.last), markPrice: Number(ticker.info.markPrice) },
+        where: { symbol: ticker.symbol }
+      })
+    })
+  await _bitmexClient.prisma.$transaction(upserts)
 }
 
 function createMarketData(market: Market): BitmexCurrencyUpsertData {
