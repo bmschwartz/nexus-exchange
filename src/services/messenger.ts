@@ -137,18 +137,15 @@ export class MessageClient {
     const { correlationId: operationId } = message.properties
 
     if (!operationId) {
-      console.error(`Missing Operation ID in accountCreated response [accountId: ${accountId}]`)
       message.reject(false)
       return
     }
 
     if (!accountId) {
-      console.error(`Missing Account ID in accountCreated response`)
       message.reject(false)
       return
     }
 
-    console.log(`completing account creation ${operationId} ${success} ${error}`)
     await completeAsyncOperation(prisma, operationId, success, error)
 
     if (success) {
@@ -166,7 +163,6 @@ export class MessageClient {
   }
 
   async _accountUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    console.log(message.properties, message.getContent())
     message.ack()
   }
 
@@ -175,7 +171,6 @@ export class MessageClient {
     const { correlationId: operationId } = message.properties
 
     if (!operationId) {
-      console.error(`Missing Operation ID in accountDeleted response [accountId: ${accountId}]`)
       message.reject(false)
       return
     }
