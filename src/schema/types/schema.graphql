@@ -16,11 +16,11 @@ extend type Query {
 }
 
 extend type Mutation {
-  createOrderSet(input: CreateOrderSetInput!): OrderSet
-  updateOrderSet(input: UpdateOrderSetInput!): OrderSet
-  cancelOrderSet(input: CancelOrderSetInput!): OrderSet
+  createOrderSet(input: CreateOrderSetInput!): CreateOrderSetResult
+  updateOrderSet(input: UpdateOrderSetInput!): UpdateOrderSetResult
+  cancelOrderSet(input: CancelOrderSetInput!): CancelOrderSetResult
 
-  cancelOrder(input: CancelOrderInput!): CancelOrderResponse!
+  cancelOrder(input: CancelOrderInput!): CancelOrderResponse
 
   createExchangeAccount(input: CreateExchangeAccountInput!): CreateExchangeAccountResult
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
@@ -58,7 +58,7 @@ input CancelOrderInput {
 }
 
 type CancelOrderResponse {
-  success: Boolean!
+  operationId: ID
   error: String
 }
 
@@ -111,6 +111,21 @@ input UpdateOrderSetInput {
 
 input CancelOrderSetInput {
   orderSetId: ID!
+}
+
+type CreateOrderSetResult {
+  operationId: ID
+  error: String
+}
+
+type UpdateOrderSetResult {
+  operationId: ID
+  error: String
+}
+
+type CancelOrderSetResult {
+  operationId: ID
+  error: String
 }
 
 ###################

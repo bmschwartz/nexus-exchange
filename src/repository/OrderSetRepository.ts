@@ -43,7 +43,7 @@ export const getOrderSet = async (ctx: Context, orderSetId: number): Promise<Ord
   return ctx.prisma.orderSet.findOne({ where: { id: orderSetId } })
 }
 
-export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): Promise<OrderSet | null | Error> => {
+export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): Promise<any> => {
   const {
     groupId,
     description,
@@ -91,8 +91,6 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
   }
 
   await createOrderForExchangeAccounts(ctx, orderSet, membershipIds)
-
-  // TODO: emit orderset created message
 
   return orderSet
 }

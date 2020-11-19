@@ -1,4 +1,4 @@
-import { Exchange, OperationType, OrderSet } from "@prisma/client";
+import { Exchange, ExchangeAccount, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
 import { asyncForEach } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
@@ -271,15 +271,34 @@ export const createOrderForExchangeAccounts = async (
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
 
-  await asyncForEach(membershipIds, async (membershipId: number) => {
-    const exchangeAccount = await ctx.prisma.exchangeAccount.findOne({
-      where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
-    })
-    if (!exchangeAccount) {
-      return
-    }
-    await createOrder(ctx, orderSet.id, exchangeAccount.id, side, exchange, symbol, orderType, price, stopPrice)
+  // await asyncForEach(membershipIds, async (membershipId: number) => {
+  //   const exchangeAccount = await ctx.prisma.exchangeAccount.findOne({
+  //     where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
+  //   })
+  //   if (!exchangeAccount) {
+  //     return
+  //   }
+  //   return exchangeAccount.id
+  // })
+  const exchnageAccounts = await Promise.all(
+    membershipIds.map(async (membershipId: number) =>
+      ctx.prisma.exchangeAccount.findOne({
+        where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
+      })
+    )
+  )
 
-    // TODO emit order created message ?
-  })
+  const exchangeAccountIds = exchnageAccounts
+    .map((account: ExchangeAccount | null) => account ? account.id : null)
+    .filter(Boolean)
+
+  const orders = await Promise.all(
+    exchangeAccountIds
+      .map((accountId: number | null) =>
+        accountId ? createOrder(ctx, orderSet.id, accountId, side, exchange, symbol, orderType, price, stopPrice) : null
+      )
+      .filter(Boolean)
+  )
+
+  console.log(orders.length)
 }

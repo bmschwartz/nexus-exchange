@@ -73,19 +73,49 @@ export const createOrder = async (
   price?: number | null,
   stopPrice?: number | null,
 ) => {
-  return ctx.prisma.order.create({
+  const orderData = {
+    exchange,
+    side,
+    symbol,
+    orderType,
+    price,
+    stopPrice,
+    status: OrderStatus.NEW
+  }
+  const order: Order = await ctx.prisma.order.create({
     data: {
-      exchange,
-      side,
-      symbol,
-      orderType,
-      price,
-      stopPrice,
-      status: "NEW",
+      ...orderData,
       exchangeAccount: { connect: { id: exchangeAccountId } },
       orderSet: { connect: { id: orderSetId } }
     }
   })
+
+  if (!order) {
+    return null
+  }
+
+  let opId: number
+  try {
+    switch (exchange) {
+      case Exchange.BINANCE:
+        console.log("creating binance order")
+        opId = -1
+        break
+      case Exchange.BITMEX:
+        console.log("creating bitmex order")
+        opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId: order.id, ...orderData })
+        break
+    }
+  } catch {
+    await ctx.prisma.exchangeAccount.delete({ where: { id: order.id } })
+    return {
+      error: "Unable to connect to exchange"
+    }
+  }
+
+  return {
+    operationId: opId
+  }
 }
 
 export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {

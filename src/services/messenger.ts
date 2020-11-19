@@ -32,16 +32,24 @@ export class MessageClient {
   _createBinanceAccountQueue?: Amqp.Queue
   _createBitmexAccountQueue?: Amqp.Queue
 
+  _createBitmexOrderQueue?: Amqp.Queue
+
   // Event Queues
   _binanceAccountHeartbeatQueue?: Amqp.Queue
   _binanceAccountCreatedQueue?: Amqp.Queue
   _binanceAccountUpdatedQueue?: Amqp.Queue
   _binanceAccountDeletedQueue?: Amqp.Queue
 
+  /* Account Queues */
   _bitmexAccountCreatedQueue?: Amqp.Queue
   _bitmexAccountUpdatedQueue?: Amqp.Queue
   _bitmexAccountDeletedQueue?: Amqp.Queue
   _bitmexAccountHeartbeatQueue?: Amqp.Queue
+
+  /* Order Queues */
+  _bitmexOrderCreatedQueue?: Amqp.Queue
+  _bitmexOrderUpdatedQueue?: Amqp.Queue
+  _bitmexOrderCanceledQueue?: Amqp.Queue
 
   // Exchanges
   _recvBinanceExchange?: Amqp.Exchange
@@ -72,8 +80,10 @@ export class MessageClient {
 
     /* Command queues */
     this._createBitmexAccountQueue = this._sendConn.declareQueue(SETTINGS["BITMEX_CREATE_ACCOUNT_QUEUE"], { durable: true })
+    this._createBitmexOrderQueue = this._sendConn.declareQueue(SETTINGS["BITMEX_CREATE_ORDER_QUEUE"], { durable: true })
 
     /* Event queues */
+    /* Account Events */
     this._bitmexAccountCreatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_CREATED_QUEUE"], { durable: true })
     await this._bitmexAccountCreatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_CREATED_KEY"])
     await this._bitmexAccountCreatedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountCreatedConsumer(this._db, message))
@@ -86,9 +96,23 @@ export class MessageClient {
     await this._bitmexAccountDeletedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_DELETED_KEY"])
     await this._bitmexAccountDeletedQueue.activateConsumer(async (message: Amqp.Message) => await this._accountDeletedConsumer(this._db, message))
 
+    /* Heartbeat Events */
     this._bitmexAccountHeartbeatQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ACCOUNT_HEARTBEAT_QUEUE"], { durable: true })
     await this._bitmexAccountHeartbeatQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ACCOUNT_HEARTBEAT_KEY"])
     await this._bitmexAccountHeartbeatQueue.activateConsumer(this._accountHeartbeatConsumer)
+
+    /* Order Events */
+    this._bitmexOrderCreatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_CREATED_QUEUE"], { durable: true })
+    await this._bitmexOrderCreatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_CREATED_KEY"])
+    await this._bitmexOrderCreatedQueue.activateConsumer(async (message: Amqp.Message) => await this._orderCreatedConsumer(this._db, message))
+
+    this._bitmexOrderUpdatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_UPDATED_QUEUE"], { durable: true })
+    await this._bitmexOrderUpdatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_UPDATED_KEY"])
+    await this._bitmexOrderUpdatedQueue.activateConsumer(async (message: Amqp.Message) => await this._orderUpdatedConsumer(this._db, message))
+
+    this._bitmexOrderCanceledQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_DELETED_QUEUE"], { durable: true })
+    await this._bitmexOrderCanceledQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_DELETED_KEY"])
+    await this._bitmexOrderCanceledQueue.activateConsumer(async (message: Amqp.Message) => await this._orderCanceledConsumer(this._db, message))
   }
 
   async _connectBinanceMessaging() {
@@ -201,6 +225,18 @@ export class MessageClient {
     message.ack()
   }
 
+  async _orderCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
+  async _orderUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
+  async _orderCanceledConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
   async sendCreateBitmexAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
 
@@ -303,6 +339,57 @@ export class MessageClient {
     return op.id
   }
 
+  async sendCreateBitmexOrder(accountId: number, data: any): Promise<number> {
+    const payload = { accountId, ...data }
+
+    if (!this._createBitmexOrderQueue) {
+      throw new Error()
+    }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ORDER)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_KEY"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendUpdateBitmexOrder(accountId: number, data: any) {
+    const { orderId } = data
+    const payload = { accountId, orderId }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BITMEX_ORDER)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_UPDATE_ORDER_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendCancelBitmexOrder(accountId: number, orderId: number) {
+    const payload = { accountId, orderId }
+
+    const opType = OperationType.CANCEL_BITMEX_ORDER
+
+    const op = await createAsyncOperation(this._db, { payload }, opType)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CANCEL_ORDER_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
 
   async _setupHeartbeatJob() {
     this._heartbeatQueue.process(FLUSH_HEARTBEAT_JOB, this._flushAccountHeartbeats)
