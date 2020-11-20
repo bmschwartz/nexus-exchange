@@ -343,6 +343,7 @@ export class MessageClient {
     const payload = { accountId, ...data }
 
     if (!this._createBitmexOrderQueue) {
+      console.error("no bitmex order queue!")
       throw new Error()
     }
 
@@ -352,8 +353,10 @@ export class MessageClient {
       throw new Error("Could not create asyncOperation")
     }
 
+    console.log(`${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
-    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_KEY"]}${accountId}`)
+    // this._createBitmexOrderQueue.send(message)
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
 
     return op.id
   }

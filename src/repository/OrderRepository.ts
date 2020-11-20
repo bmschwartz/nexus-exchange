@@ -113,9 +113,7 @@ export const createOrder = async (
     }
   }
 
-  return {
-    operationId: opId
-  }
+  return order
 }
 
 export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {

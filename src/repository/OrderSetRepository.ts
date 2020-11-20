@@ -1,6 +1,6 @@
 import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency } from "@prisma/client";
 import { Context } from "src/context";
-import { createOrderForExchangeAccounts } from "./ExchangeAccountRepository";
+import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
 
 interface CreateOrderSetInput {
   groupId: number;
@@ -57,6 +57,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
   } = data
 
   const membershipIds = data.membershipIds.map(Number)
+
   const error = await getOrderSetInputError(
     ctx,
     symbol,
@@ -69,7 +70,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
   )
 
   if (error) {
-    return error
+    return { error }
   }
 
   const orderSet = await ctx.prisma.orderSet.create({
@@ -86,11 +87,12 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     },
   })
 
+
   if (!orderSet) {
     return new Error("Unable to create the OrderSet")
   }
 
-  await createOrderForExchangeAccounts(ctx, orderSet, membershipIds)
+  await createOrdersForExchangeAccounts(ctx, orderSet, membershipIds)
 
   return orderSet
 }

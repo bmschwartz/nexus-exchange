@@ -114,8 +114,7 @@ input CancelOrderSetInput {
 }
 
 type CreateOrderSetResult {
-  operationId: ID
-  error: String
+  orderSet: OrderSet
 }
 
 type UpdateOrderSetResult {

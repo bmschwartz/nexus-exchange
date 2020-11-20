@@ -264,31 +264,27 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
   return { operationId: opId }
 }
 
-export const createOrderForExchangeAccounts = async (
+export const createOrdersForExchangeAccounts = async (
   ctx: Context,
   orderSet: OrderSet,
   membershipIds: number[],
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
 
-  // await asyncForEach(membershipIds, async (membershipId: number) => {
-  //   const exchangeAccount = await ctx.prisma.exchangeAccount.findOne({
-  //     where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
-  //   })
-  //   if (!exchangeAccount) {
-  //     return
-  //   }
-  //   return exchangeAccount.id
-  // })
-  const exchnageAccounts = await Promise.all(
-    membershipIds.map(async (membershipId: number) =>
-      ctx.prisma.exchangeAccount.findOne({
-        where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
-      })
-    )
+  const exchangeAccounts = await Promise.all(
+    membershipIds
+      .map(async (membershipId: number) =>
+        ctx.prisma.exchangeAccount.findOne({
+          where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
+        })
+      ).filter(Boolean)
   )
 
-  const exchangeAccountIds = exchnageAccounts
+  if (!exchangeAccounts.length) {
+    return
+  }
+
+  const exchangeAccountIds = exchangeAccounts
     .map((account: ExchangeAccount | null) => account ? account.id : null)
     .filter(Boolean)
 
@@ -300,5 +296,5 @@ export const createOrderForExchangeAccounts = async (
       .filter(Boolean)
   )
 
-  console.log(orders.length)
+  console.log(orders)
 }
