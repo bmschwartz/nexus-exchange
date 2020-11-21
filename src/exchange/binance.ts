@@ -1,55 +1,52 @@
 import Binance, { Binance as BinanceT, ExchangeInfo, Ticker } from "binance-api-node"
 import { BinanceCurrencyCreateInput, BinanceCurrencyUpdateInput, BinanceSymbolStatus, PrismaClient } from "@prisma/client"
+import Bull, { Job, JobInformation } from "bull"
 
 const VALID_QUOTE_ASSETS = [
   'BTC', 'ETH', 'USDT', 'BNB',
   'XRP', 'TRX', 'BUSD', 'DAI'
 ]
 
+const FETCH_CURRENCIES_JOB = "fetchCurrencies"
+const FETCH_CURRENCIES_INTERVAL = 300000 // ms
+
 const CURRENCY_UPDATE_DELAY_MS = 10000
 
-export async function initBinance(prisma: PrismaClient) {
-  const binanceClient = new BinanceClient(Binance(), prisma)
+let _client: BinanceT
+let _prisma: PrismaClient
 
-  await binanceClient.initCurrencyData()
+export async function initBinance(prisma: PrismaClient) {
+  _client = Binance()
+  _prisma = prisma
+
+  const binanceClient = new BinanceClient(_client, _prisma)
+
+  await _fetchCurrencyData()
   binanceClient.startTickerSocket()
 }
 
 class BinanceClient {
   client: BinanceT
   prisma: PrismaClient
+  _fetchCurrenciesQueue: Bull.Queue
 
   constructor(client: BinanceT, prisma: PrismaClient) {
     this.client = client
     this.prisma = prisma
+
+    this._fetchCurrenciesQueue = new Bull("accountMonitorQueue")
+    this._fetchCurrenciesQueue.process(FETCH_CURRENCIES_JOB, _fetchCurrencyData)
+
+    this._start()
   }
 
-  async initCurrencyData() {
-    const exchangeInfo: ExchangeInfo = await this.client.exchangeInfo()
-    if (!exchangeInfo) {
-      console.error("Error fetching Binance ExchangeInfo")
-      return
-    }
+  async _start() {
+    const jobs: JobInformation[] = await this._fetchCurrenciesQueue.getRepeatableJobs()
+    jobs.forEach(async (job: JobInformation) => {
+      await this._fetchCurrenciesQueue.removeRepeatableByKey(job.key)
+    })
 
-    const symbols = exchangeInfo.symbols.filter(sym => VALID_QUOTE_ASSETS.includes(sym.quoteAsset))
-
-    await Promise.allSettled(symbols.map(async (symbolInfo: any) => {
-      const existingSymbolCount = await this.prisma.binanceCurrency.count({ where: { symbol: symbolInfo.symbol } })
-      if (existingSymbolCount > 0) {
-        await this.prisma.binanceCurrency.delete({ where: { symbol: symbolInfo.symbol } })
-      }
-      const { status, orderTypes, filters, permissions, ...restSymbolinfo } = symbolInfo
-
-      const data: BinanceCurrencyCreateInput = {
-        status: BinanceSymbolStatus[status],
-        ...mapOrderTypes(orderTypes),
-        ...mapFilterTypes(filters),
-        ...mapPermissionTypes(permissions),
-        ...restSymbolinfo,
-      }
-
-      await this.prisma.binanceCurrency.create({ data })
-    }))
+    await this._fetchCurrenciesQueue.add(FETCH_CURRENCIES_JOB, {}, { repeat: { every: FETCH_CURRENCIES_INTERVAL } })
   }
 
   startTickerSocket() {
@@ -79,6 +76,36 @@ class BinanceClient {
     })
   }
 
+}
+
+async function _fetchCurrencyData(job?: Job) {
+  const exchangeInfo: ExchangeInfo = await _client.exchangeInfo()
+  if (!exchangeInfo) {
+    console.error("Error fetching Binance ExchangeInfo")
+    return
+  }
+
+  const symbols = exchangeInfo.symbols.filter(sym => VALID_QUOTE_ASSETS.includes(sym.quoteAsset))
+
+  console.log(`found ${symbols.length} symbols`)
+  await Promise.allSettled(symbols.map(async (symbolInfo: any) => {
+    const existingSymbolCount = await _prisma.binanceCurrency.count({ where: { symbol: symbolInfo.symbol } })
+
+    if (existingSymbolCount > 0) {
+      await _prisma.binanceCurrency.delete({ where: { symbol: symbolInfo.symbol } })
+    }
+    const { status, orderTypes, filters, permissions, ...restSymbolinfo } = symbolInfo
+
+    const data: BinanceCurrencyCreateInput = {
+      status: BinanceSymbolStatus[status],
+      ...mapOrderTypes(orderTypes),
+      ...mapFilterTypes(filters),
+      ...mapPermissionTypes(permissions),
+      ...restSymbolinfo,
+    }
+
+    await _prisma.binanceCurrency.create({ data })
+  }))
 }
 
 function mapOrderTypes(orderTypes: string[]): object {
