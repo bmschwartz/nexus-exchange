@@ -80,7 +80,6 @@ export class MessageClient {
 
     /* Command queues */
     this._createBitmexAccountQueue = this._sendConn.declareQueue(SETTINGS["BITMEX_CREATE_ACCOUNT_QUEUE"], { durable: true })
-    this._createBitmexOrderQueue = this._sendConn.declareQueue(SETTINGS["BITMEX_CREATE_ORDER_QUEUE"], { durable: true })
 
     /* Event queues */
     /* Account Events */
@@ -355,7 +354,6 @@ export class MessageClient {
 
     console.log(`${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
-    // this._createBitmexOrderQueue.send(message)
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
 
     return op.id
