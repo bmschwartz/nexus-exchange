@@ -1,9 +1,9 @@
-import { getBitmexCurrencies, getBitmexCurrencyById } from "../../repository/BitmexRepository"
+import { getTradableBitmexCurrencies, getBitmexCurrencyById } from "../../repository/BitmexRepository"
 import { Context } from "../../context"
 
 export const BitmexQueries = {
   async bitmexCurrencies(parent: any, args: any, ctx: Context) {
-    return getBitmexCurrencies(ctx)
+    return getTradableBitmexCurrencies(ctx)
   },
 }
 

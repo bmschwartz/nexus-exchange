@@ -87,7 +87,6 @@ async function _fetchCurrencyData(job?: Job) {
 
   const symbols = exchangeInfo.symbols.filter(sym => VALID_QUOTE_ASSETS.includes(sym.quoteAsset))
 
-  console.log(`found ${symbols.length} symbols`)
   await Promise.allSettled(symbols.map(async (symbolInfo: any) => {
     const existingSymbolCount = await _prisma.binanceCurrency.count({ where: { symbol: symbolInfo.symbol } })
 

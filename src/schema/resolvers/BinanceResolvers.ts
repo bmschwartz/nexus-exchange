@@ -1,9 +1,9 @@
-import { getBinanceCurrencies, getBinanceCurrencyById } from "../../repository/BinanceRepository"
 import { Context } from "../../context"
+import { getBinanceCurrencyById, getTradableBinanceCurrencies } from "../../repository/BinanceRepository"
 
 export const BinanceQueries = {
   async binanceCurrencies(parent: any, args: any, ctx: Context) {
-    return getBinanceCurrencies(ctx)
+    return getTradableBinanceCurrencies(ctx)
   },
 }
 
