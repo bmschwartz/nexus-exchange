@@ -1,6 +1,6 @@
 import { Exchange, ExchangeAccount, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
-import { asyncForEach } from "../helper"
+import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
@@ -271,18 +271,14 @@ export const createOrdersForExchangeAccounts = async (
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
 
-  const unresolvedExchangeAccounts = await Promise.allSettled(
+  const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
       .map(async (membershipId: number) =>
         ctx.prisma.exchangeAccount.findOne({
           where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
         })
       ).filter(Boolean)
-  )
-
-  const exchangeAccounts = unresolvedExchangeAccounts.map((result: PromiseSettledResult<ExchangeAccount | null>) => {
-    return result.status === "fulfilled" ? result.value : null
-  }).filter(Boolean)
+  ))
 
   if (!exchangeAccounts.length) {
     return
@@ -292,13 +288,12 @@ export const createOrdersForExchangeAccounts = async (
     .map((account: ExchangeAccount | null) => account ? account.id : null)
     .filter(Boolean)
 
-  const orders = await Promise.allSettled(
+  getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: number | null) =>
         accountId ? createOrder(ctx, orderSet.id, accountId, side, exchange, symbol, orderType, price, stopPrice) : null
       )
       .filter(Boolean)
-  )
+  ))
 
-  console.log(orders)
 }

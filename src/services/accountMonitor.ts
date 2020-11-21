@@ -1,5 +1,6 @@
 import { Exchange, ExchangeAccount, OperationType, PrismaClient } from "@prisma/client";
 import Bull, { Job, JobInformation } from "bull";
+import { getAllSettledResults } from "../helper";
 import { validateApiKeyAndSecret } from "../repository/ExchangeAccountRepository";
 import { MessageClient } from "./messenger";
 
@@ -17,8 +18,7 @@ async function _checkAccountLife(job: Job) {
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
 
-  const unresolvedAccountLifeChecks = await Promise.allSettled(timedOutAccounts.map(recreateAccount))
-  return unresolvedAccountLifeChecks.map(result => result.status ? "fufilled" : null).filter(Boolean)
+  return getAllSettledResults(await Promise.allSettled(timedOutAccounts.map(recreateAccount)))
 }
 
 async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount) {

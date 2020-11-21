@@ -3,3 +3,7 @@ export async function asyncForEach(array: any[], callback: CallableFunction) {
     await callback(array[index], index, array);
   }
 }
+
+export function getAllSettledResults(results: PromiseSettledResult<any>[]) {
+  return results.map((result: PromiseSettledResult<any>) => result.status === "fulfilled" ? result.value : null).filter(Boolean)
+}
