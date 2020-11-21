@@ -271,7 +271,7 @@ export const createOrdersForExchangeAccounts = async (
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
 
-  const exchangeAccounts = await Promise.all(
+  const unresolvedExchangeAccounts = await Promise.allSettled(
     membershipIds
       .map(async (membershipId: number) =>
         ctx.prisma.exchangeAccount.findOne({
@@ -279,6 +279,10 @@ export const createOrdersForExchangeAccounts = async (
         })
       ).filter(Boolean)
   )
+
+  const exchangeAccounts = unresolvedExchangeAccounts.map((result: PromiseSettledResult<ExchangeAccount | null>) => {
+    return result.status === "fulfilled" ? result.value : null
+  }).filter(Boolean)
 
   if (!exchangeAccounts.length) {
     return
@@ -288,7 +292,7 @@ export const createOrdersForExchangeAccounts = async (
     .map((account: ExchangeAccount | null) => account ? account.id : null)
     .filter(Boolean)
 
-  const orders = await Promise.all(
+  const orders = await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: number | null) =>
         accountId ? createOrder(ctx, orderSet.id, accountId, side, exchange, symbol, orderType, price, stopPrice) : null

@@ -17,7 +17,8 @@ async function _checkAccountLife(job: Job) {
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
 
-  return Promise.all(timedOutAccounts.map(recreateAccount))
+  const unresolvedAccountLifeChecks = await Promise.allSettled(timedOutAccounts.map(recreateAccount))
+  return unresolvedAccountLifeChecks.map(result => result.status ? "fufilled" : null).filter(Boolean)
 }
 
 async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount) {
