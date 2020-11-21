@@ -33,7 +33,7 @@ class BinanceClient {
 
     const symbols = exchangeInfo.symbols.filter(sym => VALID_QUOTE_ASSETS.includes(sym.quoteAsset))
 
-    await Promise.all(symbols.map(async (symbolInfo: any) => {
+    await Promise.allSettled(symbols.map(async (symbolInfo: any) => {
       const existingSymbolCount = await this.prisma.binanceCurrency.count({ where: { symbol: symbolInfo.symbol } })
       if (existingSymbolCount > 0) {
         await this.prisma.binanceCurrency.delete({ where: { symbol: symbolInfo.symbol } })
@@ -61,7 +61,7 @@ class BinanceClient {
 
       lastUpdateTime = tickers[0].eventTime
 
-      await Promise.all(tickers.map(async (ticker: Ticker) => {
+      await Promise.allSettled(tickers.map(async (ticker: Ticker) => {
         const existingSymbolCount = await this.prisma.binanceCurrency.count({ where: { symbol: ticker.symbol } })
         if (existingSymbolCount === 0) {
           return
