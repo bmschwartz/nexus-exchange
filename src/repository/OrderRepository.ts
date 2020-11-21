@@ -62,29 +62,28 @@ export const cancelOrder = async (ctx: Context, orderId: number) => {
   return { success: true, error: null }
 }
 
+interface CreateOrderData {
+  side: OrderSide;
+  exchange: Exchange;
+  symbol: string;
+  orderType: OrderType;
+  percent: number;
+  price: number | null;
+  stopPrice: number | null;
+}
+
 export const createOrder = async (
   ctx: Context,
   orderSetId: number,
   exchangeAccountId: number,
-  side: OrderSide,
-  exchange: Exchange,
-  symbol: string,
-  orderType: OrderType,
-  price?: number | null,
-  stopPrice?: number | null,
+  orderData: CreateOrderData
 ) => {
-  const orderData = {
-    exchange,
-    side,
-    symbol,
-    orderType,
-    price,
-    stopPrice,
-    status: OrderStatus.NEW
-  }
+  const { percent, ...realOrderData } = orderData
+
   const order: Order = await ctx.prisma.order.create({
     data: {
-      ...orderData,
+      ...realOrderData,
+      status: OrderStatus.NEW,
       exchangeAccount: { connect: { id: exchangeAccountId } },
       orderSet: { connect: { id: orderSetId } }
     }
@@ -96,10 +95,10 @@ export const createOrder = async (
 
   let opId: number
   try {
-    switch (exchange) {
+    switch (orderData.exchange) {
       case Exchange.BINANCE:
         console.log("creating binance order")
-        opId = -1
+        opId = -1  // TODO: Fix me
         break
       case Exchange.BITMEX:
         console.log("creating bitmex order")

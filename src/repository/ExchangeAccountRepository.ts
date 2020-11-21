@@ -1,4 +1,4 @@
-import { Exchange, ExchangeAccount, OperationType, OrderSet } from "@prisma/client";
+import { Exchange, ExchangeAccount, OperationType, OrderSet, OrderStatus } from "@prisma/client";
 import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
@@ -269,7 +269,7 @@ export const createOrdersForExchangeAccounts = async (
   orderSet: OrderSet,
   membershipIds: number[],
 ): Promise<any> => {
-  const { side, exchange, symbol, orderType, price, stopPrice } = orderSet
+  const { side, exchange, symbol, orderType, price, stopPrice, percent } = orderSet
 
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
@@ -291,7 +291,7 @@ export const createOrdersForExchangeAccounts = async (
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: number | null) =>
-        accountId ? createOrder(ctx, orderSet.id, accountId, side, exchange, symbol, orderType, price, stopPrice) : null
+        accountId ? createOrder(ctx, orderSet.id, accountId, { side, exchange, symbol, orderType, price, stopPrice, percent }) : null
       )
       .filter(Boolean)
   ))
