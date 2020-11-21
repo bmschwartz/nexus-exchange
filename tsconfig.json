@@ -18,12 +18,29 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2017", "esnext.asynciterable", "dom"],
-    "types": ["node", "apollo-env"],
+    "lib": [
+      "es2017",
+      "esnext.asynciterable",
+      "dom",
+      "ES2020.Promise"
+    ],
+    "types": [
+      "node",
+      "apollo-env"
+    ],
     "jsx": "react",
     "baseUrl": ".",
-    "plugins": [{ "name": "typescript-tslint-plugin" }]
+    "plugins": [
+      {
+        "name": "typescript-tslint-plugin"
+      }
+    ]
   },
-  "include": ["./src/**/*"],
-  "exclude": ["**/__tests__/*", "**/__mocks__/*"]
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/*",
+    "**/__mocks__/*"
+  ]
 }
