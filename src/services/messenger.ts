@@ -58,7 +58,7 @@ export class MessageClient {
   _recvBitmexExchange?: Amqp.Exchange
   _sendBitmexExchange?: Amqp.Exchange
 
-  _heartbeatQueue: Bull.Queue
+  _heartbeatJobQueue: Bull.Queue
 
   constructor(prisma: PrismaClient) {
     _db = prisma
@@ -69,7 +69,7 @@ export class MessageClient {
     this._connectBinanceMessaging()
     this._connectBitmexMessaging()
 
-    this._heartbeatQueue = new Bull("heartbeatQueue")
+    this._heartbeatJobQueue = new Bull("heartbeatQueue")
     this._setupHeartbeatJob()
   }
 
@@ -109,8 +109,8 @@ export class MessageClient {
     await this._bitmexOrderUpdatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_UPDATED_KEY"])
     await this._bitmexOrderUpdatedQueue.activateConsumer(async (message: Amqp.Message) => await this._orderUpdatedConsumer(this._db, message))
 
-    this._bitmexOrderCanceledQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_DELETED_QUEUE"], { durable: true })
-    await this._bitmexOrderCanceledQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_DELETED_KEY"])
+    this._bitmexOrderCanceledQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_CANCELED_QUEUE"], { durable: true })
+    await this._bitmexOrderCanceledQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_CANCELED_KEY"])
     await this._bitmexOrderCanceledQueue.activateConsumer(async (message: Amqp.Message) => await this._orderCanceledConsumer(this._db, message))
   }
 
@@ -239,10 +239,6 @@ export class MessageClient {
   async sendCreateBitmexAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
 
-    if (!this._createBitmexAccountQueue) {
-      throw new Error()
-    }
-
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ACCOUNT)
 
     if (!op) {
@@ -289,10 +285,6 @@ export class MessageClient {
 
   async sendCreateBinanceAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
-
-    if (!this._createBinanceAccountQueue) {
-      throw new Error()
-    }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BINANCE_ACCOUNT)
 
@@ -341,11 +333,6 @@ export class MessageClient {
   async sendCreateBitmexOrder(accountId: number, data: any): Promise<number> {
     const payload = { accountId, ...data }
 
-    if (!this._createBitmexOrderQueue) {
-      console.error("no bitmex order queue!")
-      throw new Error()
-    }
-
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ORDER)
 
     if (!op) {
@@ -393,13 +380,13 @@ export class MessageClient {
   }
 
   async _setupHeartbeatJob() {
-    this._heartbeatQueue.process(FLUSH_HEARTBEAT_JOB, this._flushAccountHeartbeats)
+    this._heartbeatJobQueue.process(FLUSH_HEARTBEAT_JOB, this._flushAccountHeartbeats)
 
-    const jobs: JobInformation[] = await this._heartbeatQueue.getRepeatableJobs()
+    const jobs: JobInformation[] = await this._heartbeatJobQueue.getRepeatableJobs()
     jobs.forEach(async (job: JobInformation) => {
-      await this._heartbeatQueue.removeRepeatableByKey(job.key)
+      await this._heartbeatJobQueue.removeRepeatableByKey(job.key)
     })
-    await this._heartbeatQueue.add(FLUSH_HEARTBEAT_JOB, {}, { repeat: { every: FLUSH_HEARTBEAT_INTERVAL } })
+    await this._heartbeatJobQueue.add(FLUSH_HEARTBEAT_JOB, {}, { repeat: { every: FLUSH_HEARTBEAT_INTERVAL } })
   }
 
   async _flushAccountHeartbeats(job: Job) {
