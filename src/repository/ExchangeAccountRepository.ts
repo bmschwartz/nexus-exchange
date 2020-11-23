@@ -1,4 +1,4 @@
-import { Exchange, ExchangeAccount, OperationType, OrderSet, OrderStatus } from "@prisma/client";
+import { Exchange, ExchangeAccount, OperationType, OrderSet } from "@prisma/client";
 import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
