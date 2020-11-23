@@ -18,10 +18,14 @@ async function _checkAccountLife(job: Job) {
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
 
-  getAllSettledResults(await Promise.allSettled(timedOutAccounts.map(recreateAccount)))
+  return getAllSettledResults(await Promise.allSettled(
+    timedOutAccounts
+      .map(recreateAccount)
+      .filter(Boolean)
+  ))
 }
 
-async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<number | null> {
+async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<number | undefined> {
   let opType: OperationType
   switch (exchange) {
     case Exchange.BITMEX:
@@ -41,13 +45,13 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   const pendingCreateOpCount = await _db.$queryRaw(query)
 
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
-    return null
+    return
   }
 
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {
     await _db.exchangeAccount.update({ where: { id: accountId }, data: { active: false } })
-    return null
+    return
   }
 
   try {
@@ -61,7 +65,7 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
     console.error(e)
   }
 
-  return null
+  return
 }
 
 export class AccountMonitor {
