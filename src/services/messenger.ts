@@ -11,6 +11,12 @@ interface AccountOperationResponse {
   operationId: number
 }
 
+interface OrderOperationResponse {
+  success: boolean
+  error?: string
+  order?: object
+}
+
 interface HeartbeatResponse {
   accountId: number
 }
@@ -229,6 +235,28 @@ export class MessageClient {
   }
 
   async _orderCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { success, order, error }: OrderOperationResponse = message.getContent()
+    const { correlationId: operationId } = message.properties
+
+    if (!operationId) {
+      message.reject(false)
+      return
+    }
+
+    await completeAsyncOperation(prisma, operationId, success, error)
+
+    if (success) {
+      //   await prisma.exchangeAccount.update({
+      //     where: { id: accountId },
+      //     data: { active: true, lastHeartbeat: new Date() },
+      //   })
+      // } else {
+      //   await prisma.exchangeAccount.delete({
+      //     where: { id: accountId }
+      //   })
+      console.log({ order })
+    }
+
     message.ack()
   }
 
