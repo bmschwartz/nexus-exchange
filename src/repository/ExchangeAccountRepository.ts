@@ -271,6 +271,7 @@ export const createOrdersForExchangeAccounts = async (
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
 
+  console.log("creating orders")
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
       .map(async (membershipId: number) =>
@@ -281,12 +282,17 @@ export const createOrdersForExchangeAccounts = async (
   ))
 
   if (!exchangeAccounts.length) {
+    console.error("no exchange accounts found!")
     return
   }
+
+  console.log(`exchange accounts: ${exchangeAccounts.length}`)
 
   const exchangeAccountIds = exchangeAccounts
     .map((account: ExchangeAccount | null) => account ? account.id : null)
     .filter(Boolean)
+
+  console.log(`account ids: ${exchangeAccountIds}`)
 
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
@@ -295,5 +301,7 @@ export const createOrdersForExchangeAccounts = async (
       )
       .filter(Boolean)
   ))
+
+  console.log("finished creating orders")
 
 }

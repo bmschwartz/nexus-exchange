@@ -1,6 +1,7 @@
 import Binance, { Binance as BinanceT, ExchangeInfo, Ticker } from "binance-api-node"
 import { BinanceCurrencyCreateInput, BinanceCurrencyUpdateInput, BinanceSymbolStatus, PrismaClient } from "@prisma/client"
 import Bull, { Job, JobInformation } from "bull"
+import { SETTINGS } from "../settings"
 
 const VALID_QUOTE_ASSETS = [
   'BTC', 'ETH', 'USDT', 'BNB',
@@ -34,18 +35,18 @@ class BinanceClient {
     this.client = client
     this.prisma = prisma
 
-    this._fetchCurrenciesQueue = new Bull("accountMonitorQueue")
+    this._fetchCurrenciesQueue = new Bull(
+      "fetchCurrenciesQueue",
+      SETTINGS["REDIS_URL"],
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+    )
     this._fetchCurrenciesQueue.process(FETCH_CURRENCIES_JOB, _fetchCurrencyData)
 
     this._start()
   }
 
   async _start() {
-    const jobs: JobInformation[] = await this._fetchCurrenciesQueue.getRepeatableJobs()
-    jobs.forEach(async (job: JobInformation) => {
-      await this._fetchCurrenciesQueue.removeRepeatableByKey(job.key)
-    })
-
+    await this._fetchCurrenciesQueue.empty()
     await this._fetchCurrenciesQueue.add(FETCH_CURRENCIES_JOB, {}, { repeat: { every: FETCH_CURRENCIES_INTERVAL } })
   }
 

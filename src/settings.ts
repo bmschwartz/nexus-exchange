@@ -6,6 +6,9 @@ dotenv.config()
 export const SETTINGS = {}
 
 export function initSettings() {
+  // Redis
+  assignEnvVar("REDIS_URL", process.env.REDIS_URL)
+
   // RabbitMQ
   assignEnvVar("AMQP_URL", process.env.AMQP_URL)
 

@@ -1,5 +1,6 @@
 import { Exchange, ExchangeAccount, OperationType, PrismaClient } from "@prisma/client";
 import Bull, { Job, JobInformation } from "bull";
+import { SETTINGS } from "../settings";
 import { getAllSettledResults } from "../helper";
 import { validateApiKeyAndSecret } from "../repository/ExchangeAccountRepository";
 import { MessageClient } from "./messenger";
@@ -17,16 +18,12 @@ async function _checkAccountLife(job: Job) {
   const timedOutAccounts = await _db.exchangeAccount.findMany({
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
-  console.log(`timed out accounts: ${timedOutAccounts.length}`);
 
-  const settled = getAllSettledResults(await Promise.allSettled(
+  getAllSettledResults(await Promise.allSettled(
     timedOutAccounts
       .map(recreateAccount)
       .filter(Boolean)
   ))
-
-  console.log(`settled results: ${settled.length}`);
-
 }
 
 async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<number | undefined> {
@@ -82,18 +79,18 @@ export class AccountMonitor {
     _db = prisma
     _messenger = messenger
 
-    this._accountMonitorQueue = new Bull("accountMonitorQueue")
-    this._accountMonitorQueue.process(CHECK_ACCOUNT_JOB, _checkAccountLife)
+    this._accountMonitorQueue = new Bull(
+      "accountMonitorQueue",
+      SETTINGS["REDIS_URL"],
+      { defaultJobOptions: { removeOnComplete: true, removeOnFail: true } }
+    )
+    this._accountMonitorQueue.client
 
-    this._start()
+    this._accountMonitorQueue.process(CHECK_ACCOUNT_JOB, _checkAccountLife)
   }
 
-  async _start() {
-    const jobs: JobInformation[] = await this._accountMonitorQueue.getRepeatableJobs()
-    jobs.forEach(async (job: JobInformation) => {
-      await this._accountMonitorQueue.removeRepeatableByKey(job.key)
-    })
-
+  async start() {
+    await this._accountMonitorQueue.empty()
     await this._accountMonitorQueue.add(CHECK_ACCOUNT_JOB, {}, { repeat: { every: CHECK_ACCOUNT_INTERVAL } })
   }
 }

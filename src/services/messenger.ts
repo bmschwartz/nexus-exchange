@@ -69,7 +69,11 @@ export class MessageClient {
     this._connectBinanceMessaging()
     this._connectBitmexMessaging()
 
-    this._heartbeatJobQueue = new Bull("heartbeatQueue")
+    this._heartbeatJobQueue = new Bull(
+      "heartbeatQueue",
+      SETTINGS["REDIS_URL"],
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+    )
     this._setupHeartbeatJob()
   }
 
