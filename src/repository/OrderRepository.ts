@@ -83,16 +83,25 @@ export const createOrder = async (
 ) => {
   const { percent, ...realOrderData } = orderData
 
-  const order: Order = await ctx.prisma.order.create({
-    data: {
-      ...realOrderData,
-      status: OrderStatus.NEW,
-      exchangeAccount: { connect: { id: exchangeAccountId } },
-      orderSet: { connect: { id: orderSetId } }
-    }
-  })
+  let order: Order
+  console.log({ ...realOrderData, status: OrderStatus.NEW })
+  try {
+    order = await ctx.prisma.order.create({
+      data: {
+        ...realOrderData,
+        status: OrderStatus.NEW,
+        exchangeAccount: { connect: { id: exchangeAccountId } },
+        orderSet: { connect: { id: orderSetId } }
+      }
+    })
+  } catch (e) {
+    console.error(e)
+    return
+  }
 
+  console.log("finished")
   if (!order) {
+    console.error("did not create order!")
     return null
   }
 

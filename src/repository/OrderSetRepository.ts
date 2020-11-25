@@ -99,7 +99,6 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     },
   })
 
-
   if (!orderSet) {
     return new Error("Unable to create the OrderSet")
   }
