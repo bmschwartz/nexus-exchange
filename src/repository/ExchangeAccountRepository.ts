@@ -269,7 +269,7 @@ export const createOrdersForExchangeAccounts = async (
   orderSet: OrderSet,
   membershipIds: number[],
 ): Promise<any> => {
-  const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType } = orderSet
+  const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
 
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
@@ -291,7 +291,7 @@ export const createOrdersForExchangeAccounts = async (
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: number | null) =>
-        accountId ? createOrder(ctx, orderSet.id, accountId, { side, exchange, symbol, orderType, price, stopPrice, percent, stopTriggerType, trailingStopPercent }) : null
+        accountId ? createOrder(ctx, orderSet.id, accountId, { side, exchange, symbol, orderType, price, stopPrice, percent, leverage, stopTriggerType, trailingStopPercent }) : null
       )
       .filter(Boolean)
   ))

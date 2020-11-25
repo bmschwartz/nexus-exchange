@@ -38,6 +38,7 @@ type Order @key(fields: "id") {
   exchange: Exchange!
   orderType: OrderType!
   status: OrderStatus!
+  leverage: Float!
   price: Float
   quantity: Float
   stopPrice: Float
@@ -76,6 +77,7 @@ type OrderSet @key(fields: "id") {
   orderType: OrderType!
   orders(limit: Int, offset: Int): OrderSetOrders!
   percent: Float!
+  leverage: Float!
   stopPrice: Float
   trailingStopPercent: Float
   stopTriggerType: StopTriggerType
@@ -101,6 +103,7 @@ input CreateOrderSetInput {
   description: String
   side: OrderSide!
   orderType: OrderType!
+  leverage: Float!
   price: Float
   percent: Float
   stopPrice: Float
@@ -111,6 +114,7 @@ input CreateOrderSetInput {
 input UpdateOrderSetInput {
   orderSetId: ID!
   description: String!
+  leverage: Float!
   price: Float
   stopPrice: Float
   trailingStopPercent: Float

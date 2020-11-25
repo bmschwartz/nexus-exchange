@@ -84,6 +84,7 @@ model OrderSet {
   orderType           OrderType
   price               Float?
   percent             Float
+  leverage            Float
   side                OrderSide
   stopPrice           Float?
   trailingStopPercent Float?
@@ -130,6 +131,7 @@ model Order {
   side                OrderSide
   lastTimestamp       DateTime?
   orderType           OrderType?
+  leverage            Float
   price               Float?
   quantity            Float?
   filledQty           Float?

@@ -12,9 +12,10 @@ interface CreateOrderSetInput {
   orderType: OrderType;
   description?: string;
   price?: number;
-  stopPrice?: number
-  trailingStopPercent?: number
-  stopTriggerType?: StopTriggerType
+  leverage: number;
+  stopPrice?: number;
+  trailingStopPercent?: number;
+  stopTriggerType?: StopTriggerType;
 }
 
 interface UpdateOrderSetInput {
@@ -54,6 +55,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     symbol,
     orderType,
     price,
+    leverage,
     stopPrice,
     percent,
     stopTriggerType,
@@ -69,6 +71,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     percent,
     side,
     membershipIds,
+    leverage,
     price,
     stopPrice,
     stopTriggerType,
@@ -88,6 +91,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
       side,
       orderType,
       price,
+      leverage,
       stopPrice,
       percent,
       stopTriggerType,
@@ -161,7 +165,7 @@ export const getOrderSide = async (ctx: Context, orderSetId: number): Promise<Or
   return orderSet && orderSet.side
 }
 
-export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: number[], price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
+export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: number[], leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
   if (!exchangeExists(exchange)) {
     return new Error("Exchange does not exist")
   }

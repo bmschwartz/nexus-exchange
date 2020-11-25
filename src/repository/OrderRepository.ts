@@ -68,6 +68,7 @@ interface CreateOrderData {
   symbol: string;
   orderType: OrderType;
   percent: number;
+  leverage: number;
   price: number | null;
   stopPrice: number | null;
   trailingStopPercent: number | null;
