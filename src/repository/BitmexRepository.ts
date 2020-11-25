@@ -6,11 +6,11 @@ export const getTradableBitmexCurrencies = async (ctx: Context): Promise<BitmexC
 }
 
 export const getBitmexCurrencyById = async (ctx: Context, id: number): Promise<BitmexCurrency | null> => {
-  return ctx.prisma.bitmexCurrency.findOne({
+  return ctx.prisma.bitmexCurrency.findUnique({
     where: { id },
   })
 }
 
 export const getBitmexCurrency = async (ctx: Context, symbol: string): Promise<BitmexCurrency | null> => {
-  return ctx.prisma.bitmexCurrency.findOne({ where: { symbol } })
+  return ctx.prisma.bitmexCurrency.findUnique({ where: { symbol } })
 }

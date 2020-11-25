@@ -5,7 +5,7 @@ import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperat
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: number) => {
-  return ctx.prisma.exchangeAccount.findOne({ where: { id: accountId } })
+  return ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 }
 
 export const getExchangeAccounts = async (ctx: Context, membershipId: number) => {
@@ -99,7 +99,7 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: Number) => 
   if (!ctx.userId) {
     return { error: "No user found!" }
   }
-  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) } })
+  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: Number(accountId) } })
 
   if (!account) {
     return { error: "Could not find the account" }
@@ -169,7 +169,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     }
   }
 
-  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: accountId } })
+  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 
   if (!account) {
     return { success: false, error: new Error("Account not found") }
@@ -224,7 +224,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
     return { error: "No user found!" }
   }
 
-  const account = await ctx.prisma.exchangeAccount.findOne({ where: { id: Number(accountId) } })
+  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: Number(accountId) } })
   if (!account) {
     return { error: "Account not found" }
   }
@@ -269,12 +269,12 @@ export const createOrdersForExchangeAccounts = async (
   orderSet: OrderSet,
   membershipIds: number[],
 ): Promise<any> => {
-  const { side, exchange, symbol, orderType, price, stopPrice, percent } = orderSet
+  const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType } = orderSet
 
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
       .map(async (membershipId: number) =>
-        ctx.prisma.exchangeAccount.findOne({
+        ctx.prisma.exchangeAccount.findUnique({
           where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } }
         })
       ).filter(Boolean)
@@ -291,7 +291,7 @@ export const createOrdersForExchangeAccounts = async (
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: number | null) =>
-        accountId ? createOrder(ctx, orderSet.id, accountId, { side, exchange, symbol, orderType, price, stopPrice, percent }) : null
+        accountId ? createOrder(ctx, orderSet.id, accountId, { side, exchange, symbol, orderType, price, stopPrice, percent, stopTriggerType, trailingStopPercent }) : null
       )
       .filter(Boolean)
   ))

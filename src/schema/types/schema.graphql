@@ -41,6 +41,8 @@ type Order @key(fields: "id") {
   price: Float
   quantity: Float
   stopPrice: Float
+  trailingStopPercent: Float
+  stopTriggerType: StopTriggerType
   filledQty: Float
   symbol: String!
   lastTimestamp: DateTime!
@@ -75,6 +77,8 @@ type OrderSet @key(fields: "id") {
   orders(limit: Int, offset: Int): OrderSetOrders!
   percent: Float!
   stopPrice: Float
+  trailingStopPercent: Float
+  stopTriggerType: StopTriggerType
   description: String
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -98,8 +102,10 @@ input CreateOrderSetInput {
   side: OrderSide!
   orderType: OrderType!
   price: Float
-  stopPrice: Float
   percent: Float
+  stopPrice: Float
+  trailingStopPercent: Float
+  stopTriggerType: StopTriggerType
 }
 
 input UpdateOrderSetInput {
@@ -107,6 +113,8 @@ input UpdateOrderSetInput {
   description: String!
   price: Float
   stopPrice: Float
+  trailingStopPercent: Float
+  stopTriggerType: StopTriggerType
 }
 
 input CancelOrderSetInput {
@@ -341,6 +349,11 @@ enum OrderSide {
 enum OrderType {
   MARKET
   LIMIT
+}
+
+enum StopTriggerType {
+  LAST_PRICE
+  MARK_PRICE
 }
 
 enum Exchange {

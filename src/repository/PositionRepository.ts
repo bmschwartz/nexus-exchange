@@ -13,11 +13,11 @@ export interface MemberPositionsResult {
 }
 
 export const getPosition = async (ctx: Context, positionId: number) => {
-  return ctx.prisma.position.findOne({ where: { id: positionId } })
+  return ctx.prisma.position.findUnique({ where: { id: positionId } })
 }
 
 export const getPositionSide = async (ctx: Context, positionId: number) => {
-  const position = await ctx.prisma.position.findOne({ where: { id: positionId } })
+  const position = await ctx.prisma.position.findUnique({ where: { id: positionId } })
   return position && position.side
 }
 

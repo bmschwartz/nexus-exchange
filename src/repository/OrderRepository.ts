@@ -1,4 +1,4 @@
-import { Exchange, Order, OrderSide, OrderStatus, OrderType } from "@prisma/client";
+import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } from "@prisma/client";
 import { Context } from "src/context";
 
 export interface MemberOrdersInput {
@@ -13,11 +13,11 @@ export interface MemberOrdersResult {
 }
 
 export const getOrder = async (ctx: Context, orderId: number) => {
-  return ctx.prisma.order.findOne({ where: { id: orderId } })
+  return ctx.prisma.order.findUnique({ where: { id: orderId } })
 }
 
 export const getOrderSet = async (ctx: Context, orderId: number) => {
-  const order = await ctx.prisma.order.findOne({
+  const order = await ctx.prisma.order.findUnique({
     where: { id: Number(orderId) },
   })
 
@@ -25,23 +25,23 @@ export const getOrderSet = async (ctx: Context, orderId: number) => {
     return new Error("Could not find order!")
   }
 
-  return ctx.prisma.orderSet.findOne({
+  return ctx.prisma.orderSet.findUnique({
     where: { id: Number(order.id) },
   })
 }
 
 export const getOrderSide = async (ctx: Context, orderId: number) => {
-  const order = await ctx.prisma.order.findOne({ where: { id: orderId } })
+  const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
   return order && order.side
 }
 
 export const getOrderType = async (ctx: Context, orderId: number) => {
-  const order = await ctx.prisma.order.findOne({ where: { id: orderId } })
+  const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
   return order && order.orderType
 }
 
 export const cancelOrder = async (ctx: Context, orderId: number) => {
-  const order = await ctx.prisma.order.findOne({
+  const order = await ctx.prisma.order.findUnique({
     where: { id: orderId },
   })
   if (!order) {
@@ -70,6 +70,8 @@ interface CreateOrderData {
   percent: number;
   price: number | null;
   stopPrice: number | null;
+  trailingStopPercent: number | null;
+  stopTriggerType: StopTriggerType | null;
 }
 
 export const createOrder = async (

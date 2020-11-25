@@ -17,12 +17,16 @@ async function _checkAccountLife(job: Job) {
   const timedOutAccounts = await _db.exchangeAccount.findMany({
     where: { active: true, lastHeartbeat: { lt: timeoutDate } }
   })
+  console.log(`timed out accounts: ${timedOutAccounts.length}`);
 
-  return getAllSettledResults(await Promise.allSettled(
+  const settled = getAllSettledResults(await Promise.allSettled(
     timedOutAccounts
       .map(recreateAccount)
       .filter(Boolean)
   ))
+
+  console.log(`settled results: ${settled.length}`);
+
 }
 
 async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<number | undefined> {
@@ -45,8 +49,10 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   const pendingCreateOpCount = await _db.$queryRaw(query)
 
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
+    console.log(`found pending op ${accountId}`);
     return
   }
+
 
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {
@@ -54,6 +60,7 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
     return
   }
 
+  console.log(`sending create account ${accountId}`);
   try {
     switch (exchange) {
       case Exchange.BITMEX:

@@ -2,7 +2,7 @@ import { AsyncOperation, OperationType, PrismaClient } from "@prisma/client"
 import { Context } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
-  return ctx.prisma.asyncOperation.findOne({
+  return ctx.prisma.asyncOperation.findUnique({
     where: { id: parseInt(id) }
   })
 }
