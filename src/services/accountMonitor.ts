@@ -1,5 +1,5 @@
 import { Exchange, ExchangeAccount, OperationType, PrismaClient } from "@prisma/client";
-import Bull, { Job, JobInformation } from "bull";
+import Bull, { Job } from "bull";
 import { SETTINGS } from "../settings";
 import { getAllSettledResults } from "../helper";
 import { validateApiKeyAndSecret } from "../repository/ExchangeAccountRepository";
