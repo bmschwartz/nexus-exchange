@@ -76,19 +76,21 @@ model BitmexCurrency {
 }
 
 model OrderSet {
-  id          Int       @id @default(autoincrement())
-  exchange    Exchange
-  symbol      String
-  description String?
-  groupId     Int
-  orderType   OrderType
-  price       Float?
-  stopPrice   Float?
-  percent     Float
-  side        OrderSide
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now())
-  orders      Order[]
+  id                  Int              @id @default(autoincrement())
+  exchange            Exchange
+  symbol              String
+  description         String?
+  groupId             Int
+  orderType           OrderType
+  price               Float?
+  percent             Float
+  side                OrderSide
+  stopPrice           Float?
+  trailingStopPercent Float?
+  stopTriggerType     StopTriggerType?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @default(now())
+  orders              Order[]
 }
 
 model ExchangeAccount {
@@ -120,23 +122,25 @@ model AsyncOperation {
 }
 
 model Order {
-  id                Int             @id @default(autoincrement())
-  orderSetId        Int
-  exchangeAccountId Int
-  symbol            String
-  exchange          Exchange
-  side              OrderSide
-  lastTimestamp     DateTime?
-  orderType         OrderType?
-  price             Float?
-  stopPrice         Float?
-  quantity          Float?
-  filledQty         Float?
-  status            OrderStatus
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @default(now())
-  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
-  orderSet          OrderSet        @relation(fields: [orderSetId], references: [id])
+  id                  Int              @id @default(autoincrement())
+  orderSetId          Int
+  exchangeAccountId   Int
+  symbol              String
+  exchange            Exchange
+  side                OrderSide
+  lastTimestamp       DateTime?
+  orderType           OrderType?
+  price               Float?
+  quantity            Float?
+  filledQty           Float?
+  status              OrderStatus
+  stopPrice           Float?
+  trailingStopPercent Float?
+  stopTriggerType     StopTriggerType?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @default(now())
+  exchangeAccount     ExchangeAccount  @relation(fields: [exchangeAccountId], references: [id])
+  orderSet            OrderSet         @relation(fields: [orderSetId], references: [id])
 }
 
 model Position {
@@ -187,6 +191,11 @@ enum OrderType {
 enum PositionSide {
   LONG
   SHORT
+}
+
+enum StopTriggerType {
+  LAST_PRICE
+  MARK_PRICE
 }
 
 enum OperationType {
