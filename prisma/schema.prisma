@@ -70,6 +70,7 @@ model BitmexCurrency {
   fractionalDigits Int?
   lastPrice        Float?
   markPrice        Float?
+  maxPrice         Float?
   tickSize         Float?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now())

@@ -99,10 +99,10 @@ async function _fetchTickers() {
 }
 
 function createMarketData(market: Market): BitmexCurrencyUpsertData {
-  const { symbol, underlying, quoteCurrency, lastPrice, markPrice, tickSize } = market.info
+  const { symbol, underlying, quoteCurrency, lastPrice, markPrice, tickSize, maxPrice } = market.info
   const fractionalDigits = 0
 
-  const symbolData = { symbol, underlying, quoteCurrency, active: market.active, lastPrice, markPrice, tickSize, fractionalDigits }
+  const symbolData = { symbol, underlying, quoteCurrency, active: market.active, maxPrice, lastPrice, markPrice, tickSize, fractionalDigits }
 
   return {
     create: symbolData,

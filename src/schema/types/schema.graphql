@@ -257,6 +257,7 @@ type BitmexCurrency @key(fields: "id") {
   fractionalDigits: Int
   lastPrice: Float
   markPrice: Float
+  maxPrice: Float
   tickSize: Float
 }
 

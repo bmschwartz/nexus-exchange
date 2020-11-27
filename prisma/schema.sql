@@ -84,6 +84,7 @@ CREATE TABLE "public"."BitmexCurrency" (
   "fractionalDigits" INTEGER,
   "lastPrice" DECIMAL,
   "markPrice" DECIMAL,
+  "maxPrice" DECIMAL,
   "tickSize" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
