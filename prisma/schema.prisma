@@ -63,10 +63,10 @@ model BinanceCurrency {
 
 model BitmexCurrency {
   id               Int      @id @default(autoincrement())
+  active           Boolean? @default(false)
   symbol           String   @unique
   underlying       String
   quoteCurrency    String
-  active           Boolean? @default(false)
   fractionalDigits Int?
   lastPrice        Float?
   markPrice        Float?
@@ -85,8 +85,8 @@ model OrderSet {
   orderType           OrderType
   price               Float?
   percent             Float
-  leverage            Float
   side                OrderSide
+  leverage            Float
   stopPrice           Float?
   trailingStopPercent Float?
   stopTriggerType     StopTriggerType?
@@ -103,9 +103,9 @@ model ExchangeAccount {
   remoteAccountId String?
   apiKey          String
   apiSecret       String
-  lastHeartbeat   DateTime   @default(now())
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @default(now())
+  lastHeartbeat   DateTime   @default(now())
   orders          Order[]
   positions       Position[]
 
@@ -127,18 +127,18 @@ model Order {
   id                  Int              @id @default(autoincrement())
   orderSetId          Int
   exchangeAccountId   Int
-  symbol              String
   clOrderId           String?
   clOrderLinkId       String?
+  symbol              String
   exchange            Exchange
   side                OrderSide
   lastTimestamp       DateTime?
   orderType           OrderType?
-  leverage            Float
   price               Float?
   quantity            Float?
   filledQty           Float?
   status              OrderStatus
+  leverage            Float
   stopPrice           Float?
   trailingStopPercent Float?
   stopTriggerType     StopTriggerType?
@@ -161,16 +161,20 @@ model Position {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @default(now())
   exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+
+  @@unique([symbol, exchangeAccountId], name: "Position_symbol_exchangeAccountId_key")
+  @@index([exchangeAccountId], name: "idx_position_exchange_account_id")
+  @@index([symbol], name: "idx_position_symbol")
 }
 
 enum BinanceSymbolStatus {
-  AUCTION_MATCH
-  BREAK
-  END_OF_DAY
-  HALT
-  POST_TRADING
   PRE_TRADING
   TRADING
+  POST_TRADING
+  END_OF_DAY
+  HALT
+  AUCTION_MATCH
+  BREAK
 }
 
 enum Exchange {
@@ -184,15 +188,15 @@ enum OrderSide {
 }
 
 enum OrderStatus {
-  CANCELED
-  FILLED
   NEW
+  FILLED
   PARTIALLY_FILLED
+  CANCELED
 }
 
 enum OrderType {
-  LIMIT
   MARKET
+  LIMIT
 }
 
 enum PositionSide {
@@ -209,28 +213,25 @@ enum PegPriceType {
   LastPeg
   MidPricePeg
   MarketPeg
-  PrimaryPe
-  TrailingStopPe
+  PrimaryPeg
+  TrailingStopPeg
 }
 
 enum OperationType {
-  // Binance
+  CREATE_BINANCE_ORDER
+  UPDATE_BINANCE_ORDER
   CANCEL_BINANCE_ORDER
   CREATE_BINANCE_ACCOUNT
-  CREATE_BINANCE_ORDER
+  UPDATE_BINANCE_ACCOUNT
   DELETE_BINANCE_ACCOUNT
   DISABLE_BINANCE_ACCOUNT
-  UPDATE_BINANCE_ACCOUNT
-  UPDATE_BINANCE_ORDER
-
-  // Bitmex
+  CREATE_BITMEX_ORDER
+  UPDATE_BITMEX_ORDER
   CANCEL_BITMEX_ORDER
   CREATE_BITMEX_ACCOUNT
-  CREATE_BITMEX_ORDER
+  UPDATE_BITMEX_ACCOUNT
   DELETE_BITMEX_ACCOUNT
   DISABLE_BITMEX_ACCOUNT
-  UPDATE_BITMEX_ACCOUNT
-  UPDATE_BITMEX_ORDER
   CLOSE_BITMEX_POSITION
   ADD_STOP_BITMEX_POSITION
   ADD_TSL_BITMEX_POSITION

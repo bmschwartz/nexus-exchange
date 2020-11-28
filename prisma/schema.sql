@@ -25,7 +25,7 @@ CREATE TYPE "PegPriceType" AS ENUM(
   'LastPeg',
   'MidPricePeg',
   'MarketPeg',
-  'PrimaryPeg'
+  'PrimaryPeg',
   'TrailingStopPeg'
 );
 
@@ -84,7 +84,9 @@ CREATE TABLE "public"."Position" (
   "quantity" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id)
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id),
+
+  UNIQUE ("symbol", "exchangeAccountId")
 );
 
 CREATE TABLE "public"."BitmexCurrency" (
@@ -194,3 +196,6 @@ $$;
 CREATE TRIGGER trigger_delete_old_async_operations
     AFTER INSERT ON "public"."AsyncOperation"
     EXECUTE PROCEDURE delete_old_async_operations();
+
+CREATE INDEX idx_position_symbol ON "public"."Position"("symbol");
+CREATE INDEX idx_position_exchange_account_id ON "public"."Position"("exchangeAccountId");
