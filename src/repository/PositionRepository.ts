@@ -1,5 +1,6 @@
 import { Exchange, Position, PositionSide } from "@prisma/client";
 import { Context } from "src/context";
+import { getAllSettledResults } from "../helper";
 
 export interface MemberPositionsInput {
   membershipId: number
@@ -10,6 +11,15 @@ export interface MemberPositionsInput {
 export interface MemberPositionsResult {
   totalCount: number
   positions: Position[]
+}
+
+export interface ClosePositionsInput {
+  symbol: string
+  exchangeAccountIds: number[]
+}
+
+export interface ClosePositionsResult {
+  positionIds: number[]
 }
 
 export const getPosition = async (ctx: Context, positionId: number) => {
@@ -64,5 +74,46 @@ export const getMemberPositions = async (ctx: Context, { membershipId, limit, of
   return {
     positions,
     totalCount
+  }
+}
+
+export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol }: ClosePositionsInput): Promise<any> => {
+  let opId: number
+  console.log(`Close position of ${symbol} on ${exchangeAccountIds.length} accounts`)
+
+  const ops: any[] = getAllSettledResults(await Promise.allSettled(
+    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+      const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
+      if (!exchangeAccount) {
+        return {
+          error: "No exchange account found"
+        }
+      }
+
+      let opId: number
+      try {
+        switch (exchangeAccount.exchange) {
+          case Exchange.BINANCE:
+            return {
+              error: "Bitmex close order not implemented"
+            }
+          case Exchange.BITMEX:
+            console.log("closing bitmex")
+            opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol })
+            break
+        }
+      } catch {
+        return {
+          error: "Unable to connect to exchange"
+        }
+      }
+      return {
+        operationId: opId
+      }
+    })
+  ))
+  console.log(ops)
+  return {
+
   }
 }

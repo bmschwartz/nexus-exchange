@@ -17,6 +17,12 @@ interface OrderOperationResponse {
   order?: object
 }
 
+interface PositionOperationResponse {
+  success: boolean
+  error?: string
+  order?: object
+}
+
 interface HeartbeatResponse {
   accountId: number
 }
@@ -38,8 +44,6 @@ export class MessageClient {
   _createBinanceAccountQueue?: Amqp.Queue
   _createBitmexAccountQueue?: Amqp.Queue
 
-  _createBitmexOrderQueue?: Amqp.Queue
-
   // Event Queues
   _binanceAccountHeartbeatQueue?: Amqp.Queue
   _binanceAccountCreatedQueue?: Amqp.Queue
@@ -56,6 +60,12 @@ export class MessageClient {
   _bitmexOrderCreatedQueue?: Amqp.Queue
   _bitmexOrderUpdatedQueue?: Amqp.Queue
   _bitmexOrderCanceledQueue?: Amqp.Queue
+
+  /* Position Queues */
+  _bitmexPositionUpdatedQueue?: Amqp.Queue
+  _bitmexPositionClosedQueue?: Amqp.Queue
+  _bitmexPositionAddedStopQueue?: Amqp.Queue
+  _bitmexPositionAddedTslQueue?: Amqp.Queue
 
   // Exchanges
   _recvBinanceExchange?: Amqp.Exchange
@@ -122,6 +132,23 @@ export class MessageClient {
     this._bitmexOrderCanceledQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_ORDER_CANCELED_QUEUE"], { durable: true })
     await this._bitmexOrderCanceledQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_ORDER_CANCELED_KEY"])
     await this._bitmexOrderCanceledQueue.activateConsumer(async (message: Amqp.Message) => await this._orderCanceledConsumer(this._db, message))
+
+    /* Position Events */
+    this._bitmexPositionUpdatedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_POSITION_UPDATED_QUEUE"], { durable: true })
+    await this._bitmexPositionUpdatedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_POSITION_UPDATED_KEY"])
+    await this._bitmexPositionUpdatedQueue.activateConsumer(async (message: Amqp.Message) => await this._positionUpdatedConsumer(this._db, message))
+
+    this._bitmexPositionClosedQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_POSITION_CLOSED_QUEUE"], { durable: true })
+    await this._bitmexPositionClosedQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_POSITION_CLOSED_KEY"])
+    await this._bitmexPositionClosedQueue.activateConsumer(async (message: Amqp.Message) => await this._positionClosedConsumer(this._db, message))
+
+    this._bitmexPositionAddedStopQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_POSITION_ADDED_STOP_QUEUE"], { durable: true })
+    await this._bitmexPositionAddedStopQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_POSITION_ADDED_STOP_KEY"])
+    await this._bitmexPositionAddedStopQueue.activateConsumer(async (message: Amqp.Message) => await this._positionAddedStopConsumer(this._db, message))
+
+    this._bitmexPositionAddedTslQueue = this._recvConn.declareQueue(SETTINGS["BITMEX_POSITION_ADDED_TSL_QUEUE"], { durable: true })
+    await this._bitmexPositionAddedTslQueue.bind(this._recvBitmexExchange, SETTINGS["BITMEX_EVENT_POSITION_ADDED_TSL_KEY"])
+    await this._bitmexPositionAddedTslQueue.activateConsumer(async (message: Amqp.Message) => await this._positionAddedTslConsumer(this._db, message))
   }
 
   async _connectBinanceMessaging() {
@@ -268,6 +295,20 @@ export class MessageClient {
     message.ack()
   }
 
+  async _positionUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
+  async _positionClosedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+  async _positionAddedStopConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+  async _positionAddedTslConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
   async sendCreateBitmexAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
     const payload = { accountId, apiKey, apiSecret }
 
@@ -406,6 +447,51 @@ export class MessageClient {
 
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CANCEL_ORDER_CMD_KEY_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendCloseBitmexPosition(accountId: number, data: any) {
+    const payload = { accountId, ...data }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.CLOSE_BITMEX_POSITION)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CLOSE_POSITION_CMD_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendAddStopBitmexPosition(accountId: number, data: any) {
+    const payload = { accountId, ...data }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.ADD_STOP_BITMEX_POSITION)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_ADD_STOP_POSITION_CMD_PREFIX"]}${accountId}`)
+
+    return op.id
+  }
+
+  async sendAddTslBitmexPosition(accountId: number, data: any) {
+    const payload = { accountId, ...data }
+
+    const op = await createAsyncOperation(this._db, { payload }, OperationType.ADD_TSL_BITMEX_POSITION)
+
+    if (!op) {
+      throw new Error("Could not create asyncOperation")
+    }
+
+    const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
+    this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_ADD_TSL_POSITION_CMD_PREFIX"]}${accountId}`)
 
     return op.id
   }

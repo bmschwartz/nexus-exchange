@@ -21,6 +21,7 @@ extend type Mutation {
   cancelOrderSet(input: CancelOrderSetInput!): CancelOrderSetResult
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse
+  closePositions(input: ClosePositionsInput!): ClosePositionsResult
 
   createExchangeAccount(input: CreateExchangeAccountInput!): CreateExchangeAccountResult
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
@@ -156,6 +157,16 @@ type Position @key(fields: "id") {
 
 input PositionInput {
   id: ID!
+}
+
+input ClosePositionsInput {
+  symbol: String!
+  exchangeAccountIds: [ID!]!
+}
+
+type ClosePositionsResult {
+  operationId: ID
+  error: String
 }
 
 ###########################
