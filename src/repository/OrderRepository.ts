@@ -84,7 +84,7 @@ export const createOrder = async (
   const { percent, ...realOrderData } = orderData
 
   let order: Order
-  console.log({ ...realOrderData, status: OrderStatus.NEW })
+
   try {
     order = await ctx.prisma.order.create({
       data: {

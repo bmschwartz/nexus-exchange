@@ -371,7 +371,6 @@ export class MessageClient {
       throw new Error("Could not create asyncOperation")
     }
 
-    console.log(`${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
     const message = new Amqp.Message(JSON.stringify(payload), { persistent: true, correlationId: String(op.id) })
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
 

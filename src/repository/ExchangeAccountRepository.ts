@@ -302,6 +302,4 @@ export const createOrdersForExchangeAccounts = async (
       .filter(Boolean)
   ))
 
-  console.log("finished creating orders")
-
 }

@@ -46,7 +46,6 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   const pendingCreateOpCount = await _db.$queryRaw(query)
 
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
-    console.log(`found pending op ${accountId}`);
     return
   }
 
