@@ -20,6 +20,13 @@ CREATE TYPE "OperationType" AS ENUM(
   'DELETE_BITMEX_ACCOUNT', 'DISABLE_BITMEX_ACCOUNT'
 );
 CREATE TYPE "StopTriggerType" AS ENUM('LAST_PRICE', 'MARK_PRICE');
+CREATE TYPE "PegPriceType" AS ENUM(
+  'LastPeg',
+  'MidPricePeg',
+  'MarketPeg',
+  'PrimaryPeg'
+  'TrailingStopPeg'
+);
 
 CREATE TABLE "public"."OrderSet" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
@@ -43,6 +50,8 @@ CREATE TABLE "public"."Order" (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   "orderSetId" BIGINT NOT NULL,
   "exchangeAccountId" INTEGER NOT NULL,
+  "clOrderId" VARCHAR(255),
+  "clOrderLinkId" VARCHAR(255),
   "symbol" VARCHAR(255) NOT NULL,
   "exchange" "Exchange" NOT NULL,
   "side" "OrderSide" NOT NULL,
@@ -56,6 +65,8 @@ CREATE TABLE "public"."Order" (
   "stopPrice" DECIMAL,
   "trailingStopPercent" DECIMAL,
   "stopTriggerType" "StopTriggerType",
+  "pegOffsetValue" DECIMAL,
+  "pegPriceType" "PegPriceType",
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
   FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id),
