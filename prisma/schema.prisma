@@ -154,10 +154,15 @@ model Position {
   id                Int             @id @default(autoincrement())
   exchangeAccountId Int
   symbol            String
+  isOpen            Boolean
   exchange          Exchange
   side              PositionSide
   avgPrice          Float?
   quantity          Float?
+  leverage          Float?
+  markPrice         Float?
+  margin            Float?
+  maintenanceMargin Float?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @default(now())
   exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])

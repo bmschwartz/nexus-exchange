@@ -38,6 +38,12 @@ export const createPosition = async (
   exchange: Exchange,
   symbol: string,
   avgPrice?: number | null,
+  isOpen?: boolean | null,
+  quantity?: number | null,
+  leverage?: number | null,
+  markPrice?: number | null,
+  margin?: number | null,
+  maintenanceMargin?: number | null,
 ) => {
   return ctx.prisma.position.create({
     data: {
@@ -45,6 +51,12 @@ export const createPosition = async (
       side,
       symbol,
       avgPrice,
+      isOpen: isOpen || false,
+      quantity,
+      leverage,
+      markPrice,
+      margin,
+      maintenanceMargin,
       exchangeAccount: { connect: { id: exchangeAccountId } },
     }
   })

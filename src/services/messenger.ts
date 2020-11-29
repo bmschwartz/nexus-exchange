@@ -1,6 +1,6 @@
 import * as Amqp from "amqp-ts"
 import Bull, { Job, JobInformation } from "bull"
-import { PrismaClient, OperationType, PositionCreateInput, Prisma } from "@prisma/client";
+import { PrismaClient, OperationType, PositionCreateInput, Prisma, OrderSide, PositionSide } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 
@@ -296,7 +296,7 @@ export class MessageClient {
   }
 
   async _positionUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    const { success, positions: rawPositions, error } = message.getContent()
+    const { success, positions: rawPositions, accountId, exchange, error } = message.getContent()
 
     if (error) {
       message.reject(false)
@@ -304,24 +304,45 @@ export class MessageClient {
     }
 
     if (success) {
+      const exchangeAccountId = Number(accountId)
       const positions = rawPositions.map(JSON.parse)
-      const upserts = positions.map(position => {
-        const { exchange, account_id: exchangeAccountId, symbol, current_quantity: quantity } = position
-        const side = quantity >= 0 ? "LONG" : "SHORT"
-        const create: Prisma.PositionCreateInput = {
-          side,
+      console.log({ positions })
+      const upserts = positions.map(async (position) => {
+        const {
           symbol,
-          exchange,
-          quantity: quantity,
+          is_open: isOpen,
+          current_quantity: quantity,
+          leverage,
+          mark_price: markPrice,
+          margin,
+          maintenance_margin: maintenanceMargin
+        } = position
+        const existingPosition = await prisma.position.findUnique({
+          where: {
+            Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId }
+          }
+        })
+        const side = (quantity || existingPosition?.quantity) >= 0 ? PositionSide.LONG : PositionSide.SHORT
+        const inputData = {
+          side: side || existingPosition?.side,
+          symbol,
+          quantity: quantity || existingPosition?.quantity || 0,
+          exchange: exchange || existingPosition?.exchange,
+          isOpen: isOpen || existingPosition?.isOpen || (quantity !== 0 && quantity !== undefined && quantity !== null),
+          leverage: leverage || existingPosition?.leverage,
+          markPrice: markPrice || existingPosition?.markPrice,
+          margin: margin || existingPosition?.margin,
+          maintenanceMargin: maintenanceMargin || existingPosition?.maintenanceMargin,
+        }
+        const create: Prisma.PositionCreateInput = {
+          ...inputData,
           exchangeAccount: { connect: { id: exchangeAccountId } },
         }
         const update: Prisma.PositionUpdateInput = {
-          side,
-          symbol,
-          exchange,
-          quantity: quantity,
+          ...inputData,
           exchangeAccount: { connect: { id: exchangeAccountId } },
         }
+        console.log({ create })
         return prisma.position.upsert({
           create,
           update,
