@@ -3,6 +3,7 @@ import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, PositionCreateInput, Prisma, OrderSide, PositionSide } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
+import { getAllSettledResults } from "src/helper";
 
 interface AccountOperationResponse {
   success: boolean
@@ -306,7 +307,7 @@ export class MessageClient {
     if (success) {
       const exchangeAccountId = Number(accountId)
       const positions = rawPositions.map(JSON.parse)
-      console.log({ positions })
+
       const upserts = positions.map(async (position) => {
         const {
           symbol,
@@ -342,7 +343,7 @@ export class MessageClient {
           ...inputData,
           exchangeAccount: { connect: { id: exchangeAccountId } },
         }
-        console.log({ create })
+
         return prisma.position.upsert({
           create,
           update,
@@ -350,13 +351,23 @@ export class MessageClient {
         })
       })
 
-      await prisma.$transaction(upserts)
+      await Promise.allSettled(upserts)
     }
 
     message.ack()
   }
 
   async _positionClosedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { success, error } = message.getContent()
+    const { correlationId: operationId } = message.properties
+
+    if (!operationId) {
+      message.reject(false)
+      return
+    }
+
+    await completeAsyncOperation(prisma, operationId, success, error)
+
     message.ack()
   }
   async _positionAddedStopConsumer(prisma: PrismaClient, message: Amqp.Message) {

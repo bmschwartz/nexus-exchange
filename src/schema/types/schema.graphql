@@ -21,7 +21,7 @@ extend type Mutation {
   cancelOrderSet(input: CancelOrderSetInput!): CancelOrderSetResult
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse
-  closePositions(input: ClosePositionsInput!): ClosePositionsResult
+  closePositions(input: ClosePositionsInput!): [ClosePositionsResult!]
 
   createExchangeAccount(input: CreateExchangeAccountInput!): CreateExchangeAccountResult
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
@@ -161,6 +161,8 @@ input PositionInput {
 
 input ClosePositionsInput {
   symbol: String!
+  price: Float
+  fraction: Float
   exchangeAccountIds: [ID!]!
 }
 

@@ -15,6 +15,8 @@ export interface MemberPositionsResult {
 
 export interface ClosePositionsInput {
   symbol: string
+  price: number
+  fraction: number
   exchangeAccountIds: number[]
 }
 
@@ -89,8 +91,7 @@ export const getMemberPositions = async (ctx: Context, { membershipId, limit, of
   }
 }
 
-export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol }: ClosePositionsInput): Promise<any> => {
-  let opId: number
+export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol, price, fraction }: ClosePositionsInput): Promise<any> => {
   console.log(`Close position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
@@ -111,7 +112,7 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol 
             }
           case Exchange.BITMEX:
             console.log("closing bitmex")
-            opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol })
+            opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol, price, fraction })
             break
         }
       } catch {
@@ -125,7 +126,5 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol 
     })
   ))
   console.log(ops)
-  return {
-
-  }
+  return ops
 }

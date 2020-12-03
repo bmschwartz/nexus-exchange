@@ -34,8 +34,8 @@ export const PositionResolvers = {
 
 export const PositionMutations = {
   async closePositions(parent: any, args: any, ctx: Context) {
-    const { input: { exchangeAccountIds, symbol } } = args
+    const { input: { exchangeAccountIds, symbol, price, fraction } } = args
 
-    return closePositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol })
+    return closePositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, price, fraction })
   },
 }
