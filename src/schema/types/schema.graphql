@@ -22,6 +22,8 @@ extend type Mutation {
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse
   closePositions(input: ClosePositionsInput!): [ClosePositionsResult!]
+  addStopToPositions(input: AddStopToPositionsInput!): [AddStopToPositionsResult!]
+  addTslToPositions(input: AddTslToPositionsInput!): [AddTslToPositionsResult!]
 
   createExchangeAccount(input: CreateExchangeAccountInput!): CreateExchangeAccountResult
   deleteExchangeAccount(input: DeleteExchangeAccountInput!): DeleteExchangeAccountResult!
@@ -170,6 +172,31 @@ type ClosePositionsResult {
   operationId: ID
   error: String
 }
+
+input AddStopToPositionsInput {
+  symbol: String!
+  stopPrice: Float!
+  exchangeAccountIds: [ID!]!
+  stopTriggerPriceType: StopTriggerType!
+}
+
+type AddStopToPositionsResult {
+  operationId: ID
+  error: String
+}
+
+input AddTslToPositionsInput {
+  symbol: String!
+  tslPercent: Float!
+  exchangeAccountIds: [ID!]!
+  stopTriggerPriceType: StopTriggerType!
+}
+
+type AddTslToPositionsResult {
+  operationId: ID
+  error: String
+}
+
 
 ###########################
 # ExchangeAccount

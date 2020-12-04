@@ -1,4 +1,4 @@
-import { closePositions, getPosition, getPositionSide } from "../../repository/PositionRepository"
+import { addStopToPositions, addTslToPositions, closePositions, getPosition, getPositionSide } from "../../repository/PositionRepository"
 import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { Context } from "../../context"
 
@@ -38,4 +38,18 @@ export const PositionMutations = {
 
     return closePositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, price, fraction })
   },
+
+  async addStopToPositions(parent: any, args: any, ctx: Context) {
+    console.log("add stop")
+    const { input: { exchangeAccountIds, symbol, stopPrice, stopTriggerPriceType } } = args
+
+    return addStopToPositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, stopPrice, stopTriggerPriceType })
+  },
+
+  async addTslToPositions(parent: any, args: any, ctx: Context) {
+    console.log("add tsl")
+    const { input: { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType } } = args
+
+    return addTslToPositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, tslPercent, stopTriggerPriceType })
+  }
 }

@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide } from "@prisma/client";
+import { Exchange, Position, PositionSide, StopTriggerType } from "@prisma/client";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -17,6 +17,20 @@ export interface ClosePositionsInput {
   symbol: string
   price: number
   fraction: number
+  exchangeAccountIds: number[]
+}
+
+export interface AddStopToPositionsInput {
+  symbol: string
+  stopPrice: number
+  stopTriggerPriceType: StopTriggerType
+  exchangeAccountIds: number[]
+}
+
+export interface AddTslToPositionsInput {
+  symbol: string
+  tslPercent: number
+  stopTriggerPriceType: StopTriggerType
   exchangeAccountIds: number[]
 }
 
@@ -108,11 +122,90 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
             return {
-              error: "Bitmex close order not implemented"
+              error: "Binance close position order not implemented"
             }
           case Exchange.BITMEX:
-            console.log("closing bitmex")
             opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol, price, fraction })
+            break
+        }
+      } catch {
+        return {
+          error: "Unable to connect to exchange"
+        }
+      }
+      return {
+        operationId: opId
+      }
+    })
+  ))
+  console.log(ops)
+  return ops
+}
+
+export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, symbol, stopPrice, stopTriggerPriceType }: AddStopToPositionsInput): Promise<any> => {
+  console.log(`Add stop to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
+
+  const ops: any[] = getAllSettledResults(await Promise.allSettled(
+    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+      console.log(exchangeAccountId);
+      const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
+      if (!exchangeAccount) {
+        console.log("no exchange account")
+        return {
+          error: "No exchange account found"
+        }
+      }
+
+      let opId: number
+      try {
+        switch (exchangeAccount.exchange) {
+          case Exchange.BINANCE:
+            return {
+              error: "Binance add stop to position not implemented"
+            }
+          case Exchange.BITMEX:
+            console.log(`adding stop to bitmex ${exchangeAccountId}`)
+            opId = await ctx.messenger.sendAddStopBitmexPosition(exchangeAccount.id, { symbol, stopPrice, stopTriggerPriceType })
+            break
+        }
+      } catch {
+        return {
+          error: "Unable to connect to exchange"
+        }
+      }
+      return {
+        operationId: opId
+      }
+    })
+  ))
+  console.log(ops)
+  return ops
+}
+
+export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType }: AddTslToPositionsInput): Promise<any> => {
+  console.log(`Add TSL to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
+
+  const ops: any[] = getAllSettledResults(await Promise.allSettled(
+    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+      console.log(exchangeAccountId);
+      const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
+      if (!exchangeAccount) {
+        console.log("no exchange account")
+        return {
+          error: "No exchange account found"
+        }
+      }
+
+      let opId: number
+      try {
+        switch (exchangeAccount.exchange) {
+          case Exchange.BINANCE:
+            return {
+              error: "Binance add tsl to position not implemented"
+            }
+          case Exchange.BITMEX:
+            console.log(`adding tsl to bitmex ${exchangeAccountId}`)
+            opId = await ctx.messenger.sendAddTslBitmexPosition(exchangeAccount.id, { symbol, tslPercent, stopTriggerPriceType })
             break
         }
       } catch {
