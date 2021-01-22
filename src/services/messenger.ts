@@ -1,6 +1,6 @@
 import * as Amqp from "amqp-ts"
 import Bull, { Job, JobInformation } from "bull"
-import { PrismaClient, OperationType, PositionCreateInput, Prisma, OrderSide, PositionSide } from "@prisma/client";
+import { PrismaClient, OperationType, Prisma, PositionSide } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 import { getAllSettledResults } from "src/helper";
@@ -282,7 +282,6 @@ export class MessageClient {
       //   await prisma.exchangeAccount.delete({
       //     where: { id: accountId }
       //   })
-      console.log({ order })
     }
 
     message.ack()
@@ -574,7 +573,7 @@ export class MessageClient {
     await this._heartbeatJobQueue.add(FLUSH_HEARTBEAT_JOB, {}, { repeat: { every: FLUSH_HEARTBEAT_INTERVAL } })
   }
 
-  async _flushAccountHeartbeats(job: Job) {
+  async _flushAccountHeartbeats(_job: Job) {
     if (!_db) {
       return
     }

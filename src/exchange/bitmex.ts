@@ -1,5 +1,5 @@
-import { BitmexCurrencyCreateInput, BitmexCurrencyUpdateInput, PrismaClient } from "@prisma/client"
-import Bull, { JobInformation } from "bull";
+import { Prisma, PrismaClient } from "@prisma/client"
+import Bull from "bull";
 import { Market, Ticker } from "ccxt";
 import { bitmex as CcxtBitmex } from "ccxt.pro"
 import { SETTINGS } from "../settings";
@@ -13,8 +13,8 @@ const FETCH_TICKERS_INTERVAL = 10000 // ms
 let _bitmexClient: BitmexClient
 
 interface BitmexCurrencyUpsertData {
-  create: BitmexCurrencyCreateInput
-  update: BitmexCurrencyUpdateInput
+  create: Prisma.BitmexCurrencyCreateInput
+  update: Prisma.BitmexCurrencyUpdateInput
 }
 
 export async function initBitmex(prisma: PrismaClient) {

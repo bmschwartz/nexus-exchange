@@ -30,7 +30,8 @@ export const OrderSetMutations = {
       },
     } = args
 
-    return createOrderSet(ctx, { groupId, membershipIds, symbol, exchange, description, side, orderType, leverage, price, stopPrice, percent, stopTriggerType, trailingStopPercent })
+    const orderSet = await createOrderSet(ctx, { groupId, membershipIds, symbol, exchange, description, side, orderType, leverage, price, stopPrice, percent, stopTriggerType, trailingStopPercent })
+    return { orderSet }
   },
 
   async updateOrderSet(parent: any, args: any, ctx: Context) {

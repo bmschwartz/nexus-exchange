@@ -1,6 +1,6 @@
 import Binance, { Binance as BinanceT, ExchangeInfo, Ticker } from "binance-api-node"
-import { BinanceCurrencyCreateInput, BinanceCurrencyUpdateInput, BinanceSymbolStatus, PrismaClient } from "@prisma/client"
-import Bull, { Job, JobInformation } from "bull"
+import { BinanceSymbolStatus, PrismaClient, Prisma } from "@prisma/client"
+import Bull, { Job } from "bull"
 import { SETTINGS } from "../settings"
 
 const VALID_QUOTE_ASSETS = [
@@ -67,7 +67,7 @@ class BinanceClient {
 
         const { symbol, priceChange, open: openPrice, low: lowPrice, high: highPrice, curDayClose: lastPrice, priceChangePercent } = ticker
 
-        const data: BinanceCurrencyUpdateInput = {
+        const data: Prisma.BinanceCurrencyUpdateInput = {
           priceChange, priceChangePercent, lowPrice, highPrice, openPrice, lastPrice
         }
 
@@ -96,7 +96,7 @@ async function _fetchCurrencyData(job?: Job) {
     }
     const { status, orderTypes, filters, permissions, ...restSymbolinfo } = symbolInfo
 
-    const data: BinanceCurrencyCreateInput = {
+    const data: Prisma.BinanceCurrencyCreateInput = {
       status: BinanceSymbolStatus[status],
       ...mapOrderTypes(orderTypes),
       ...mapFilterTypes(filters),
