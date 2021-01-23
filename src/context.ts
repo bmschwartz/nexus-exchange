@@ -12,7 +12,7 @@ export const messenger = new MessageClient(prisma)
 export const accountMonitor = new AccountMonitor(prisma, messenger)
 
 export interface Context {
-  userId?: number
+  userId?: string
   permissions: string[]
   prisma: PrismaClient
   messenger: MessageClient
@@ -22,7 +22,7 @@ export interface Context {
 export function createContext({ req }: any): Context {
   let { userid: userId, permissions } = req.headers
 
-  userId = userId !== "undefined" ? Number(userId) : undefined
+  userId = userId !== "undefined" ? userId : undefined
   permissions = permissions !== "undefined" ? JSON.parse(permissions) : []
 
   return {
