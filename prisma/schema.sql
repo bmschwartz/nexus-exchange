@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 DROP DATABASE IF EXISTS "nexus_exchange";
 CREATE DATABASE "nexus_exchange";
 
@@ -29,12 +31,27 @@ CREATE TYPE "PegPriceType" AS ENUM(
   'TrailingStopPeg'
 );
 
+CREATE TABLE "public"."ExchangeAccount" (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  active BOOLEAN NOT NULL DEFAULT false,
+  exchange "Exchange" NOT NULL,
+  "membershipId" uuid NOT NULL,
+  "remoteAccountId" VARCHAR(255),
+  "apiKey" VARCHAR(255) NOT NULL,
+  "apiSecret" VARCHAR(255) NOT NULL,
+  "lastHeartbeat" TIMESTAMP NOT NULL DEFAULT now(),
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+
+  UNIQUE ("exchange", "membershipId")
+);
+
 CREATE TABLE "public"."OrderSet" (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   exchange "Exchange" NOT NULL,
   symbol VARCHAR(255) NOT NULL,
   "description" TEXT,
-  "groupId" INTEGER NOT NULL,
+  "groupId" uuid NOT NULL,
   "orderType" "OrderType" NOT NULL,
   "price" DECIMAL,
   "percent" DECIMAL NOT NULL,
@@ -48,10 +65,10 @@ CREATE TABLE "public"."OrderSet" (
 );
 
 CREATE TABLE "public"."Order" (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
-  "orderSetId" BIGINT NOT NULL,
-  "exchangeAccountId" INTEGER NOT NULL,
-  "clOrderId" VARCHAR(255),
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "orderSetId" uuid NOT NULL,
+  "exchangeAccountId" uuid NOT NULL,
+  "clOrderId" uuid DEFAULT uuid_generate_v4(),
   "clOrderLinkId" VARCHAR(255),
   "symbol" VARCHAR(255) NOT NULL,
   "exchange" "Exchange" NOT NULL,
@@ -75,8 +92,8 @@ CREATE TABLE "public"."Order" (
 );
 
 CREATE TABLE "public"."Position" (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
-  "exchangeAccountId" INTEGER NOT NULL,
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "exchangeAccountId" uuid NOT NULL,
   "symbol" VARCHAR(255) NOT NULL,
   "isOpen" BOOLEAN NOT NULL DEFAULT false,
   "exchange" "Exchange" NOT NULL,
@@ -95,7 +112,7 @@ CREATE TABLE "public"."Position" (
 );
 
 CREATE TABLE "public"."BitmexCurrency" (
-  id SERIAL PRIMARY KEY NOT NULL,
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   active BOOLEAN DEFAULT false,
   symbol VARCHAR(255) UNIQUE NOT NULL,
   underlying VARCHAR(255) NOT NULL,
@@ -110,7 +127,7 @@ CREATE TABLE "public"."BitmexCurrency" (
 );
 
 CREATE TABLE "public"."BinanceCurrency" (
-  id SERIAL PRIMARY KEY NOT NULL,
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   symbol VARCHAR(255) UNIQUE NOT NULL,
   "status" "BinanceSymbolStatus" NOT NULL,
   "baseAsset" VARCHAR(255) NOT NULL,
@@ -163,23 +180,8 @@ CREATE TABLE "public"."BinanceCurrency" (
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
 );
 
-CREATE TABLE "public"."ExchangeAccount" (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
-  active BOOLEAN NOT NULL DEFAULT false,
-  exchange "Exchange" NOT NULL,
-  "membershipId" INTEGER NOT NULL,
-  "remoteAccountId" VARCHAR(255),
-  "apiKey" VARCHAR(255) NOT NULL,
-  "apiSecret" VARCHAR(255) NOT NULL,
-  "lastHeartbeat" TIMESTAMP NOT NULL DEFAULT now(),
-  "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-
-  UNIQUE ("exchange", "membershipId")
-);
-
 CREATE TABLE "public"."AsyncOperation" (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "opType" "OperationType" NOT NULL,
   complete BOOLEAN NOT NULL DEFAULT false,
   success BOOLEAN DEFAULT false,
