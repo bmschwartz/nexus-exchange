@@ -4,27 +4,27 @@ import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
-export const getExchangeAccount = async (ctx: Context, accountId: number) => {
+export const getExchangeAccount = async (ctx: Context, accountId: string) => {
   return ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 }
 
-export const getExchangeAccounts = async (ctx: Context, membershipId: number) => {
+export const getExchangeAccounts = async (ctx: Context, membershipId: string) => {
   return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
 }
 
-export const getOrders = async (ctx: Context, id: number) => {
+export const getOrders = async (ctx: Context, id: string) => {
   return ctx.prisma.order.findMany({
     where: { exchangeAccountId: id },
   })
 }
 
-export const getPositions = async (ctx: Context, id: number) => {
+export const getPositions = async (ctx: Context, id: string) => {
   return ctx.prisma.position.findMany({
     where: { exchangeAccountId: id },
   })
 }
 
-export const createExchangeAccount = async (ctx: Context, membershipId: number, apiKey: string, apiSecret: string, exchange: Exchange) => {
+export const createExchangeAccount = async (ctx: Context, membershipId: string, apiKey: string, apiSecret: string, exchange: Exchange) => {
   if (!ctx.userId) {
     return {
       error: "No user found!",
@@ -65,7 +65,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: number, 
     },
   })
 
-  let opId: number
+  let opId: string
   console.log("about to send create account")
   try {
     switch (exchange) {
@@ -95,17 +95,17 @@ export const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string
   return true
 }
 
-export const deleteExchangeAccount = async (ctx: Context, accountId: number) => {
+export const deleteExchangeAccount = async (ctx: Context, accountId: string) => {
   if (!ctx.userId) {
     return { error: "No user found!" }
   }
-  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: Number(accountId) } })
+  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 
   if (!account) {
     return { error: "Could not find the account" }
   }
 
-  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, Number(accountId))
+  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, accountId)
 
   if (pendingAccountOps && pendingAccountOps.length > 0) {
     return { error: "Already updating account" }
@@ -122,10 +122,10 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: number) => 
         break
     }
 
-    await ctx.prisma.exchangeAccount.delete({ where: { id: Number(accountId) } })
+    await ctx.prisma.exchangeAccount.delete({ where: { id: accountId } })
     const operation = await createAsyncOperation(
       ctx.prisma,
-      { accountId: Number(accountId), success: true, complete: true },
+      { accountId, success: true, complete: true },
       opType,
     )
 
@@ -136,7 +136,7 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: number) => 
     return { operationId: operation.id }
   }
 
-  let opId: number
+  let opId: string
 
   try {
     if (account.active) {
@@ -162,7 +162,7 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: number) => 
   }
 }
 
-export const updateExchangeAccount = async (ctx: Context, accountId: number, apiKey: string, apiSecret: string) => {
+export const updateExchangeAccount = async (ctx: Context, accountId: string, apiKey: string, apiSecret: string) => {
   if (!ctx.userId) {
     return {
       error: "No user found!",
@@ -188,7 +188,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     return { success: false, error: new Error(`Invalid API key pair for ${account.exchange}`) }
   }
 
-  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: Number(accountId) }, data: { apiKey, apiSecret } })
+  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: accountId }, data: { apiKey, apiSecret } })
 
   if (!updatedAccount) {
     return {
@@ -196,7 +196,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
     }
   }
 
-  let opId: number
+  let opId: string
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
@@ -219,12 +219,12 @@ export const updateExchangeAccount = async (ctx: Context, accountId: number, api
 
 }
 
-export const toggleExchangeAccountActive = async (ctx: Context, accountId: number): Promise<any> => {
+export const toggleExchangeAccountActive = async (ctx: Context, accountId: string): Promise<any> => {
   if (!ctx.userId) {
     return { error: "No user found!" }
   }
 
-  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: Number(accountId) } })
+  const account = await ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
   if (!account) {
     return { error: "Account not found" }
   }
@@ -237,7 +237,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
 
   const { apiKey, apiSecret } = account
 
-  let opId: number
+  let opId: string
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
@@ -267,14 +267,14 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: numbe
 export const createOrdersForExchangeAccounts = async (
   ctx: Context,
   orderSet: OrderSet,
-  membershipIds: number[],
+  membershipIds: string[],
 ): Promise<any> => {
   const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
 
   console.log("creating orders")
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     membershipIds
-      .map(async (membershipId: number) =>
+      .map(async (membershipId: string) =>
         ctx.prisma.exchangeAccount.findUnique({
           where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
         }),
@@ -296,7 +296,7 @@ export const createOrdersForExchangeAccounts = async (
 
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
-      .map((accountId: number | null) =>
+      .map((accountId: string | null) =>
         accountId ? createOrder(
           ctx,
           orderSet.id,

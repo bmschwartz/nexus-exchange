@@ -6,7 +6,7 @@ export const OrderSetQueries = {
     const {
       input: { id: orderSetId },
     } = args
-    return getOrderSet(ctx, Number(orderSetId))
+    return getOrderSet(ctx, orderSetId)
   },
 }
 
@@ -45,11 +45,11 @@ export const OrderSetMutations = {
 
 export const OrderSetResolvers = {
   async __resolveReference(orderSet: any, args: any, ctx: Context) {
-    return getOrderSet(ctx, Number(orderSet.id))
+    return getOrderSet(ctx, orderSet.id)
   },
 
   async orders({ id: orderSetId }: any, { limit, offset }: any, ctx: Context) {
-    return getOrders(ctx, { limit, offset, orderSetId: Number(orderSetId) })
+    return getOrders(ctx, { limit, offset, orderSetId })
   },
 
   async side({ id: orderSetId }: any, args: any, ctx: Context) {

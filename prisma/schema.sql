@@ -1,7 +1,6 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 DROP DATABASE IF EXISTS "nexus_exchange";
 CREATE DATABASE "nexus_exchange";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE "OrderSide" AS ENUM('BUY', 'SELL');
 CREATE TYPE "OrderType" AS ENUM('MARKET', 'LIMIT');

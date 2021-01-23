@@ -8,7 +8,7 @@ export const OrderQueries = {
       input: { id: orderId },
     } = args
 
-    return getOrder(ctx, Number(orderId))
+    return getOrder(ctx, orderId)
   },
 }
 
@@ -34,7 +34,7 @@ export const OrderResolvers = {
     }
   },
   async exchangeAccount(order: any, args: any, ctx: Context) {
-    return getExchangeAccount(ctx, Number(order.exchangeAccountId))
+    return getExchangeAccount(ctx, order.exchangeAccountId)
   }
 }
 
@@ -42,6 +42,6 @@ export const OrderMutations = {
   async cancelOrder(parent: any, args: any, ctx: Context) {
     const { input: { id: orderId } } = args
 
-    return cancelOrder(ctx, Number(orderId))
+    return cancelOrder(ctx, orderId)
   },
 }

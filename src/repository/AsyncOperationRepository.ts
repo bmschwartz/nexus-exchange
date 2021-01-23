@@ -3,7 +3,7 @@ import { Context } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
   return ctx.prisma.asyncOperation.findUnique({
-    where: { id: parseInt(id) }
+    where: { id }
   })
 }
 
@@ -14,14 +14,14 @@ export const createAsyncOperation = async (prisma: PrismaClient, data: any, opTy
 }
 
 export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, error?: string): Promise<AsyncOperation | null> => {
-  const exists = await prisma.asyncOperation.count({ where: { id: parseInt(id) } })
+  const exists = await prisma.asyncOperation.count({ where: { id } })
 
   if (!exists) {
     return null
   }
 
   return prisma.asyncOperation.update({
-    where: { id: parseInt(id) },
+    where: { id },
     data: {
       complete: true,
       success,
@@ -30,7 +30,7 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
   })
 }
 
-export const getPendingAccountOperations = async (prisma: PrismaClient, accountId: number): Promise<AsyncOperation[] | null> => {
+export const getPendingAccountOperations = async (prisma: PrismaClient, accountId: string): Promise<AsyncOperation[] | null> => {
   const query = `
   SELECT * FROM "AsyncOperation"
   WHERE

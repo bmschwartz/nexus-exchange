@@ -26,7 +26,7 @@ async function _checkAccountLife(job: Job) {
   ))
 }
 
-async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<number | undefined> {
+async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<string | undefined> {
   let opType: OperationType
   switch (exchange) {
     case Exchange.BITMEX:
@@ -48,7 +48,6 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
     return
   }
-
 
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {

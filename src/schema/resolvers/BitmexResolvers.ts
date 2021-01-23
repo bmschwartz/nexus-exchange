@@ -9,6 +9,6 @@ export const BitmexQueries = {
 
 export const BitmexResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return getBitmexCurrencyById(ctx, Number(parent.id))
+    return getBitmexCurrencyById(ctx, parent.id)
   },
 }

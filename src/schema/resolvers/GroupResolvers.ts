@@ -4,15 +4,15 @@ import { getGroupOrderSets, getGroupPositions } from "../../repository/GroupRepo
 
 export const GroupResolvers = {
   async orderSet(group: any, args: any, ctx: Context) {
-    return getOrderSet(ctx, Number(args.input.id))
+    return getOrderSet(ctx, args.input.id)
   },
 
   async orderSets(group: any, { limit, offset }: any, ctx: Context) {
-    return getGroupOrderSets(ctx, { limit, offset, groupId: Number(group.id) })
+    return getGroupOrderSets(ctx, { limit, offset, groupId: group.id })
   },
 
   async positions(group: any, { symbol, limit, offset }: any, ctx: Context) {
-    return getGroupPositions(ctx, { symbol, limit, offset, groupId: Number(group.id) })
+    return getGroupPositions(ctx, { symbol, limit, offset, groupId: group.id })
   },
 
   async symbolsWithPosition(group: any, args: any, ctx: Context) {

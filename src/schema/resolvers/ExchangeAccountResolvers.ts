@@ -12,11 +12,11 @@ import {
 export const ExchangeAccountQueries = {
   async exchangeAccount(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
-    return getExchangeAccount(ctx, Number(accountId))
+    return getExchangeAccount(ctx, accountId)
   },
   async exchangeAccounts(parent: any, args: any, ctx: Context) {
     const { input: { membershipId } } = args
-    return getExchangeAccounts(ctx, Number(membershipId))
+    return getExchangeAccounts(ctx, membershipId)
   },
 }
 
@@ -30,10 +30,10 @@ export const ExchangeAccountResolvers = {
     }
   },
   async orders(account: any, args: any, ctx: Context) {
-    return getOrders(ctx, Number(account.id))
+    return getOrders(ctx, account.id)
   },
   async positions(account: any, args: any, ctx: Context) {
-    return getPositions(ctx, Number(account.id))
+    return getPositions(ctx, account.id)
   },
 }
 
@@ -45,24 +45,24 @@ export const ExchangeAccountMutations = {
       }
     } = args
 
-    return runCreateExchangeAccount(ctx, Number(membershipId), apiKey, apiSecret, exchange)
+    return runCreateExchangeAccount(ctx, membershipId, apiKey, apiSecret, exchange)
   },
 
   async deleteExchangeAccount(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
 
-    return runDeleteExchangeAccount(ctx, Number(accountId))
+    return runDeleteExchangeAccount(ctx, accountId)
   },
 
   async updateExchangeAccount(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId, apiKey, apiSecret } } = args
 
-    return runUpdateExchangeAccount(ctx, Number(accountId), apiKey, apiSecret)
+    return runUpdateExchangeAccount(ctx, accountId, apiKey, apiSecret)
   },
 
   async toggleExchangeAccountActive(parent: any, args: any, ctx: Context) {
     const { input: { id: accountId } } = args
 
-    return runToggleExchangeAccountActive(ctx, Number(accountId))
+    return runToggleExchangeAccountActive(ctx, accountId)
   }
 }

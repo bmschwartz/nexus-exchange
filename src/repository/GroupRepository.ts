@@ -3,7 +3,7 @@ import { Context } from "src/context";
 
 
 export interface OrderSetsInput {
-  groupId: number
+  groupId: string
   limit?: number
   offset?: number
 }
@@ -14,7 +14,7 @@ export interface OrderSetResult {
 }
 
 export interface GroupPositionsInput {
-  groupId: number
+  groupId: string
   symbol: string
   limit?: number
   offset?: number

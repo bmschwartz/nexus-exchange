@@ -5,7 +5,7 @@ export const getTradableBitmexCurrencies = async (ctx: Context): Promise<BitmexC
   return ctx.prisma.bitmexCurrency.findMany({ where: { active: true } })
 }
 
-export const getBitmexCurrencyById = async (ctx: Context, id: number): Promise<BitmexCurrency | null> => {
+export const getBitmexCurrencyById = async (ctx: Context, id: string): Promise<BitmexCurrency | null> => {
   return ctx.prisma.bitmexCurrency.findUnique({
     where: { id },
   })

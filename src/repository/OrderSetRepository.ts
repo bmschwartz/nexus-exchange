@@ -3,8 +3,8 @@ import { Context } from "src/context";
 import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
 
 interface CreateOrderSetInput {
-  groupId: number;
-  membershipIds: number[]
+  groupId: string;
+  membershipIds: string[]
   percent: number;
   side: OrderSide;
   symbol: string;
@@ -19,16 +19,16 @@ interface CreateOrderSetInput {
 }
 
 interface UpdateOrderSetInput {
-  orderSetId: number;
+  orderSetId: string;
   description?: string;
 }
 
 interface CancelOrderSetInput {
-  orderSetId: number;
+  orderSetId: string;
 }
 
 interface OrdersInput {
-  orderSetId: number
+  orderSetId: string
   limit?: number
   offset?: number
 }
@@ -42,7 +42,7 @@ type Currency =
   | BinanceCurrency
   | BitmexCurrency
 
-export const getOrderSet = async (ctx: Context, orderSetId: number): Promise<OrderSet | null> => {
+export const getOrderSet = async (ctx: Context, orderSetId: string): Promise<OrderSet | null> => {
   return ctx.prisma.orderSet.findUnique({ where: { id: orderSetId } })
 }
 
@@ -58,11 +58,10 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     leverage,
     stopPrice,
     percent,
+    membershipIds,
     stopTriggerType,
     trailingStopPercent,
   } = data
-
-  const membershipIds = data.membershipIds.map(Number)
 
   const error = await getOrderSetInputError(
     ctx,
@@ -84,7 +83,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
 
   const orderSet = await ctx.prisma.orderSet.create({
     data: {
-      groupId: Number(groupId),
+      groupId,
       description,
       exchange,
       symbol,
@@ -111,7 +110,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
 export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): Promise<OrderSet | null> => {
   const { orderSetId, description } = data
   const orderSet = ctx.prisma.orderSet.update({
-    where: { id: Number(orderSetId) },
+    where: { id: orderSetId },
     data: { description },
   })
 
@@ -159,12 +158,12 @@ export const getOrders = async (ctx: Context, { orderSetId, limit, offset }: Ord
   }
 }
 
-export const getOrderSide = async (ctx: Context, orderSetId: number): Promise<OrderSide | null> => {
+export const getOrderSide = async (ctx: Context, orderSetId: string): Promise<OrderSide | null> => {
   const orderSet = await ctx.prisma.orderSet.findUnique({ where: { id: orderSetId } })
   return orderSet && orderSet.side
 }
 
-export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: number[], leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
+export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: string[], leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
   if (!exchangeExists(exchange)) {
     return new Error("Exchange does not exist")
   }

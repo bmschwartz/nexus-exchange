@@ -3,7 +3,7 @@ import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
 export interface MemberPositionsInput {
-  membershipId: number
+  membershipId: string
   limit?: number
   offset?: number
 }
@@ -17,39 +17,39 @@ export interface ClosePositionsInput {
   symbol: string
   price: number
   fraction: number
-  exchangeAccountIds: number[]
+  exchangeAccountIds: string[]
 }
 
 export interface AddStopToPositionsInput {
   symbol: string
   stopPrice: number
   stopTriggerPriceType: StopTriggerType
-  exchangeAccountIds: number[]
+  exchangeAccountIds: string[]
 }
 
 export interface AddTslToPositionsInput {
   symbol: string
   tslPercent: number
   stopTriggerPriceType: StopTriggerType
-  exchangeAccountIds: number[]
+  exchangeAccountIds: string[]
 }
 
 export interface ClosePositionsResult {
-  positionIds: number[]
+  positionIds: string[]
 }
 
-export const getPosition = async (ctx: Context, positionId: number) => {
+export const getPosition = async (ctx: Context, positionId: string) => {
   return ctx.prisma.position.findUnique({ where: { id: positionId } })
 }
 
-export const getPositionSide = async (ctx: Context, positionId: number) => {
+export const getPositionSide = async (ctx: Context, positionId: string) => {
   const position = await ctx.prisma.position.findUnique({ where: { id: positionId } })
   return position && position.side
 }
 
 export const createPosition = async (
   ctx: Context,
-  exchangeAccountId: number,
+  exchangeAccountId: string,
   side: PositionSide,
   exchange: Exchange,
   symbol: string,
@@ -109,7 +109,7 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
   console.log(`Close position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
-    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+    exchangeAccountIds.map(async (exchangeAccountId: string) => {
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
         return {
@@ -117,7 +117,7 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
         }
       }
 
-      let opId: number
+      let opId: string
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
@@ -146,7 +146,7 @@ export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, sym
   console.log(`Add stop to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
-    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+    exchangeAccountIds.map(async (exchangeAccountId: string) => {
       console.log(exchangeAccountId);
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
@@ -156,7 +156,7 @@ export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, sym
         }
       }
 
-      let opId: number
+      let opId: string
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
@@ -186,7 +186,7 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
   console.log(`Add TSL to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
-    exchangeAccountIds.map(async (exchangeAccountId: number) => {
+    exchangeAccountIds.map(async (exchangeAccountId: string) => {
       console.log(exchangeAccountId);
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
@@ -196,7 +196,7 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
         }
       }
 
-      let opId: number
+      let opId: string
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:

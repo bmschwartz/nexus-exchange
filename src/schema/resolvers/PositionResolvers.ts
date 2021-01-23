@@ -8,7 +8,7 @@ export const PositionQueries = {
       input: { id: positionId },
     } = args
 
-    return getPosition(ctx, Number(positionId))
+    return getPosition(ctx, positionId)
   },
 }
 
@@ -28,7 +28,7 @@ export const PositionResolvers = {
   },
 
   async exchangeAccount(position: any, args: any, ctx: Context) {
-    return getExchangeAccount(ctx, Number(position.exchangeAccountId))
+    return getExchangeAccount(ctx, position.exchangeAccountId)
   }
 }
 

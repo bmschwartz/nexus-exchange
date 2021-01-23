@@ -2,7 +2,7 @@ import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } f
 import { Context } from "src/context";
 
 export interface MemberOrdersInput {
-  membershipId: number
+  membershipId: string
   limit?: number
   offset?: number
 }
@@ -12,13 +12,13 @@ export interface MemberOrdersResult {
   orders: Order[]
 }
 
-export const getOrder = async (ctx: Context, orderId: number) => {
+export const getOrder = async (ctx: Context, orderId: string) => {
   return ctx.prisma.order.findUnique({ where: { id: orderId } })
 }
 
-export const getOrderSet = async (ctx: Context, orderId: number) => {
+export const getOrderSet = async (ctx: Context, orderId: string) => {
   const order = await ctx.prisma.order.findUnique({
-    where: { id: Number(orderId) },
+    where: { id: orderId },
   })
 
   if (!order) {
@@ -26,21 +26,21 @@ export const getOrderSet = async (ctx: Context, orderId: number) => {
   }
 
   return ctx.prisma.orderSet.findUnique({
-    where: { id: Number(order.id) },
+    where: { id: order.id },
   })
 }
 
-export const getOrderSide = async (ctx: Context, orderId: number) => {
+export const getOrderSide = async (ctx: Context, orderId: string) => {
   const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
   return order && order.side
 }
 
-export const getOrderType = async (ctx: Context, orderId: number) => {
+export const getOrderType = async (ctx: Context, orderId: string) => {
   const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
   return order && order.orderType
 }
 
-export const cancelOrder = async (ctx: Context, orderId: number) => {
+export const cancelOrder = async (ctx: Context, orderId: string) => {
   const order = await ctx.prisma.order.findUnique({
     where: { id: orderId },
   })
@@ -77,8 +77,8 @@ interface CreateOrderData {
 
 export const createOrder = async (
   ctx: Context,
-  orderSetId: number,
-  exchangeAccountId: number,
+  orderSetId: string,
+  exchangeAccountId: string,
   orderData: CreateOrderData
 ) => {
   const { percent, ...realOrderData } = orderData
@@ -105,12 +105,12 @@ export const createOrder = async (
     return null
   }
 
-  let opId: number
+  let opId: string
   try {
     switch (orderData.exchange) {
       case Exchange.BINANCE:
         console.log("creating binance order")
-        opId = -1  // TODO: Fix me
+        opId = ""  // TODO: Fix me
         break
       case Exchange.BITMEX:
         console.log("creating bitmex order")

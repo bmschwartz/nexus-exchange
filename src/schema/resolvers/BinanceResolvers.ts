@@ -9,6 +9,6 @@ export const BinanceQueries = {
 
 export const BinanceResolvers = {
   async __resolveReference(parent: any, args: any, ctx: Context) {
-    return getBinanceCurrencyById(ctx, Number(parent.id))
+    return getBinanceCurrencyById(ctx, parent.id)
   },
 }

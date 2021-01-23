@@ -3,13 +3,12 @@ import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, Prisma, PositionSide } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
-import { getAllSettledResults } from "src/helper";
 
 interface AccountOperationResponse {
   success: boolean
   error?: string
-  accountId: number
-  operationId: number
+  accountId: string
+  operationId: string
 }
 
 interface OrderOperationResponse {
@@ -25,14 +24,14 @@ interface PositionOperationResponse {
 }
 
 interface HeartbeatResponse {
-  accountId: number
+  accountId: string
 }
 
 const FLUSH_HEARTBEAT_JOB = "flushHeartbeats"
 const FLUSH_HEARTBEAT_INTERVAL = 5000 // ms
 
 let accountHeartbeats: object = {}
-const heartbeats: Set<number> = new Set<number>()
+const heartbeats: Set<string> = new Set<string>()
 
 let _db: PrismaClient
 
@@ -282,6 +281,10 @@ export class MessageClient {
       //   await prisma.exchangeAccount.delete({
       //     where: { id: accountId }
       //   })
+      console.log(operationId);
+
+      console.log({ order });
+
     }
 
     message.ack()
@@ -304,7 +307,7 @@ export class MessageClient {
     }
 
     if (success) {
-      const exchangeAccountId = Number(accountId)
+      const exchangeAccountId = accountId
       const positions = rawPositions.map(JSON.parse)
 
       const upserts = positions.map(async (position) => {
@@ -376,7 +379,7 @@ export class MessageClient {
     message.ack()
   }
 
-  async sendCreateBitmexAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
+  async sendCreateBitmexAccount(accountId: string, apiKey: string, apiSecret: string): Promise<string> {
     const payload = { accountId, apiKey, apiSecret }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ACCOUNT)
@@ -391,7 +394,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendUpdateBitmexAccount(accountId: number, apiKey: string, apiSecret: string) {
+  async sendUpdateBitmexAccount(accountId: string, apiKey: string, apiSecret: string) {
     const payload = { accountId, apiKey, apiSecret }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BITMEX_ACCOUNT)
@@ -406,7 +409,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendDeleteBitmexAccount(accountId: number, disabling?: boolean) {
+  async sendDeleteBitmexAccount(accountId: string, disabling?: boolean) {
     const payload = { accountId }
 
     const opType = disabling ? OperationType.DISABLE_BITMEX_ACCOUNT : OperationType.DELETE_BITMEX_ACCOUNT
@@ -423,7 +426,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCreateBinanceAccount(accountId: number, apiKey: string, apiSecret: string): Promise<number> {
+  async sendCreateBinanceAccount(accountId: string, apiKey: string, apiSecret: string): Promise<string> {
     const payload = { accountId, apiKey, apiSecret }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BINANCE_ACCOUNT)
@@ -438,7 +441,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendUpdateBinanceAccount(accountId: number, apiKey: string, apiSecret: string) {
+  async sendUpdateBinanceAccount(accountId: string, apiKey: string, apiSecret: string) {
     const payload = { accountId, apiKey, apiSecret }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
@@ -453,7 +456,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendDeleteBinanceAccount(accountId: number, disabling?: boolean) {
+  async sendDeleteBinanceAccount(accountId: string, disabling?: boolean) {
     const payload = { accountId }
 
     const opType = disabling ? OperationType.DISABLE_BINANCE_ACCOUNT : OperationType.DELETE_BINANCE_ACCOUNT
@@ -470,7 +473,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCreateBitmexOrder(accountId: number, data: any): Promise<number> {
+  async sendCreateBitmexOrder(accountId: string, data: any): Promise<string> {
     const payload = { accountId, ...data }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ORDER)
@@ -485,7 +488,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendUpdateBitmexOrder(accountId: number, data: any) {
+  async sendUpdateBitmexOrder(accountId: string, data: any) {
     const { orderId } = data
     const payload = { accountId, orderId }
 
@@ -501,7 +504,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCancelBitmexOrder(accountId: number, orderId: number) {
+  async sendCancelBitmexOrder(accountId: string, orderId: string) {
     const payload = { accountId, orderId }
 
     const opType = OperationType.CANCEL_BITMEX_ORDER
@@ -518,7 +521,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCloseBitmexPosition(accountId: number, data: any) {
+  async sendCloseBitmexPosition(accountId: string, data: any) {
     const payload = { accountId, ...data }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CLOSE_BITMEX_POSITION)
@@ -533,7 +536,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendAddStopBitmexPosition(accountId: number, data: any) {
+  async sendAddStopBitmexPosition(accountId: string, data: any) {
     const payload = { accountId, ...data }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.ADD_STOP_BITMEX_POSITION)
@@ -548,7 +551,7 @@ export class MessageClient {
     return op.id
   }
 
-  async sendAddTslBitmexPosition(accountId: number, data: any) {
+  async sendAddTslBitmexPosition(accountId: string, data: any) {
     const payload = { accountId, ...data }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.ADD_TSL_BITMEX_POSITION)

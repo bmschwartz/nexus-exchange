@@ -5,7 +5,7 @@ export const getTradableBinanceCurrencies = async (ctx: Context): Promise<Binanc
   return ctx.prisma.binanceCurrency.findMany({ where: { status: "TRADING" } })
 }
 
-export const getBinanceCurrencyById = async (ctx: Context, id: number): Promise<BinanceCurrency | null> => {
+export const getBinanceCurrencyById = async (ctx: Context, id: string): Promise<BinanceCurrency | null> => {
   return ctx.prisma.binanceCurrency.findUnique({
     where: { id },
   })
