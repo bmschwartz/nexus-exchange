@@ -41,7 +41,7 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   SELECT count(*) FROM "AsyncOperation"
   WHERE
     "opType" = '${opType}' AND
-    payload -> 'accountId' = '${accountId}' AND
+    payload ->> 'accountId' = '${accountId}' AND
     complete = false;`
   const pendingCreateOpCount = await _db.$queryRaw(query)
 

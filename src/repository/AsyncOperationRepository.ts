@@ -34,7 +34,7 @@ export const getPendingAccountOperations = async (prisma: PrismaClient, accountI
   const query = `
   SELECT * FROM "AsyncOperation"
   WHERE
-    payload -> 'accountId' = '${accountId}' AND
+    payload ->> 'accountId' = '${accountId}' AND
     complete = false;`
   return prisma.$queryRaw(query)
 }
