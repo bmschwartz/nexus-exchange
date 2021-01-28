@@ -7,7 +7,7 @@ import { SETTINGS } from "../settings";
 const LOAD_CURRENCY_JOB = "loadCurrencyJob"
 const LOAD_CURRENCY_INTERVAL = 3600000 // ms
 
-const FETCH_TICKERERS_JOB = "fetchTickersJob"
+const FETCH_TICKERS_JOB = "fetchTickersJob"
 const FETCH_TICKERS_INTERVAL = 10000 // ms
 
 let _bitmexClient: BitmexClient
@@ -49,7 +49,7 @@ class BitmexClient {
 
   setupQueues() {
     this._loadMarketsQueue.process(LOAD_CURRENCY_JOB, _loadCurrencyData)
-    this._fetchTickersQueue.process(FETCH_TICKERERS_JOB, _fetchTickers)
+    this._fetchTickersQueue.process(FETCH_TICKERS_JOB, _fetchTickers)
   }
 
   async start() {
@@ -64,7 +64,7 @@ class BitmexClient {
     await this._loadMarketsQueue.empty()
 
     await this._loadMarketsQueue.add(LOAD_CURRENCY_JOB, {}, { repeat: { every: LOAD_CURRENCY_INTERVAL } })
-    await this._fetchTickersQueue.add(FETCH_TICKERERS_JOB, {}, { repeat: { every: FETCH_TICKERS_INTERVAL } })
+    await this._fetchTickersQueue.add(FETCH_TICKERS_JOB, {}, { repeat: { every: FETCH_TICKERS_INTERVAL } })
   }
 }
 

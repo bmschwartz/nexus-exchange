@@ -114,7 +114,8 @@ export const createOrder = async (
         break
       case Exchange.BITMEX:
         console.log("creating bitmex order")
-        opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId: order.id, ...orderData })
+        const {id: orderId, clOrderId, clOrderLinkId} = order
+        opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
         break
     }
   } catch {

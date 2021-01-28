@@ -82,9 +82,11 @@ export class AccountMonitor {
       SETTINGS["REDIS_URL"],
       { defaultJobOptions: { removeOnComplete: true, removeOnFail: true } }
     )
-    this._accountMonitorQueue.client
 
-    this._accountMonitorQueue.process(CHECK_ACCOUNT_JOB, _checkAccountLife)
+    // give heartbeats a chance to roll in before checking to see if they have expired
+    setTimeout(() => {
+      this._accountMonitorQueue.process(CHECK_ACCOUNT_JOB, _checkAccountLife)
+    }, 1000 * 60)
   }
 
   async start() {

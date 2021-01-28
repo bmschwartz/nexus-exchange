@@ -67,7 +67,7 @@ CREATE TABLE "public"."Order" (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "orderSetId" uuid NOT NULL,
   "exchangeAccountId" uuid NOT NULL,
-  "clOrderId" uuid DEFAULT uuid_generate_v4(),
+  "clOrderId" uuid UNIQUE DEFAULT uuid_generate_v4(),
   "clOrderLinkId" VARCHAR(255),
   "symbol" VARCHAR(255) NOT NULL,
   "exchange" "Exchange" NOT NULL,

@@ -1,6 +1,6 @@
 import * as Amqp from "amqp-ts"
 import Bull, { Job, JobInformation } from "bull"
-import { PrismaClient, OperationType, Prisma, PositionSide } from "@prisma/client";
+import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 
@@ -14,7 +14,11 @@ interface AccountOperationResponse {
 interface OrderOperationResponse {
   success: boolean
   error?: string
-  order?: object
+  order?: Order
+}
+
+interface OrderUpdateMessage {
+  order: Order
 }
 
 interface PositionOperationResponse {
@@ -27,10 +31,23 @@ interface HeartbeatResponse {
   accountId: string
 }
 
+interface Order {
+  orderId: string
+  status: string
+  clOrderId: string
+  clOrderLinkId: string
+  orderQty: number
+  filledQty: number
+  avgPrice: number
+  stopPrice: number
+  pegOffsetValue: number
+  timestamp: string
+}
+
 const FLUSH_HEARTBEAT_JOB = "flushHeartbeats"
 const FLUSH_HEARTBEAT_INTERVAL = 5000 // ms
 
-let accountHeartbeats: object = {}
+const accountHeartbeats: object = {}
 const heartbeats: Set<string> = new Set<string>()
 
 let _db: PrismaClient
@@ -270,27 +287,65 @@ export class MessageClient {
       return
     }
 
-    await completeAsyncOperation(prisma, operationId, success, error)
+    const op = await completeAsyncOperation(prisma, operationId, success, error)
 
-    if (success) {
-      //   await prisma.exchangeAccount.update({
-      //     where: { id: accountId },
-      //     data: { active: true, lastHeartbeat: new Date() },
-      //   })
-      // } else {
-      //   await prisma.exchangeAccount.delete({
-      //     where: { id: accountId }
-      //   })
-      console.log(operationId);
+    if (success && order && op) {
+      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty, stopPrice, avgPrice: price, pegOffsetValue, timestamp: lastTimestamp }: Order = order
 
-      console.log({ order });
+      console.log({ orderStatus, clOrderId, clOrderLinkId, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp })
 
+      let status: OrderStatus
+      if (orderStatus === "Filled") {
+        status = OrderStatus.FILLED
+      } else if (orderStatus === "PartiallyFilled") {
+        status = OrderStatus.PARTIALLY_FILLED
+      } else if (orderStatus === "Canceled") {
+        status = OrderStatus.CANCELED
+      } else {
+        status = OrderStatus.NEW
+      }
+      try {
+        await prisma.order.update({
+          where: {clOrderId},
+          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp},
+        })
+      } catch (e) {
+        // order probably doesn't exist
+      }
     }
 
     message.ack()
   }
 
   async _orderUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { order }: OrderUpdateMessage = message.getContent()
+
+    if (order) {
+      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty, stopPrice, avgPrice: price, pegOffsetValue, timestamp: lastTimestamp }: Order = order
+
+      console.log({ orderStatus, clOrderId, clOrderLinkId, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp })
+
+      let status: OrderStatus
+      if (orderStatus === "Filled") {
+        status = OrderStatus.FILLED
+      } else if (orderStatus === "PartiallyFilled") {
+        status = OrderStatus.PARTIALLY_FILLED
+      } else if (orderStatus === "Canceled") {
+        status = OrderStatus.CANCELED
+      } else {
+        status = OrderStatus.NEW
+      }
+
+      try {
+        await prisma.order.update({
+          where: {clOrderId},
+          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp},
+        })
+      } catch (e) {
+        // order probably doesn't exist
+      }
+    }
+
     message.ack()
   }
 
