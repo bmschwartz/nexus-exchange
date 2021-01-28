@@ -38,6 +38,7 @@ interface Order {
   clOrderLinkId: string
   orderQty: number
   filledQty: number
+  price: number
   avgPrice: number
   stopPrice: number
   pegOffsetValue: number
@@ -290,9 +291,9 @@ export class MessageClient {
     const op = await completeAsyncOperation(prisma, operationId, success, error)
 
     if (success && order && op) {
-      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty, stopPrice, avgPrice: price, pegOffsetValue, timestamp: lastTimestamp }: Order = order
-
-      console.log({ orderStatus, clOrderId, clOrderLinkId, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp })
+      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
+        stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
+      }: Order = order
 
       let status: OrderStatus
       if (orderStatus === "Filled") {
@@ -307,7 +308,7 @@ export class MessageClient {
       try {
         await prisma.order.update({
           where: {clOrderId},
-          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp},
+          data: {status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp},
         })
       } catch (e) {
         // order probably doesn't exist
@@ -321,9 +322,9 @@ export class MessageClient {
     const { order }: OrderUpdateMessage = message.getContent()
 
     if (order) {
-      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty, stopPrice, avgPrice: price, pegOffsetValue, timestamp: lastTimestamp }: Order = order
-
-      console.log({ orderStatus, clOrderId, clOrderLinkId, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp })
+      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
+        stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
+      }: Order = order
 
       let status: OrderStatus
       if (orderStatus === "Filled") {
@@ -339,7 +340,7 @@ export class MessageClient {
       try {
         await prisma.order.update({
           where: {clOrderId},
-          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, lastTimestamp},
+          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp},
         })
       } catch (e) {
         // order probably doesn't exist

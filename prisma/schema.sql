@@ -75,6 +75,7 @@ CREATE TABLE "public"."Order" (
   "lastTimestamp" TIMESTAMP,
   "orderType" "OrderType",
   "price" DECIMAL,
+  "avgPrice" DECIMAL,
   "quantity" DECIMAL,
   "filledQty" DECIMAL,
   "status" "OrderStatus" NOT NULL,

@@ -142,6 +142,7 @@ model Order {
   lastTimestamp       DateTime?
   orderType           OrderType?
   price               Float?
+  avgPrice            Float?
   quantity            Float?
   filledQty           Float?
   status              OrderStatus
