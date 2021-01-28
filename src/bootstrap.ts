@@ -1,4 +1,4 @@
-import { accountMonitor, prisma } from './context';
+import { accountMonitor, prisma } from "./context";
 import { initBinance } from "./exchange/binance";
 import { initBitmex } from "./exchange/bitmex";
 
