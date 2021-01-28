@@ -11,22 +11,6 @@ interface AccountOperationResponse {
   operationId: string
 }
 
-interface OrderOperationResponse {
-  success: boolean
-  error?: string
-  order?: Order
-}
-
-interface OrderUpdateMessage {
-  order: Order
-}
-
-interface PositionOperationResponse {
-  success: boolean
-  error?: string
-  order?: object
-}
-
 interface HeartbeatResponse {
   accountId: string
 }
@@ -43,6 +27,16 @@ interface Order {
   stopPrice: number
   pegOffsetValue: number
   timestamp: string
+}
+
+interface OrderOperationResponse {
+  success: boolean
+  error?: string
+  order?: Order
+}
+
+interface OrderUpdateMessage {
+  order: Order
 }
 
 const FLUSH_HEARTBEAT_JOB = "flushHeartbeats"
@@ -381,17 +375,20 @@ export class MessageClient {
             Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId }
           }
         })
-        const side = (quantity || existingPosition?.quantity) >= 0 ? PositionSide.LONG : PositionSide.SHORT
+        const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
+
+
+        // TODO: Fix these values... specifically leverage right now
         const inputData = {
-          side: side || existingPosition?.side,
+          side,
           symbol,
-          quantity: quantity || existingPosition?.quantity || 0,
+          quantity: quantity !== undefined ? quantity : existingPosition?.quantity,
           exchange: exchange || existingPosition?.exchange,
-          isOpen: isOpen || existingPosition?.isOpen || (quantity !== 0 && quantity !== undefined && quantity !== null),
-          leverage: leverage || existingPosition?.leverage,
-          markPrice: markPrice || existingPosition?.markPrice,
-          margin: margin || existingPosition?.margin,
-          maintenanceMargin: maintenanceMargin || existingPosition?.maintenanceMargin,
+          isOpen: isOpen !== undefined ? isOpen : existingPosition?.isOpen,
+          leverage: leverage !== undefined ? leverage : existingPosition?.leverage,
+          markPrice: markPrice !== undefined ? markPrice : existingPosition?.markPrice,
+          margin: margin !== undefined ? margin : existingPosition?.margin,
+          maintenanceMargin: maintenanceMargin !== undefined ? maintenanceMargin : existingPosition?.maintenanceMargin,
         }
         const create: Prisma.PositionCreateInput = {
           ...inputData,
