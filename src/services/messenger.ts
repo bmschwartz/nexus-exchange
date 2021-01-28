@@ -300,6 +300,13 @@ export class MessageClient {
         status = OrderStatus.NEW
       }
       try {
+        const existingOrder = await prisma.order.findUnique({ where: {clOrderId}, select: {lastTimestamp: true}})
+        const currentLastTimestamp = existingOrder?.lastTimestamp
+
+        if (currentLastTimestamp && currentLastTimestamp > new Date(lastTimestamp)) {
+          return
+        }
+
         await prisma.order.update({
           where: {clOrderId},
           data: {status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp},
@@ -332,6 +339,13 @@ export class MessageClient {
       }
 
       try {
+        const existingOrder = await prisma.order.findUnique({ where: {clOrderId}, select: {lastTimestamp: true}})
+        const currentLastTimestamp = existingOrder?.lastTimestamp
+        if (currentLastTimestamp === undefined || currentLastTimestamp === null) {
+          message.reject(true)
+          return
+        }
+
         await prisma.order.update({
           where: {clOrderId},
           data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp},
@@ -375,8 +389,8 @@ export class MessageClient {
             Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId }
           }
         })
-        const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
 
+        const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
 
         // TODO: Fix these values... specifically leverage right now
         const inputData = {
@@ -385,7 +399,7 @@ export class MessageClient {
           quantity: quantity !== undefined ? quantity : existingPosition?.quantity,
           exchange: exchange || existingPosition?.exchange,
           isOpen: isOpen !== undefined ? isOpen : existingPosition?.isOpen,
-          leverage: leverage !== undefined ? leverage : existingPosition?.leverage,
+          leverage: (leverage !== undefined && leverage !== null) ? leverage : existingPosition?.leverage,
           markPrice: markPrice !== undefined ? markPrice : existingPosition?.markPrice,
           margin: margin !== undefined ? margin : existingPosition?.margin,
           maintenanceMargin: maintenanceMargin !== undefined ? maintenanceMargin : existingPosition?.maintenanceMargin,
