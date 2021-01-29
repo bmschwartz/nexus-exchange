@@ -1,4 +1,11 @@
-import { addStopToPositions, addTslToPositions, closePositions, getPosition, getPositionSide } from "../../repository/PositionRepository"
+import {
+  addStopToPositions,
+  addTslToPositions,
+  closePositions,
+  getPosition,
+  getPositionSide,
+  getExchangeAccountPositions,
+} from "../../repository/PositionRepository"
 import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { Context } from "../../context"
 
@@ -9,6 +16,14 @@ export const PositionQueries = {
     } = args
 
     return getPosition(ctx, positionId)
+  },
+
+  async exchangeAccountPositions(parent: any, args: any, ctx: Context) {
+    const {
+      input: { exchangeAccountId, limit, offset },
+    } = args
+
+    return getExchangeAccountPositions(ctx, { exchangeAccountId, limit, offset })
   },
 }
 
@@ -21,15 +36,20 @@ export const PositionResolvers = {
     return getPositionSide(ctx, positionId)
   },
 
-  async membership(postition: any, args: any, ctx: Context) {
+  async membership(position: any, args: any, ctx: Context) {
     return {
-      id: postition.membershipId,
+      id: position.membershipId,
     }
+  },
+
+  async isOpen({ id: positionId }: any, args: any, ctx: Context) {
+    const position = await getPosition(ctx, positionId)
+    return position ? position.isOpen : false
   },
 
   async exchangeAccount(position: any, args: any, ctx: Context) {
     return getExchangeAccount(ctx, position.exchangeAccountId)
-  }
+  },
 }
 
 export const PositionMutations = {

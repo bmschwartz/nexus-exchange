@@ -4,6 +4,8 @@ import { getAllSettledResults } from "../helper";
 
 export interface MemberPositionsInput {
   membershipId: string
+  exchange: Exchange
+  symbol?: string
   limit?: number
   offset?: number
 }
@@ -36,6 +38,17 @@ export interface AddTslToPositionsInput {
 
 export interface ClosePositionsResult {
   positionIds: string[]
+}
+
+export interface ExchangeAccountPositionsInput {
+  exchangeAccountId: string
+  limit?: number
+  offset?: number
+}
+
+export interface ExchangeAccountPositionsResult {
+  totalCount: number
+  positions: Position[]
 }
 
 export const getPosition = async (ctx: Context, positionId: string) => {
@@ -78,30 +91,33 @@ export const createPosition = async (
   })
 }
 
-export const getMemberPositions = async (ctx: Context, { membershipId, limit, offset }: MemberPositionsInput): Promise<MemberPositionsResult | Error> => {
-  const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({
-    where: { membershipId }
+export const getMemberPositions = async (ctx: Context, { symbol, exchange, membershipId, limit, offset }: MemberPositionsInput): Promise<MemberPositionsResult | Error> => {
+  const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
+    where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
   })
 
-  if (!exchangeAccounts) {
-    return new Error("Can't find exchanges for this membership")
+  if (!exchangeAccount) {
+    return { positions: [], totalCount: 0 }
   }
 
-  const accountIds = exchangeAccounts.map(account => account.id)
+  const whereClause = { exchangeAccountId: exchangeAccount.id }
+  if (symbol) {
+    whereClause["symbol"] = symbol
+  }
 
   const positions: Position[] = await ctx.prisma.position.findMany({
     take: limit,
     skip: offset,
-    where: { exchangeAccountId: { in: accountIds } },
+    where: whereClause,
     orderBy: { createdAt: "desc" },
   })
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId: { in: accountIds } },
+    where: { exchangeAccountId: exchangeAccount.id },
   })
 
   return {
     positions,
-    totalCount
+    totalCount,
   }
 }
 
@@ -220,4 +236,21 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
   ))
   console.log(ops)
   return ops
+}
+
+export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccountId, limit, offset }: ExchangeAccountPositionsInput): Promise<ExchangeAccountPositionsResult | Error> => {
+  const positions: Position[] = await ctx.prisma.position.findMany({
+    take: limit,
+    skip: offset,
+    where: { exchangeAccountId },
+    orderBy: { createdAt: "desc" },
+  })
+  const totalCount = await ctx.prisma.position.count({
+    where: { exchangeAccountId },
+  })
+
+  return {
+    positions,
+    totalCount,
+  }
 }

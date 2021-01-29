@@ -8,6 +8,7 @@ extend type Query {
   bitmexCurrencies: [BitmexCurrency!]!
 
   position(input: PositionInput!): Position
+  exchangeAccountPositions(input: ExchangeAccountPositionsInput!): ExchangeAccountPositionsResult
 
   asyncOperationStatus(input: AsyncOperationStatusInput!): AsyncOperationStatus
 
@@ -153,6 +154,7 @@ type Position @key(fields: "id") {
   quantity: Float
   avgPrice: Float
   symbol: String!
+  isOpen: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -195,6 +197,14 @@ input AddTslToPositionsInput {
 type AddTslToPositionsResult {
   operationId: ID
   error: String
+}
+
+input ExchangeAccountPositionsInput {
+  exchangeAccountId: ID!
+}
+
+type ExchangeAccountPositionsResult {
+  positions: [Position!]!
 }
 
 
@@ -344,17 +354,10 @@ extend type Group @key(fields: "id") {
   orderSet(input: OrderSetInput!): OrderSet
 
   symbolsWithPosition: SymbolsWithPositionResult
-  positions(symbol: String, limit: Int, offset: Int): GroupPositions!
-  position(input: PositionInput!): Position
 }
 
 type GroupOrderSets {
   orderSets: [OrderSet!]!
-  totalCount: Int!
-}
-
-type GroupPositions {
-  positions: [Position!]!
   totalCount: Int!
 }
 
@@ -368,19 +371,31 @@ type SymbolsWithPositionResult {
 ###########################
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
-  orders(limit: Int, offset: Int): MemberOrders!
-  positions(limit: Int, offset: Int): MemberPositions!
+  orders(input: MemberOrdersInput!): MemberOrdersResult
+  positions(input: MemberPositionsInput!): MemberPositionsResult
   exchangeAccounts: [ExchangeAccount!]!
 }
 
-type MemberOrders {
+type MemberOrdersResult {
   orders: [Order!]!
   totalCount: Int!
 }
 
-type MemberPositions {
+type MemberPositionsResult {
   positions: [Position!]!
   totalCount: Int!
+}
+
+input MemberPositionsInput {
+  exchange: Exchange!
+  symbol: String
+  limit: Int
+  offset: Int
+}
+
+input MemberOrdersInput {
+  limit: Int
+  offset: Int
 }
 
 ###########################

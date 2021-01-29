@@ -8,8 +8,8 @@ export const GroupMembershipResolvers = {
     return getMemberOrders(ctx, { limit, offset, membershipId: membership.id })
   },
 
-  async positions(membership: any, { limit, offset }: any, ctx: Context) {
-    return getMemberPositions(ctx, { limit, offset, membershipId: membership.id })
+  async positions(membership: any, { symbol, exchange, limit, offset }: any, ctx: Context) {
+    return getMemberPositions(ctx, { symbol, exchange, limit, offset, membershipId: membership.id })
   },
 
   async exchangeAccounts(membership: any, args: any, ctx: Context) {

@@ -1,6 +1,6 @@
 import { Context } from "../../context"
 import { getOrderSet } from "../../repository/OrderSetRepository"
-import { getGroupOrderSets, getGroupPositions } from "../../repository/GroupRepository"
+import { getGroupOrderSets } from "../../repository/GroupRepository"
 
 export const GroupResolvers = {
   async orderSet(group: any, args: any, ctx: Context) {
@@ -11,10 +11,6 @@ export const GroupResolvers = {
     return getGroupOrderSets(ctx, { limit, offset, groupId: group.id })
   },
 
-  async positions(group: any, { symbol, limit, offset }: any, ctx: Context) {
-    return getGroupPositions(ctx, { symbol, limit, offset, groupId: group.id })
-  },
-
   async symbolsWithPosition(group: any, args: any, ctx: Context) {
     // TODO This function...
     return {
@@ -22,9 +18,4 @@ export const GroupResolvers = {
       bitmex: []
     }
   },
-
-  async position(group: any, { id: positionId }: any, ctx: Context) {
-    // TODO This function...
-    return null
-  }
 }
