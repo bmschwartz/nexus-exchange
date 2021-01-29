@@ -402,7 +402,7 @@ export class MessageClient {
         const inputData = {
           side,
           symbol,
-          avgPrice: avgPrice !== undefined ? avgPrice : existingPosition?.avgPrice,
+          avgPrice: !!avgPrice ? avgPrice : existingPosition?.avgPrice,
           quantity: quantity !== undefined ? quantity : existingPosition?.quantity,
           exchange: exchange || existingPosition?.exchange,
           isOpen: isOpen !== undefined ? isOpen : existingPosition?.isOpen,
