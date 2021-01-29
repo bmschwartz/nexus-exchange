@@ -340,6 +340,12 @@ export class MessageClient {
 
       try {
         const existingOrder = await prisma.order.findUnique({ where: {clOrderId}, select: {lastTimestamp: true}})
+
+        if (!existingOrder) {
+          message.reject()
+          return
+        }
+
         const currentLastTimestamp = existingOrder?.lastTimestamp
         if (currentLastTimestamp === undefined || currentLastTimestamp === null) {
           message.reject(true)
@@ -382,7 +388,7 @@ export class MessageClient {
           leverage,
           mark_price: markPrice,
           margin,
-          maintenance_margin: maintenanceMargin
+          maintenance_margin: maintenanceMargin,
         } = position
         const existingPosition = await prisma.position.findUnique({
           where: {
