@@ -131,7 +131,7 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
   })
 
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId: {in: accountIds} },
+    where: { exchangeAccountId: {in: accountIds}, symbol },
   })
 
   return {
