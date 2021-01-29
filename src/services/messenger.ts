@@ -392,7 +392,6 @@ export class MessageClient {
 
         const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
 
-        // TODO: Fix these values... specifically leverage right now
         const inputData = {
           side,
           symbol,
