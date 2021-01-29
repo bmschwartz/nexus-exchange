@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide, StopTriggerType } from "@prisma/client";
+import { Exchange, Position, PositionSide, StopTriggerType, ExchangeAccount } from "@prisma/client";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -97,15 +97,28 @@ export const createPosition = async (
 }
 
 export const getMemberPositions = async (ctx: Context, { symbol, exchange, membershipId, limit, offset }: MemberPositionsInput): Promise<MemberPositionsResult | Error> => {
-  const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
-    where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
-  })
+  let accountIds: string[] = []
 
-  if (!exchangeAccount) {
-    return { positions: [], totalCount: 0 }
+  if (exchange) {
+    const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
+      where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
+    })
+    if (!exchangeAccount) {
+      return { positions: [], totalCount: 0 }
+    }
+    accountIds = [exchangeAccount.id]
+  } else {
+    const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({
+      where: { membershipId },
+    })
+
+    if (!exchangeAccounts) {
+      return { positions: [], totalCount: 0}
+    }
+    accountIds = exchangeAccounts.map(account => account.id)
   }
 
-  const whereClause = { exchangeAccountId: exchangeAccount.id }
+  const whereClause = { exchangeAccountId: {in: accountIds} }
   if (symbol) {
     whereClause["symbol"] = symbol
   }
@@ -116,8 +129,9 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
     where: whereClause,
     orderBy: { createdAt: "desc" },
   })
+
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId: exchangeAccount.id },
+    where: { exchangeAccountId: {in: accountIds} },
   })
 
   return {

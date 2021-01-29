@@ -212,7 +212,7 @@ type ExchangeAccount @key(fields: "id") {
   apiKey: String!
   apiSecret: String!
   orders: [Order!]!
-  positions(input: ExchangeAccountPositionsInput!): ExchangeAccountPositionsResult
+  positions(input: ExchangeAccountPositionsInput): ExchangeAccountPositionsResult
   position(input: ExchangeAccountSymbolPositionInput!): ExchangeAccountSymbolPositionResult
   membershipId: ID!
 }
@@ -273,6 +273,7 @@ input ExchangeAccountPositionsInput {
 
 type ExchangeAccountPositionsResult {
   positions: [Position!]!
+  totalCount: Int!
 }
 
 input ExchangeAccountSymbolPositionInput {
@@ -380,8 +381,8 @@ type SymbolsWithPositionResult {
 ###########################
 extend type GroupMembership @key(fields: "id") {
   id: ID! @external
-  orders(input: MemberOrdersInput!): MemberOrdersResult
-  positions(input: MemberPositionsInput!): MemberPositionsResult
+  orders(input: MemberOrdersInput!): MemberOrdersResult!
+  positions(input: MemberPositionsInput!): MemberPositionsResult!
   exchangeAccounts: [ExchangeAccount!]!
 }
 
@@ -396,7 +397,7 @@ type MemberPositionsResult {
 }
 
 input MemberPositionsInput {
-  exchange: Exchange!
+  exchange: Exchange
   symbol: String
   limit: Int
   offset: Int

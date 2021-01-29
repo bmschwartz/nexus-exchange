@@ -35,9 +35,11 @@ export const ExchangeAccountResolvers = {
   },
   async positions(account: any, args: any, ctx: Context) {
     const {id: exchangeAccountId} = account
-    const {
-      input: { limit, offset },
-    } = args
+    const { input } = args
+
+    const limit = input?.limit
+    const offset = input?.offset
+
     return getExchangeAccountPositions(ctx, {exchangeAccountId, limit, offset})
   },
   async position(account: any, args: any, ctx: Context) {
