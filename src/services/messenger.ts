@@ -417,6 +417,7 @@ export class MessageClient {
         }
         const update: Prisma.PositionUpdateInput = {
           ...inputData,
+          updatedAt: new Date(),
           exchangeAccount: { connect: { id: exchangeAccountId } },
         }
 
