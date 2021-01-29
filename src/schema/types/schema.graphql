@@ -8,7 +8,6 @@ extend type Query {
   bitmexCurrencies: [BitmexCurrency!]!
 
   position(input: PositionInput!): Position
-  exchangeAccountPositions(input: ExchangeAccountPositionsInput!): ExchangeAccountPositionsResult
 
   asyncOperationStatus(input: AsyncOperationStatusInput!): AsyncOperationStatus
 
@@ -199,14 +198,6 @@ type AddTslToPositionsResult {
   error: String
 }
 
-input ExchangeAccountPositionsInput {
-  exchangeAccountId: ID!
-}
-
-type ExchangeAccountPositionsResult {
-  positions: [Position!]!
-}
-
 
 ###########################
 # ExchangeAccount
@@ -221,7 +212,8 @@ type ExchangeAccount @key(fields: "id") {
   apiKey: String!
   apiSecret: String!
   orders: [Order!]!
-  positions: [Position!]!
+  positions(input: ExchangeAccountPositionsInput!): ExchangeAccountPositionsResult
+  position(input: ExchangeAccountSymbolPositionInput!): ExchangeAccountSymbolPositionResult
   membershipId: ID!
 }
 
@@ -272,6 +264,23 @@ input UpdateExchangeAccountInput {
 type UpdateExchangeAccountResult {
   operationId: ID
   error: String
+}
+
+input ExchangeAccountPositionsInput {
+  limit: Int
+  offset: Int
+}
+
+type ExchangeAccountPositionsResult {
+  positions: [Position!]!
+}
+
+input ExchangeAccountSymbolPositionInput {
+  symbol: String!
+}
+
+type ExchangeAccountSymbolPositionResult {
+  position: Position!
 }
 
 ###########################

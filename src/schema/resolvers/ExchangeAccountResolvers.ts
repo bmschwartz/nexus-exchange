@@ -1,5 +1,5 @@
 import { Context } from "../../context"
-import { getOrders, getPositions } from "../../repository/ExchangeAccountRepository"
+import { getOrders } from "../../repository/ExchangeAccountRepository"
 import {
   getExchangeAccount,
   getExchangeAccounts,
@@ -8,6 +8,7 @@ import {
   updateExchangeAccount as runUpdateExchangeAccount,
   toggleExchangeAccountActive as runToggleExchangeAccountActive
 } from "../../repository/ExchangeAccountRepository"
+import {getExchangeAccountPosition, getExchangeAccountPositions} from "../../repository/PositionRepository";
 
 export const ExchangeAccountQueries = {
   async exchangeAccount(parent: any, args: any, ctx: Context) {
@@ -33,7 +34,18 @@ export const ExchangeAccountResolvers = {
     return getOrders(ctx, account.id)
   },
   async positions(account: any, args: any, ctx: Context) {
-    return getPositions(ctx, account.id)
+    const {id: exchangeAccountId} = account
+    const {
+      input: { limit, offset },
+    } = args
+    return getExchangeAccountPositions(ctx, {exchangeAccountId, limit, offset})
+  },
+  async position(account: any, args: any, ctx: Context) {
+    const {id: exchangeAccountId} = account
+    const {
+      input: { symbol },
+    } = args
+    return getExchangeAccountPosition(ctx, {exchangeAccountId, symbol})
   },
 }
 

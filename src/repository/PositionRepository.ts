@@ -51,6 +51,11 @@ export interface ExchangeAccountPositionsResult {
   positions: Position[]
 }
 
+export interface ExchangeAccountPositionInput {
+  exchangeAccountId: string
+  symbol: string
+}
+
 export const getPosition = async (ctx: Context, positionId: string) => {
   return ctx.prisma.position.findUnique({ where: { id: positionId } })
 }
@@ -253,4 +258,10 @@ export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccoun
     positions,
     totalCount,
   }
+}
+
+export const getExchangeAccountPosition = async (ctx: Context, { exchangeAccountId, symbol }: ExchangeAccountPositionInput): Promise<Position | null> => {
+  return ctx.prisma.position.findUnique({
+    where: {Position_symbol_exchangeAccountId_key: {exchangeAccountId, symbol}},
+  })
 }
