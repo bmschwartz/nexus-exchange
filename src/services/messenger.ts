@@ -388,6 +388,7 @@ export class MessageClient {
           leverage,
           mark_price: markPrice,
           margin,
+          average_entry_price: avgPrice,
           maintenance_margin: maintenanceMargin,
         } = position
         const existingPosition = await prisma.position.findUnique({
@@ -401,6 +402,7 @@ export class MessageClient {
         const inputData = {
           side,
           symbol,
+          avgPrice: avgPrice !== undefined ? avgPrice : existingPosition?.avgPrice,
           quantity: quantity !== undefined ? quantity : existingPosition?.quantity,
           exchange: exchange || existingPosition?.exchange,
           isOpen: isOpen !== undefined ? isOpen : existingPosition?.isOpen,
