@@ -435,17 +435,7 @@ export class MessageClient {
   }
 
   async _positionClosedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    const { success, error } = message.getContent()
-    const { correlationId: operationId } = message.properties
-
-    if (!operationId) {
-      message.reject(false)
-      return
-    }
-
-    await completeAsyncOperation(prisma, operationId, success, error)
-
-    message.ack()
+    await this._orderCreatedConsumer(prisma, message)
   }
   async _positionAddedStopConsumer(prisma: PrismaClient, message: Amqp.Message) {
     message.ack()
