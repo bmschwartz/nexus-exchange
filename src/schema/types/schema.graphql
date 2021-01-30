@@ -166,7 +166,7 @@ input PositionInput {
 input ClosePositionsInput {
   symbol: String!
   price: Float
-  fraction: Float
+  percent: Float
   exchangeAccountIds: [ID!]!
 }
 

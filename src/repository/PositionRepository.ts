@@ -18,7 +18,7 @@ export interface MemberPositionsResult {
 export interface ClosePositionsInput {
   symbol: string
   price: number
-  fraction: number
+  percent: number
   exchangeAccountIds: string[]
 }
 
@@ -113,12 +113,12 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
     })
 
     if (!exchangeAccounts) {
-      return { positions: [], totalCount: 0}
+      return { positions: [], totalCount: 0 }
     }
     accountIds = exchangeAccounts.map(account => account.id)
   }
 
-  const whereClause = { exchangeAccountId: {in: accountIds} }
+  const whereClause = { exchangeAccountId: { in: accountIds } }
   if (symbol) {
     whereClause["symbol"] = symbol
   }
@@ -131,7 +131,7 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
   })
 
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId: {in: accountIds}, symbol },
+    where: { exchangeAccountId: { in: accountIds }, symbol },
   })
 
   return {
@@ -140,7 +140,7 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
   }
 }
 
-export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol, price, fraction }: ClosePositionsInput): Promise<any> => {
+export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol, price, percent }: ClosePositionsInput): Promise<any> => {
   console.log(`Close position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
@@ -160,7 +160,7 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
               error: "Binance close position order not implemented"
             }
           case Exchange.BITMEX:
-            opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol, price, fraction })
+            opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol, price, percent })
             break
         }
       } catch {
@@ -276,6 +276,6 @@ export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccoun
 
 export const getExchangeAccountPosition = async (ctx: Context, { exchangeAccountId, symbol }: ExchangeAccountPositionInput): Promise<Position | null> => {
   return ctx.prisma.position.findUnique({
-    where: {Position_symbol_exchangeAccountId_key: {exchangeAccountId, symbol}},
+    where: { Position_symbol_exchangeAccountId_key: { exchangeAccountId, symbol } },
   })
 }
