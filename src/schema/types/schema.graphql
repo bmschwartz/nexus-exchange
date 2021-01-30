@@ -22,7 +22,7 @@ extend type Mutation {
   cancelOrderSet(input: CancelOrderSetInput!): CancelOrderSetResult
 
   cancelOrder(input: CancelOrderInput!): CancelOrderResponse
-  closePositions(input: ClosePositionsInput!): [ClosePositionsResult!]
+  closePositions(input: ClosePositionsInput!): ClosePositionsResult
   addStopToPositions(input: AddStopToPositionsInput!): [AddStopToPositionsResult!]
   addTslToPositions(input: AddTslToPositionsInput!): [AddTslToPositionsResult!]
 
@@ -171,8 +171,7 @@ input ClosePositionsInput {
 }
 
 type ClosePositionsResult {
-  operationId: ID
-  error: String
+  orderSet: OrderSet
 }
 
 input AddStopToPositionsInput {
