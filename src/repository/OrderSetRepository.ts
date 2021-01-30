@@ -1,15 +1,16 @@
-import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType } from "@prisma/client";
+import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType, ExchangeAccount } from "@prisma/client";
 import { Context } from "src/context";
 import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
 
 interface CreateOrderSetInput {
   groupId: string;
-  membershipIds: string[]
+  exchangeAccountIds: string[]
   percent: number;
   side: OrderSide;
   symbol: string;
   exchange: Exchange;
   orderType: OrderType;
+  closeOrderSet: boolean;
   description?: string;
   price?: number;
   leverage: number;
@@ -54,11 +55,12 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     exchange,
     symbol,
     orderType,
+    closeOrderSet,
     price,
     leverage,
     stopPrice,
     percent,
-    membershipIds,
+    exchangeAccountIds,
     stopTriggerType,
     trailingStopPercent,
   } = data
@@ -69,7 +71,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     exchange,
     percent,
     side,
-    membershipIds,
+    closeOrderSet,
     leverage,
     price,
     stopPrice,
@@ -89,6 +91,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
       symbol,
       side,
       orderType,
+      closeOrderSet,
       price,
       leverage,
       stopPrice,
@@ -102,7 +105,7 @@ export const createOrderSet = async (ctx: Context, data: CreateOrderSetInput): P
     return new Error("Unable to create the OrderSet")
   }
 
-  await createOrdersForExchangeAccounts(ctx, orderSet, membershipIds)
+  await createOrdersForExchangeAccounts(ctx, orderSet, exchangeAccountIds)
 
   return orderSet
 }
@@ -118,7 +121,7 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
     return null
   }
 
-  // emit orderset updated message
+  // TODO: emit orderset updated message
 
   return orderSet
 }
@@ -163,18 +166,9 @@ export const getOrderSide = async (ctx: Context, orderSetId: string): Promise<Or
   return orderSet && orderSet.side
 }
 
-export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, exchangeAccountIds: string[], leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
+export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, closeOrder: boolean, leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
   if (!exchangeExists(exchange)) {
     return new Error("Exchange does not exist")
-  }
-
-  if (exchangeAccountIds.length === 0) {
-    return new Error("Must have at least one member selected")
-  }
-
-  const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({ where: { id: { in: exchangeAccountIds } } })
-  if (exchangeAccounts.filter(account => !account.active).length > 0) {
-    return new Error("One or more accounts is inactive")
   }
 
   const currency = await getCurrency(ctx, exchange, symbol)
@@ -199,6 +193,10 @@ export const getOrderSetInputError = async (ctx: Context, symbol: string, exchan
         )
       }
     }
+
+    if (closeOrder) {
+
+    }
   } else {
     // market order
     if (stopPrice) {
@@ -206,6 +204,12 @@ export const getOrderSetInputError = async (ctx: Context, symbol: string, exchan
         currency.lastPrice
     }
   }
+
+  // TODO: Close order validation?
+  if (closeOrder) {
+
+  }
+
   return
 }
 

@@ -67,6 +67,7 @@ interface CreateOrderData {
   exchange: Exchange;
   symbol: string;
   orderType: OrderType;
+  closeOrder: boolean;
   percent: number;
   leverage: number;
   price: number | null;
@@ -114,7 +115,7 @@ export const createOrder = async (
         break
       case Exchange.BITMEX:
         console.log("creating bitmex order")
-        const {id: orderId, clOrderId, clOrderLinkId} = order
+        const { id: orderId, clOrderId, clOrderLinkId } = order
         opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
         break
     }

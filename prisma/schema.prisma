@@ -89,6 +89,7 @@ model OrderSet {
   price               Float?
   percent             Float
   side                OrderSide
+  closeOrderSet       Boolean
   leverage            Float
   stopPrice           Float?
   trailingStopPercent Float?
@@ -139,6 +140,7 @@ model Order {
   symbol              String
   exchange            Exchange
   side                OrderSide
+  closeOrder          Boolean
   lastTimestamp       DateTime?
   orderType           OrderType?
   price               Float?

@@ -300,7 +300,7 @@ export class MessageClient {
         status = OrderStatus.NEW
       }
       try {
-        const existingOrder = await prisma.order.findUnique({ where: {clOrderId}, select: {lastTimestamp: true}})
+        const existingOrder = await prisma.order.findUnique({ where: { clOrderId }, select: { lastTimestamp: true } })
         const currentLastTimestamp = existingOrder?.lastTimestamp
 
         if (currentLastTimestamp && currentLastTimestamp > new Date(lastTimestamp)) {
@@ -308,8 +308,8 @@ export class MessageClient {
         }
 
         await prisma.order.update({
-          where: {clOrderId},
-          data: {status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp},
+          where: { clOrderId },
+          data: { status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp },
         })
       } catch (e) {
         // order probably doesn't exist
@@ -339,7 +339,7 @@ export class MessageClient {
       }
 
       try {
-        const existingOrder = await prisma.order.findUnique({ where: {clOrderId}, select: {lastTimestamp: true}})
+        const existingOrder = await prisma.order.findUnique({ where: { clOrderId }, select: { lastTimestamp: true } })
 
         if (!existingOrder) {
           message.reject()
@@ -353,8 +353,8 @@ export class MessageClient {
         }
 
         await prisma.order.update({
-          where: {clOrderId},
-          data: {status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp},
+          where: { clOrderId },
+          data: { status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp },
         })
       } catch (e) {
         // order probably doesn't exist

@@ -42,6 +42,7 @@ type Order @key(fields: "id") {
   exchange: Exchange!
   orderType: OrderType!
   status: OrderStatus!
+  closeOrder: Boolean!
   leverage: Float!
   price: Float
   quantity: Float
@@ -79,6 +80,7 @@ type OrderSet @key(fields: "id") {
   price: Float
   side: OrderSide!
   orderType: OrderType!
+  closeOrderSet: Boolean!
   orders(limit: Int, offset: Int): OrderSetOrders!
   percent: Float!
   leverage: Float!
@@ -101,12 +103,13 @@ input OrderSetInput {
 
 input CreateOrderSetInput {
   groupId: ID!
-  membershipIds: [ID!]!
+  exchangeAccountIds: [ID!]!
   symbol: String!
   exchange: Exchange!
   description: String
   side: OrderSide!
   orderType: OrderType!
+  closeOrderSet: Boolean!
   leverage: Float!
   price: Float
   percent: Float

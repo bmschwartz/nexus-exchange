@@ -1,5 +1,6 @@
 import { getOrderSet, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
 import { Context } from "src/context"
+import { createOrdersForExchangeAccounts } from "src/repository/ExchangeAccountRepository"
 
 export const OrderSetQueries = {
   async orderSet(parent: any, args: any, ctx: Context) {
@@ -15,12 +16,13 @@ export const OrderSetMutations = {
     const {
       input: {
         groupId,
-        membershipIds,
+        exchangeAccountIds,
         symbol,
         exchange,
         description,
         side,
         orderType,
+        closeOrderSet,
         price,
         stopPrice,
         percent,
@@ -30,7 +32,8 @@ export const OrderSetMutations = {
       },
     } = args
 
-    const orderSet = await createOrderSet(ctx, { groupId, membershipIds, symbol, exchange, description, side, orderType, leverage, price, stopPrice, percent, stopTriggerType, trailingStopPercent })
+    const orderSet = await createOrderSet(ctx, { groupId, exchangeAccountIds, symbol, exchange, description, side, orderType, closeOrderSet, leverage, price, stopPrice, percent, stopTriggerType, trailingStopPercent })
+
     return { orderSet }
   },
 

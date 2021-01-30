@@ -261,16 +261,17 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
 export const createOrdersForExchangeAccounts = async (
   ctx: Context,
   orderSet: OrderSet,
-  membershipIds: string[],
+  exchangeAccountIds: string[],
 ): Promise<any> => {
-  const { side, exchange, symbol, orderType, price, stopPrice, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
+  const { side, exchange, symbol, orderType, price, stopPrice, closeOrderSet, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
+  const closeOrder = closeOrderSet
 
   console.log("creating orders")
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
-    membershipIds
-      .map(async (membershipId: string) =>
+    exchangeAccountIds
+      .map(async (accountId: string) =>
         ctx.prisma.exchangeAccount.findUnique({
-          where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
+          where: { id: accountId },
         }),
       ).filter(Boolean),
   ))
@@ -282,12 +283,6 @@ export const createOrdersForExchangeAccounts = async (
 
   console.log(`exchange accounts: ${exchangeAccounts.length}`)
 
-  const exchangeAccountIds = exchangeAccounts
-    .map((account: ExchangeAccount | null) => account ? account.id : null)
-    .filter(Boolean)
-
-  console.log(`account ids: ${exchangeAccountIds}`)
-
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map((accountId: string | null) =>
@@ -295,7 +290,7 @@ export const createOrdersForExchangeAccounts = async (
           ctx,
           orderSet.id,
           accountId,
-          { side, exchange, symbol, orderType, price, stopPrice, percent, leverage, stopTriggerType, trailingStopPercent },
+          { side, exchange, symbol, orderType, closeOrder, price, stopPrice, percent, leverage, stopTriggerType, trailingStopPercent },
         ) : null,
       )
       .filter(Boolean),

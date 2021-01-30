@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide, StopTriggerType, ExchangeAccount } from "@prisma/client";
+import { Exchange, Position, PositionSide, StopTriggerType, ExchangeAccount, OrderSet } from "@prisma/client";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -141,8 +141,6 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
 }
 
 export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol, price, percent }: ClosePositionsInput): Promise<any> => {
-  console.log(`Close position of ${symbol} on ${exchangeAccountIds.length} accounts`)
-
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds.map(async (exchangeAccountId: string) => {
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })

@@ -8,6 +8,7 @@ import {
 } from "../../repository/PositionRepository"
 import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { Context } from "../../context"
+import { createOrderSet } from "src/repository/OrderSetRepository"
 
 export const PositionQueries = {
   async position(parent: any, args: any, ctx: Context) {
@@ -53,23 +54,17 @@ export const PositionResolvers = {
 }
 
 export const PositionMutations = {
-  async closePositions(parent: any, args: any, ctx: Context) {
-    const { input: { exchangeAccountIds, symbol, price, percent } } = args
-
-    return closePositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, price, percent })
-  },
-
   async addStopToPositions(parent: any, args: any, ctx: Context) {
     console.log("add stop")
-    const { input: { exchangeAccountIds, symbol, stopPrice, stopTriggerPriceType } } = args
+    const { input: { exchange, membershipIds, symbol, stopPrice, stopTriggerPriceType } } = args
 
-    return addStopToPositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, stopPrice, stopTriggerPriceType })
+    // return addStopToPositions(ctx, { exchange, membershipIds, symbol, stopPrice, stopTriggerPriceType })
   },
 
   async addTslToPositions(parent: any, args: any, ctx: Context) {
     console.log("add tsl")
-    const { input: { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType } } = args
+    const { input: { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType } } = args
 
-    return addTslToPositions(ctx, { exchangeAccountIds: exchangeAccountIds.map(Number), symbol, tslPercent, stopTriggerPriceType })
+    // return addTslToPositions(ctx, { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType })
   }
 }
