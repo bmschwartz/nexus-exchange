@@ -115,8 +115,12 @@ export const createOrder = async (
         break
       case Exchange.BITMEX:
         console.log("creating bitmex order")
-        const { id: orderId, clOrderId, clOrderLinkId } = order
-        opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
+        const { id: orderId, clOrderId, clOrderLinkId, closeOrder } = order
+        if (closeOrder) {
+          opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
+        } else {
+          opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
+        }
         break
     }
   } catch {
