@@ -4,8 +4,9 @@ extend type Query {
   order(input: OrderInput!): Order
   orderSet(input: OrderSetInput!): OrderSet
 
-  binanceCurrencies: [BinanceCurrency!]!
   bitmexCurrencies: [BitmexCurrency!]!
+  binanceCurrencies: [BinanceCurrency!]!
+  currency(input: CurrencyInput!): CurrencyResponse
 
   position(input: PositionInput!): Position
 
@@ -285,7 +286,7 @@ type ExchangeAccountSymbolPositionResult {
 }
 
 ###########################
-# BinanceCurrency
+# AsyncOperation
 ###########################
 type AsyncOperation {
   id: ID!
@@ -302,6 +303,21 @@ input AsyncOperationStatusInput {
 type AsyncOperationStatus {
   operation: AsyncOperation!
 }
+
+###########################
+# Currency
+###########################
+union Currency = BitmexCurrency | BinanceCurrency
+
+input CurrencyInput {
+  exchange: Exchange!
+  symbol: String!
+}
+
+type CurrencyResponse {
+  currency: Currency
+}
+
 
 ###########################
 # BitmexCurrency
