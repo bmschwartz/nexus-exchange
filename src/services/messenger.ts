@@ -3,6 +3,7 @@ import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
+import { deleteExchangeAccount, deleteExchangeAccountsForMembership } from "src/repository/ExchangeAccountRepository";
 
 interface AccountOperationResponse {
   success: boolean
@@ -79,12 +80,17 @@ export class MessageClient {
   _bitmexPositionAddedStopQueue?: Amqp.Queue
   _bitmexPositionAddedTslQueue?: Amqp.Queue
 
+  /* Group Queues */
+  _groupMembershipDeletedQueue?: Amqp.Queue
+
   // Exchanges
   _recvBinanceExchange?: Amqp.Exchange
   _sendBinanceExchange?: Amqp.Exchange
 
   _recvBitmexExchange?: Amqp.Exchange
   _sendBitmexExchange?: Amqp.Exchange
+
+  _recvGroupExchange?: Amqp.Exchange
 
   _heartbeatJobQueue: Bull.Queue
 
@@ -96,6 +102,7 @@ export class MessageClient {
 
     this._connectBinanceMessaging()
     this._connectBitmexMessaging()
+    this._connectGroupMessaging()
 
     this._heartbeatJobQueue = new Bull(
       "heartbeatQueue",
@@ -187,6 +194,16 @@ export class MessageClient {
     this._binanceAccountHeartbeatQueue = this._recvConn.declareQueue(SETTINGS["BINANCE_ACCOUNT_HEARTBEAT_QUEUE"], { durable: true })
     await this._binanceAccountHeartbeatQueue.bind(this._recvBinanceExchange, SETTINGS["BINANCE_EVENT_ACCOUNT_HEARTBEAT_KEY"])
     await this._binanceAccountHeartbeatQueue.activateConsumer(this._accountHeartbeatConsumer)
+  }
+
+  async _connectGroupMessaging() {
+    /* Exchanges */
+    this._recvGroupExchange = this._recvConn.declareExchange(SETTINGS["GROUP_EXCHANGE"], "topic", { durable: true })
+
+    /* Event queues */
+    this._groupMembershipDeletedQueue = this._recvConn.declareQueue(SETTINGS["GROUP_MEMBERSHIP_DELETED_QUEUE"], { durable: true })
+    await this._groupMembershipDeletedQueue.bind(this._recvGroupExchange, SETTINGS["GROUP_EVENT_MEMBERSHIP_DELETED_KEY"])
+    await this._groupMembershipDeletedQueue.activateConsumer(async (message: Amqp.Message) => await this._groupMembershipDeletedConsumer(this._db, message))
   }
 
   async _accountHeartbeatConsumer(message: Amqp.Message) {
@@ -451,6 +468,14 @@ export class MessageClient {
     message.ack()
   }
   async _positionAddedTslConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    message.ack()
+  }
+
+  async _groupMembershipDeletedConsumer(prisma: PrismaClient, message: Amqp.Message) {
+    const { membershipId } = message.getContent()
+    console.log("Group Membership Deleted!", membershipId);
+
+    await deleteExchangeAccountsForMembership(prisma, this, membershipId)
     message.ack()
   }
 

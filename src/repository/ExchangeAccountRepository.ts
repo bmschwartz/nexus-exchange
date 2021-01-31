@@ -1,7 +1,8 @@
-import { Exchange, ExchangeAccount, OperationType, OrderSet } from "@prisma/client";
+import { Exchange, ExchangeAccount, OperationType, OrderSet, PrismaClient } from "@prisma/client";
+import { MessageClient } from "src/services/messenger";
 import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
-import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
+import { createAsyncOperation, getPendingAccountOperations, getPendingDeleteAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: string) => {
@@ -89,6 +90,21 @@ export const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string
   return true
 }
 
+export const deleteExchangeAccountsForMembership = async (prisma: PrismaClient, messenger: MessageClient, membershipId: string) => {
+  const accounts = await prisma.exchangeAccount.findMany({
+    where: { membershipId }
+  })
+
+  if (!accounts || !accounts.length) {
+    console.log("No exchange accounts found!", membershipId);
+    return
+  }
+
+  await Promise.allSettled(
+    accounts.map(async (account: ExchangeAccount) => doDeleteExchangeAccount(prisma, messenger, account))
+  )
+}
+
 export const deleteExchangeAccount = async (ctx: Context, accountId: string) => {
   if (!ctx.userId) {
     return { error: "No user found!" }
@@ -99,10 +115,14 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: string) => 
     return { error: "Could not find the account" }
   }
 
-  const pendingAccountOps = await getPendingAccountOperations(ctx.prisma, accountId)
+  return doDeleteExchangeAccount(ctx.prisma, ctx.messenger, account)
+}
+
+const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageClient, account: ExchangeAccount) => {
+  const pendingAccountOps = await getPendingDeleteAccountOperations(prisma, account.id)
 
   if (pendingAccountOps && pendingAccountOps.length > 0) {
-    return { error: "Already updating account" }
+    return { error: "Already deleting account" }
   }
 
   if (!account.active) {
@@ -116,10 +136,10 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: string) => 
         break
     }
 
-    await ctx.prisma.exchangeAccount.delete({ where: { id: accountId } })
+    await prisma.exchangeAccount.delete({ where: { id: account.id } })
     const operation = await createAsyncOperation(
-      ctx.prisma,
-      { accountId, success: true, complete: true },
+      prisma,
+      { accountId: account.id, success: true, complete: true },
       opType,
     )
 
@@ -136,10 +156,10 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: string) => 
     if (account.active) {
       switch (account.exchange) {
         case Exchange.BINANCE:
-          opId = await ctx.messenger.sendDeleteBinanceAccount(account.id)
+          opId = await messenger.sendDeleteBinanceAccount(account.id)
           break
         case Exchange.BITMEX:
-          opId = await ctx.messenger.sendDeleteBitmexAccount(account.id)
+          opId = await messenger.sendDeleteBitmexAccount(account.id)
           break
       }
     } else {
@@ -155,6 +175,7 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: string) => 
     operationId: opId,
   }
 }
+
 
 export const updateExchangeAccount = async (ctx: Context, accountId: string, apiKey: string, apiSecret: string) => {
   if (!ctx.userId) {

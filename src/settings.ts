@@ -71,6 +71,12 @@ export function initSettings() {
   assignEnvVar("BITMEX_POSITION_ADDED_TSL_QUEUE", process.env.BITMEX_POSITION_ADDED_TSL_QUEUE)
   assignEnvVar("BITMEX_ADD_TSL_POSITION_CMD_PREFIX", process.env.BITMEX_ADD_TSL_POSITION_CMD_PREFIX)
   assignEnvVar("BITMEX_EVENT_POSITION_ADDED_TSL_KEY", process.env.BITMEX_EVENT_POSITION_ADDED_TSL_KEY)
+
+  // RabbitMQ - Group
+  assignEnvVar("GROUP_EXCHANGE", process.env.GROUP_EXCHANGE)
+
+  assignEnvVar("GROUP_MEMBERSHIP_DELETED_QUEUE", process.env.GROUP_MEMBERSHIP_DELETED_QUEUE)
+  assignEnvVar("GROUP_EVENT_MEMBERSHIP_DELETED_KEY", process.env.GROUP_EVENT_MEMBERSHIP_DELETED_KEY)
 }
 
 function assignEnvVar(name: string, envKey?: any) {
