@@ -306,11 +306,6 @@ export class MessageClient {
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
 
-      if (!clOrderId) {
-        message.reject(false)
-        return
-      }
-
       let status: OrderStatus
       if (orderStatus === "Filled") {
         status = OrderStatus.FILLED
@@ -348,11 +343,6 @@ export class MessageClient {
       const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
-
-      if (!clOrderId) {
-        message.reject(false)
-        return
-      }
 
       let status: OrderStatus
       if (orderStatus === "Filled") {
