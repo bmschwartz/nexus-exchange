@@ -3,7 +3,7 @@ import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
-import { deleteExchangeAccount, deleteExchangeAccountsForMembership } from "src/repository/ExchangeAccountRepository";
+import { deleteExchangeAccount, deleteExchangeAccountsForMembership } from "../repository/ExchangeAccountRepository";
 
 interface AccountOperationResponse {
   success: boolean
