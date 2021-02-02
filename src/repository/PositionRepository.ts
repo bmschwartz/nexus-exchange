@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide, StopTriggerType, ExchangeAccount, OrderSet } from "@prisma/client";
+import { Exchange, Position, PositionSide, StopTriggerType } from "@prisma/client";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -150,7 +150,7 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
         }
       }
 
-      let opId: string
+      let opId: string = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
@@ -189,7 +189,7 @@ export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, sym
         }
       }
 
-      let opId: string
+      let opId: string = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
@@ -229,7 +229,7 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
         }
       }
 
-      let opId: string
+      let opId: string = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:

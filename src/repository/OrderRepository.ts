@@ -1,5 +1,5 @@
 import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } from "@prisma/client";
-import { Context } from "src/context";
+import { Context } from "../context";
 
 export interface MemberOrdersInput {
   membershipId: string
@@ -92,8 +92,8 @@ export const createOrder = async (
         ...realOrderData,
         status: OrderStatus.NEW,
         exchangeAccount: { connect: { id: exchangeAccountId } },
-        orderSet: { connect: { id: orderSetId } }
-      }
+        orderSet: { connect: { id: orderSetId } },
+      },
     })
   } catch (e) {
     console.error(e)
@@ -124,9 +124,9 @@ export const createOrder = async (
         break
     }
   } catch {
-    await ctx.prisma.exchangeAccount.delete({ where: { id: order.id } })
+    await ctx.prisma.order.delete({ where: { id: order.id } })
     return {
-      error: "Unable to connect to exchange"
+      error: "Unable to connect to exchange",
     }
   }
 
@@ -135,11 +135,11 @@ export const createOrder = async (
 
 export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {
   const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({
-    where: { membershipId }
+    where: { membershipId },
   })
 
   if (!exchangeAccounts) {
-    return new Error("Can't find exchanges for this membership")
+    return { orders: [], totalCount: 0}
   }
 
   const accountIds = exchangeAccounts.map(account => account.id)

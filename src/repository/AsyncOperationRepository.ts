@@ -43,7 +43,7 @@ export const getPendingDeleteAccountOperations = async (prisma: PrismaClient, ac
   const query = `
   SELECT * FROM "AsyncOperation"
   WHERE
-    ("opType" = 'DELETE_BITMEX_ACCOUNT' OR "opType" = 'DELETE_BINANCE_ACCOUNT') AND 
+    ("opType" = 'DELETE_BITMEX_ACCOUNT' OR "opType" = 'DELETE_BINANCE_ACCOUNT') AND
     payload ->> 'accountId' = '${accountId}' AND
     complete = false;`
   return prisma.$queryRaw(query)

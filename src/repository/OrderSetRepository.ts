@@ -1,4 +1,4 @@
-import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType, ExchangeAccount } from "@prisma/client";
+import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType } from "@prisma/client";
 import { Context } from "src/context";
 import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
 

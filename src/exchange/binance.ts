@@ -4,8 +4,8 @@ import Bull, { Job } from "bull"
 import { SETTINGS } from "../settings"
 
 const VALID_QUOTE_ASSETS = [
-  'BTC', 'ETH', 'USDT', 'BNB',
-  'XRP', 'TRX', 'BUSD', 'DAI'
+  "BTC", "ETH", "USDT", "BNB",
+  "XRP", "TRX", "BUSD", "DAI",
 ]
 
 const FETCH_CURRENCIES_JOB = "fetchCurrencies"
@@ -38,7 +38,7 @@ class BinanceClient {
     this._fetchCurrenciesQueue = new Bull(
       "fetchCurrenciesQueue",
       SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
     )
     this._fetchCurrenciesQueue.process(FETCH_CURRENCIES_JOB, _fetchCurrencyData)
 
@@ -51,7 +51,7 @@ class BinanceClient {
   }
 
   startTickerSocket() {
-    let lastUpdateTime: number = 0
+    let lastUpdateTime = 0
     this.client.ws.allTickers(async (tickers: Ticker[]) => {
       if (!tickers.length || (tickers[0].eventTime - lastUpdateTime) < CURRENCY_UPDATE_DELAY_MS) {
         return
@@ -68,7 +68,7 @@ class BinanceClient {
         const { symbol, priceChange, open: openPrice, low: lowPrice, high: highPrice, curDayClose: lastPrice, priceChangePercent } = ticker
 
         const data: Prisma.BinanceCurrencyUpdateInput = {
-          priceChange, priceChangePercent, lowPrice, highPrice, openPrice, lastPrice
+          priceChange, priceChangePercent, lowPrice, highPrice, openPrice, lastPrice,
         }
 
         await this.prisma.binanceCurrency.update({ where: { symbol }, data })
@@ -110,13 +110,13 @@ async function _fetchCurrencyData(job?: Job) {
 
 function mapOrderTypes(orderTypes: string[]): object {
   return {
-    allowsLimit: orderTypes.includes('LIMIT'),
-    allowsMarket: orderTypes.includes('MARKET'),
-    allowsStopLoss: orderTypes.includes('STOP_LOSS'),
-    allowsStopLossLimit: orderTypes.includes('STOP_LOSS_LIMIT'),
-    allowsTakeProfit: orderTypes.includes('TAKE_PROFIT'),
-    allowsTakeProfitLimit: orderTypes.includes('TAKE_PROFIT_LIMIT'),
-    allowsLimitMaker: orderTypes.includes('LIMIT_MAKER')
+    allowsLimit: orderTypes.includes("LIMIT"),
+    allowsMarket: orderTypes.includes("MARKET"),
+    allowsStopLoss: orderTypes.includes("STOP_LOSS"),
+    allowsStopLossLimit: orderTypes.includes("STOP_LOSS_LIMIT"),
+    allowsTakeProfit: orderTypes.includes("TAKE_PROFIT"),
+    allowsTakeProfitLimit: orderTypes.includes("TAKE_PROFIT_LIMIT"),
+    allowsLimitMaker: orderTypes.includes("LIMIT_MAKER"),
   }
 }
 

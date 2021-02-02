@@ -6,8 +6,7 @@ import { initSettings } from "./settings"
 
 initSettings()
 
-
-export const prisma = new PrismaClient()
+export const prisma: PrismaClient = new PrismaClient()
 export const messenger = new MessageClient(prisma)
 export const accountMonitor = new AccountMonitor(prisma, messenger)
 

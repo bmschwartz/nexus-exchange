@@ -60,7 +60,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: string, 
     },
   })
 
-  let opId: string
+  let opId: string = ""
   console.log("about to send create account")
   try {
     switch (exchange) {
@@ -150,7 +150,7 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
     return { operationId: operation.id }
   }
 
-  let opId: string
+  let opId: string = ""
 
   try {
     if (account.active) {
@@ -175,7 +175,6 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
     operationId: opId,
   }
 }
-
 
 export const updateExchangeAccount = async (ctx: Context, accountId: string, apiKey: string, apiSecret: string) => {
   if (!ctx.userId) {
@@ -211,7 +210,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
     }
   }
 
-  let opId: string
+  let opId: string = ""
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
@@ -252,7 +251,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
 
   const { apiKey, apiSecret } = account
 
-  let opId: string
+  let opId: string = ""
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:

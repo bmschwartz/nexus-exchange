@@ -89,8 +89,8 @@ CREATE TABLE "public"."Order" (
   "pegPriceType" "PegPriceType",
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id),
-  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id)
+  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id) ON DELETE CASCADE,
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE CASCADE
 );
 
 CREATE TABLE "public"."Position" (
@@ -108,7 +108,7 @@ CREATE TABLE "public"."Position" (
   "maintenanceMargin" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id),
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE CASCADE,
 
   UNIQUE ("symbol", "exchangeAccountId")
 );

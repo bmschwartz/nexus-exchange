@@ -237,15 +237,20 @@ export class MessageClient {
 
     await completeAsyncOperation(prisma, operationId, success, error)
 
-    if (success) {
-      await prisma.exchangeAccount.update({
-        where: { id: accountId },
-        data: { active: true, lastHeartbeat: new Date() },
-      })
-    } else {
-      await prisma.exchangeAccount.delete({
-        where: { id: accountId }
-      })
+    try {
+      if (success) {
+        await prisma.exchangeAccount.update({
+          where: {id: accountId},
+          data: {active: true, lastHeartbeat: new Date()},
+        })
+      } else {
+        await prisma.exchangeAccount.update({
+          where: {id: accountId},
+          data: { active: false }
+        })
+      }
+    } catch (e) {
+      // do nothing
     }
 
     message.ack()
