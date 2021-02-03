@@ -106,8 +106,8 @@ model ExchangeAccount {
   exchange        Exchange
   membershipId    String
   remoteAccountId String?
-  apiKey          String
-  apiSecret       String
+  apiKey          String?
+  apiSecret       String?
   lastHeartbeat   DateTime   @default(now())
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @default(now())

@@ -36,8 +36,8 @@ CREATE TABLE "public"."ExchangeAccount" (
   exchange "Exchange" NOT NULL,
   "membershipId" uuid NOT NULL,
   "remoteAccountId" VARCHAR(255),
-  "apiKey" VARCHAR(255) NOT NULL,
-  "apiSecret" VARCHAR(255) NOT NULL,
+  "apiKey" VARCHAR(255),
+  "apiSecret" VARCHAR(255),
   "lastHeartbeat" TIMESTAMP NOT NULL DEFAULT now(),
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
@@ -89,8 +89,8 @@ CREATE TABLE "public"."Order" (
   "pegPriceType" "PegPriceType",
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id) ON DELETE CASCADE,
-  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE CASCADE
+  FOREIGN KEY ("orderSetId") REFERENCES "public"."OrderSet"(id) ON DELETE SET NULL,
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE SET NULL
 );
 
 CREATE TABLE "public"."Position" (
@@ -108,7 +108,7 @@ CREATE TABLE "public"."Position" (
   "maintenanceMargin" DECIMAL,
   "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE CASCADE,
+  FOREIGN KEY ("exchangeAccountId") REFERENCES "public"."ExchangeAccount"(id) ON DELETE SET NULL,
 
   UNIQUE ("symbol", "exchangeAccountId")
 );

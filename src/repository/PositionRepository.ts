@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide, StopTriggerType } from "@prisma/client";
+import { Exchange, Position, PositionSide, StopTriggerType } from "prisma";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -103,7 +103,7 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
     const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
       where: { ExchangeAccount_exchange_membershipId_key: { exchange, membershipId } },
     })
-    if (!exchangeAccount) {
+    if (!exchangeAccount || !exchangeAccount.active) {
       return { positions: [], totalCount: 0 }
     }
     accountIds = [exchangeAccount.id]
@@ -118,7 +118,12 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
     accountIds = exchangeAccounts.map(account => account.id)
   }
 
-  const whereClause = { exchangeAccountId: { in: accountIds } }
+  const whereClause = {
+    exchangeAccountId: { in: accountIds },
+    exchangeAccount: {
+      active: true,
+    },
+  }
   if (symbol) {
     whereClause["symbol"] = symbol
   }
@@ -131,7 +136,13 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
   })
 
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId: { in: accountIds }, symbol },
+    where: {
+      exchangeAccount: {
+        active: true,
+      },
+      exchangeAccountId: { in: accountIds },
+      symbol,
+    },
   })
 
   return {
@@ -259,7 +270,12 @@ export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccoun
   const positions: Position[] = await ctx.prisma.position.findMany({
     take: limit,
     skip: offset,
-    where: { exchangeAccountId },
+    where: {
+      exchangeAccount: {
+        id: exchangeAccountId,
+        active: true,
+      },
+    },
     orderBy: { createdAt: "desc" },
   })
   const totalCount = await ctx.prisma.position.count({
@@ -273,6 +289,14 @@ export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccoun
 }
 
 export const getExchangeAccountPosition = async (ctx: Context, { exchangeAccountId, symbol }: ExchangeAccountPositionInput): Promise<Position | null> => {
+  const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
+    where: {id: exchangeAccountId},
+  })
+
+  if (!exchangeAccount || !exchangeAccount.active) {
+    return null
+  }
+
   return ctx.prisma.position.findUnique({
     where: { Position_symbol_exchangeAccountId_key: { exchangeAccountId, symbol } },
   })

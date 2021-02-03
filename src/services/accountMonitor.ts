@@ -49,6 +49,10 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
     return
   }
 
+  if (!apiKey || !apiSecret) {
+    return
+  }
+
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {
     await _db.exchangeAccount.update({ where: { id: accountId }, data: { active: false } })

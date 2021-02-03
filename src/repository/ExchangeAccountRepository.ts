@@ -74,7 +74,14 @@ export const createExchangeAccount = async (ctx: Context, membershipId: string, 
         break
     }
   } catch {
-    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+    await ctx.prisma.exchangeAccount.update({
+      where: { id: account.id },
+      data: {
+        active: false,
+        apiKey: null,
+        apiSecret: null,
+      },
+    })
     return {
       error: "Unable to connect to exchange",
     }
@@ -136,7 +143,14 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
         break
     }
 
-    await prisma.exchangeAccount.delete({ where: { id: account.id } })
+    await prisma.exchangeAccount.update({
+      where: { id: account.id },
+      data: {
+        active: false,
+        apiKey: null,
+        apiSecret: null,
+      },
+    })
     const operation = await createAsyncOperation(
       prisma,
       { accountId: account.id, success: true, complete: true },
@@ -221,7 +235,14 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
         break
     }
   } catch {
-    await ctx.prisma.exchangeAccount.delete({ where: { id: account.id } })
+    await ctx.prisma.exchangeAccount.update({
+      where: { id: account.id },
+      data: {
+        active: false,
+        apiKey: null,
+        apiSecret: null,
+      },
+    })
     return {
       error: "Unable to connect to exchange",
     }
@@ -250,6 +271,10 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
   }
 
   const { apiKey, apiSecret } = account
+
+  if (!apiKey || !apiSecret) {
+    return {error: "API Key and Secret are required"}
+  }
 
   let opId: string = ""
   try {

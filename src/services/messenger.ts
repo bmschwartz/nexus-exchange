@@ -3,7 +3,7 @@ import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "@prisma/client";
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
-import { deleteExchangeAccount, deleteExchangeAccountsForMembership } from "../repository/ExchangeAccountRepository";
+import { deleteExchangeAccountsForMembership } from "../repository/ExchangeAccountRepository";
 
 interface AccountOperationResponse {
   success: boolean
@@ -275,7 +275,14 @@ export class MessageClient {
       switch (operation.opType) {
         case OperationType.DELETE_BITMEX_ACCOUNT:
         case OperationType.DELETE_BINANCE_ACCOUNT: {
-          await prisma.exchangeAccount.delete({ where: { id: accountId } })
+          await prisma.exchangeAccount.update({
+            where: { id: accountId },
+            data: {
+              active: false,
+              apiKey: null,
+              apiSecret: null,
+            },
+          })
           break;
         }
         case OperationType.DISABLE_BITMEX_ACCOUNT:
@@ -415,7 +422,7 @@ export class MessageClient {
         } = position
         const existingPosition = await prisma.position.findUnique({
           where: {
-            Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId }
+            Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId },
           }
         })
 
