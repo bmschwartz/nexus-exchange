@@ -475,7 +475,6 @@ export class MessageClient {
 
   async _groupMembershipDeletedConsumer(prisma: PrismaClient, message: Amqp.Message) {
     const { membershipId } = message.getContent()
-    console.log("Group Membership Deleted!", membershipId);
 
     await deleteExchangeAccountsForMembership(prisma, this, membershipId)
     message.ack()
