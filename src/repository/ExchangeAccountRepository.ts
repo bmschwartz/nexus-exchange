@@ -61,15 +61,12 @@ export const createExchangeAccount = async (ctx: Context, membershipId: string, 
   })
 
   let opId: string = ""
-  console.log("about to send create account")
   try {
     switch (exchange) {
       case Exchange.BINANCE:
-        console.log("creating binance")
         opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
         break
       case Exchange.BITMEX:
-        console.log("creating bitmex")
         opId = await ctx.messenger.sendCreateBitmexAccount(account.id, apiKey, apiSecret)
         break
     }
@@ -99,11 +96,10 @@ export const validateApiKeyAndSecret = async (exchange: Exchange, apiKey: string
 
 export const deleteExchangeAccountsForMembership = async (prisma: PrismaClient, messenger: MessageClient, membershipId: string) => {
   const accounts = await prisma.exchangeAccount.findMany({
-    where: { membershipId }
+    where: { membershipId },
   })
 
   if (!accounts || !accounts.length) {
-    console.log("No exchange accounts found!", membershipId);
     return
   }
 
@@ -311,7 +307,6 @@ export const createOrdersForExchangeAccounts = async (
   const { side, exchange, symbol, orderType, price, stopPrice, closeOrderSet, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
   const closeOrder = closeOrderSet
 
-  console.log("creating orders")
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds
       .map(async (accountId: string) =>
@@ -322,11 +317,8 @@ export const createOrdersForExchangeAccounts = async (
   ))
 
   if (!exchangeAccounts.length) {
-    console.error("no exchange accounts found!")
     return
   }
-
-  console.log(`exchange accounts: ${exchangeAccounts.length}`)
 
   getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds

@@ -92,11 +92,14 @@ export const createPosition = async (
       margin,
       maintenanceMargin,
       exchangeAccount: { connect: { id: exchangeAccountId } },
-    }
+    },
   })
 }
 
-export const getMemberPositions = async (ctx: Context, { symbol, exchange, membershipId, limit, offset }: MemberPositionsInput): Promise<MemberPositionsResult | Error> => {
+export const getMemberPositions = async (
+  ctx: Context,
+  { symbol, exchange, membershipId, limit, offset }: MemberPositionsInput,
+): Promise<MemberPositionsResult | Error> => {
   let accountIds: string[] = []
 
   if (exchange) {
@@ -152,21 +155,21 @@ export const getMemberPositions = async (ctx: Context, { symbol, exchange, membe
 }
 
 export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol, price, percent }: ClosePositionsInput): Promise<any> => {
-  const ops: any[] = getAllSettledResults(await Promise.allSettled(
+  return getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds.map(async (exchangeAccountId: string) => {
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
         return {
-          error: "No exchange account found"
+          error: "No exchange account found",
         }
       }
 
-      let opId: string = ""
+      let opId = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
             return {
-              error: "Binance close position order not implemented"
+              error: "Binance close position order not implemented",
             }
           case Exchange.BITMEX:
             opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccount.id, { symbol, price, percent })
@@ -174,38 +177,35 @@ export const closePositions = async (ctx: Context, { exchangeAccountIds, symbol,
         }
       } catch {
         return {
-          error: "Unable to connect to exchange"
+          error: "Unable to connect to exchange",
         }
       }
       return {
-        operationId: opId
+        operationId: opId,
       }
-    })
+    }),
   ))
-  console.log(ops)
-  return ops
 }
 
-export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, symbol, stopPrice, stopTriggerPriceType }: AddStopToPositionsInput): Promise<any> => {
-  console.log(`Add stop to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
-
+export const addStopToPositions = async (
+  ctx: Context,
+  { exchangeAccountIds, symbol, stopPrice, stopTriggerPriceType }: AddStopToPositionsInput,
+): Promise<any> => {
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds.map(async (exchangeAccountId: string) => {
-      console.log(exchangeAccountId);
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
-        console.log("no exchange account")
         return {
-          error: "No exchange account found"
+          error: "No exchange account found",
         }
       }
 
-      let opId: string = ""
+      let opId = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
             return {
-              error: "Binance add stop to position not implemented"
+              error: "Binance add stop to position not implemented",
             }
           case Exchange.BITMEX:
             console.log(`adding stop to bitmex ${exchangeAccountId}`)
@@ -214,19 +214,22 @@ export const addStopToPositions = async (ctx: Context, { exchangeAccountIds, sym
         }
       } catch {
         return {
-          error: "Unable to connect to exchange"
+          error: "Unable to connect to exchange",
         }
       }
       return {
-        operationId: opId
+        operationId: opId,
       }
-    })
+    }),
   ))
   console.log(ops)
   return ops
 }
 
-export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType }: AddTslToPositionsInput): Promise<any> => {
+export const addTslToPositions = async (
+  ctx: Context,
+  { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType }: AddTslToPositionsInput,
+): Promise<any> => {
   console.log(`Add TSL to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
 
   const ops: any[] = getAllSettledResults(await Promise.allSettled(
@@ -236,16 +239,16 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
       if (!exchangeAccount) {
         console.log("no exchange account")
         return {
-          error: "No exchange account found"
+          error: "No exchange account found",
         }
       }
 
-      let opId: string = ""
+      let opId = ""
       try {
         switch (exchangeAccount.exchange) {
           case Exchange.BINANCE:
             return {
-              error: "Binance add tsl to position not implemented"
+              error: "Binance add tsl to position not implemented",
             }
           case Exchange.BITMEX:
             console.log(`adding tsl to bitmex ${exchangeAccountId}`)
@@ -254,19 +257,22 @@ export const addTslToPositions = async (ctx: Context, { exchangeAccountIds, symb
         }
       } catch {
         return {
-          error: "Unable to connect to exchange"
+          error: "Unable to connect to exchange",
         }
       }
       return {
-        operationId: opId
+        operationId: opId,
       }
-    })
+    }),
   ))
   console.log(ops)
   return ops
 }
 
-export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccountId, limit, offset }: ExchangeAccountPositionsInput): Promise<ExchangeAccountPositionsResult | Error> => {
+export const getExchangeAccountPositions = async (
+  ctx: Context,
+  { exchangeAccountId, limit, offset }: ExchangeAccountPositionsInput,
+): Promise<ExchangeAccountPositionsResult | Error> => {
   const positions: Position[] = await ctx.prisma.position.findMany({
     take: limit,
     skip: offset,
@@ -288,7 +294,10 @@ export const getExchangeAccountPositions = async (ctx: Context, { exchangeAccoun
   }
 }
 
-export const getExchangeAccountPosition = async (ctx: Context, { exchangeAccountId, symbol }: ExchangeAccountPositionInput): Promise<Position | null> => {
+export const getExchangeAccountPosition = async (
+  ctx: Context,
+  { exchangeAccountId, symbol }: ExchangeAccountPositionInput,
+): Promise<Position | null> => {
   const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({
     where: {id: exchangeAccountId},
   })

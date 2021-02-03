@@ -80,7 +80,7 @@ export const createOrder = async (
   ctx: Context,
   orderSetId: string,
   exchangeAccountId: string,
-  orderData: CreateOrderData
+  orderData: CreateOrderData,
 ) => {
   const { percent, ...realOrderData } = orderData
 
@@ -100,9 +100,7 @@ export const createOrder = async (
     return
   }
 
-  console.log("finished")
   if (!order) {
-    console.error("did not create order!")
     return null
   }
 
@@ -110,11 +108,9 @@ export const createOrder = async (
   try {
     switch (orderData.exchange) {
       case Exchange.BINANCE:
-        console.log("creating binance order")
         opId = ""  // TODO: Fix me
         break
       case Exchange.BITMEX:
-        console.log("creating bitmex order")
         const { id: orderId, clOrderId, clOrderLinkId, closeOrder } = order
         if (closeOrder) {
           opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
