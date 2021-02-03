@@ -3,7 +3,6 @@ import { AccountMonitor } from "./services/accountMonitor"
 import { MessageClient } from "./services/messenger"
 import { initSettings } from "./settings"
 
-
 initSettings()
 
 export const prisma: PrismaClient = new PrismaClient()
