@@ -1,3 +1,5 @@
+CREATE EXTENSION "pgcrypto";
+
 -- CreateEnum
 CREATE TYPE "BinanceSymbolStatus" AS ENUM ('PRE_TRADING', 'TRADING', 'POST_TRADING', 'END_OF_DAY', 'HALT', 'AUCTION_MATCH', 'BREAK');
 
@@ -225,3 +227,16 @@ ALTER TABLE "Order" ADD FOREIGN KEY ("orderSetId") REFERENCES "OrderSet"("id") O
 
 -- AddForeignKey
 ALTER TABLE "Position" ADD FOREIGN KEY ("exchangeAccountId") REFERENCES "ExchangeAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE FUNCTION delete_old_async_operations() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  DELETE FROM "public"."AsyncOperation" WHERE "createdAt" < NOW() - INTERVAL '3 days';
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER trigger_delete_old_async_operations
+    AFTER INSERT ON "public"."AsyncOperation"
+    EXECUTE PROCEDURE delete_old_async_operations();
