@@ -23,7 +23,7 @@
     "graphql-middleware": "^4.0.2",
     "graphql-shield": "^7.3.3",
     "picomatch": "^2.2.2",
-    "uuid": "^8.3.1"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@prisma/cli": "^2.16.0",

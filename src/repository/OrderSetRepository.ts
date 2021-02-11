@@ -126,7 +126,6 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
   return orderSet
 }
 
-
 export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput): Promise<OrderSet | null> => {
   const { orderSetId } = data
   // const orderSet = ctx.prisma.orderSet.update({
@@ -187,7 +186,7 @@ export const getOrderSetInputError = async (ctx: Context, symbol: string, exchan
         return new Error(
           "Stop price must be lower than entry price for BUY orders",
         )
-      } else if (side === OrderSide.SELL) {
+      } else if (side === OrderSide.SELL && stopPrice <= price) {
         return new Error(
           "Stop price must be higher than entry price for SELL orders",
         )

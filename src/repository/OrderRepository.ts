@@ -1,3 +1,4 @@
+import { v4 as uuid4 } from "uuid"
 import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } from "@prisma/client";
 import { Context } from "../context";
 
@@ -82,19 +83,67 @@ export const createOrder = async (
   exchangeAccountId: string,
   orderData: CreateOrderData,
 ) => {
-  const { percent, ...realOrderData } = orderData
+  const { percent, stopPrice, trailingStopPercent, stopTriggerType, side, ...realOrderData } = orderData
 
-  let order: Order
+  let order: object
+  let stopOrder: object | undefined
+  let tslOrder: object | undefined
+
+  const selectedFields = {
+    id: true, clOrderId: true, symbol: true, side: true, orderType: true, closeOrder: true, price: true,
+    stopPrice: true, leverage: true, stopTriggerType: true, trailingStopPercent: true,
+  }
+  const sharedId = uuid4().replace("-", "").slice(0, 24)
 
   try {
     order = await ctx.prisma.order.create({
       data: {
+        side,
         ...realOrderData,
+        clOrderId: `${sharedId}_order`,
         status: OrderStatus.NEW,
         exchangeAccount: { connect: { id: exchangeAccountId } },
         orderSet: { connect: { id: orderSetId } },
       },
+      select: selectedFields,
     })
+
+    order["percent"] = percent
+
+    if (stopPrice) {
+      stopOrder = await ctx.prisma.order.create({
+        data: {
+          stopPrice,
+          stopTriggerType,
+          ...realOrderData,
+          side: side === OrderSide.BUY ? OrderSide.SELL : OrderSide.BUY,
+          clOrderId: `${sharedId}_stop`,
+          status: OrderStatus.NEW,
+          exchangeAccount: { connect: { id: exchangeAccountId } },
+          orderSet: { connect: { id: orderSetId } },
+        },
+        select: selectedFields,
+      })
+
+      stopOrder["percent"] = null
+    }
+    if (trailingStopPercent) {
+      tslOrder = await ctx.prisma.order.create({
+        data: {
+          trailingStopPercent,
+          stopTriggerType,
+          ...realOrderData,
+          side: side === OrderSide.BUY ? OrderSide.SELL : OrderSide.BUY,
+          clOrderId: `${sharedId}_tsl`,
+          status: OrderStatus.NEW,
+          exchangeAccount: { connect: { id: exchangeAccountId } },
+          orderSet: { connect: { id: orderSetId } },
+        },
+        select: selectedFields,
+      })
+
+      tslOrder["percent"] = null
+    }
   } catch (e) {
     console.error(e)
     return
@@ -111,16 +160,16 @@ export const createOrder = async (
         opId = ""  // TODO: Fix me
         break
       case Exchange.BITMEX:
-        const { id: orderId, clOrderId, clOrderLinkId, closeOrder } = order
-        if (closeOrder) {
-          opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
+        const orders = [order, stopOrder, tslOrder].filter(Boolean)
+        if (order["closeOrder"]) {
+          opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccountId, orders)
         } else {
-          opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, { orderId, clOrderId, clOrderLinkId, ...orderData })
+          opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, orders)
         }
         break
     }
   } catch {
-    await ctx.prisma.order.delete({ where: { id: order.id } })
+    await ctx.prisma.order.delete({ where: { id: order["id"] } })
     return {
       error: "Unable to connect to exchange",
     }
@@ -135,7 +184,7 @@ export const getMemberOrders = async (ctx: Context, { membershipId, limit, offse
   })
 
   if (!exchangeAccounts) {
-    return { orders: [], totalCount: 0}
+    return { orders: [], totalCount: 0 }
   }
 
   const accountIds = exchangeAccounts.map(account => account.id)

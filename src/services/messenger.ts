@@ -33,7 +33,7 @@ interface Order {
 interface OrderOperationResponse {
   success: boolean
   error?: string
-  order?: Order
+  orders?: object
 }
 
 interface OrderUpdateMessage {
@@ -107,7 +107,7 @@ export class MessageClient {
     this._heartbeatJobQueue = new Bull(
       "heartbeatQueue",
       SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
     )
     this._setupHeartbeatJob()
   }
@@ -240,13 +240,13 @@ export class MessageClient {
     try {
       if (success) {
         await prisma.exchangeAccount.update({
-          where: {id: accountId},
-          data: {active: true, lastHeartbeat: new Date()},
+          where: { id: accountId },
+          data: { active: true, lastHeartbeat: new Date() },
         })
       } else {
         await prisma.exchangeAccount.update({
-          where: {id: accountId},
-          data: { active: false }
+          where: { id: accountId },
+          data: { active: false },
         })
       }
     } catch (e) {
@@ -289,7 +289,7 @@ export class MessageClient {
         case OperationType.DISABLE_BINANCE_ACCOUNT: {
           await prisma.exchangeAccount.update({
             where: { id: accountId },
-            data: { active: false }
+            data: { active: false },
           })
           break;
         }
@@ -303,7 +303,7 @@ export class MessageClient {
   }
 
   async _orderCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    const { success, order, error }: OrderOperationResponse = message.getContent()
+    const { success, orders, error }: OrderOperationResponse = message.getContent()
     const { correlationId: operationId } = message.properties
 
     if (!operationId) {
@@ -313,35 +313,45 @@ export class MessageClient {
 
     const op = await completeAsyncOperation(prisma, operationId, success, error)
 
-    if (success && order && op) {
-      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
-        stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
-      }: Order = order
+    console.log(orders, op);
+    if (success && orders && op) {
 
-      let status: OrderStatus
-      if (orderStatus === "Filled") {
-        status = OrderStatus.FILLED
-      } else if (orderStatus === "PartiallyFilled") {
-        status = OrderStatus.PARTIALLY_FILLED
-      } else if (orderStatus === "Canceled") {
-        status = OrderStatus.CANCELED
-      } else {
-        status = OrderStatus.NEW
-      }
-      try {
-        const existingOrder = await prisma.order.findUnique({ where: { clOrderId }, select: { lastTimestamp: true } })
-        const currentLastTimestamp = existingOrder?.lastTimestamp
+      for (const order of Object.values(orders)) {
+        const {
+          status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
+          stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
+        }: Order = order
 
-        if (currentLastTimestamp && currentLastTimestamp > new Date(lastTimestamp)) {
-          return
+        let status: OrderStatus
+        if (orderStatus === "Filled") {
+          status = OrderStatus.FILLED
+        } else if (orderStatus === "PartiallyFilled") {
+          status = OrderStatus.PARTIALLY_FILLED
+        } else if (orderStatus === "Canceled") {
+          status = OrderStatus.CANCELED
+        } else {
+          status = OrderStatus.NEW
         }
+        try {
+          const existingOrder = await prisma.order.findUnique({where: {clOrderId}, select: {lastTimestamp: true}})
 
-        await prisma.order.update({
-          where: { clOrderId },
-          data: { status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp },
-        })
-      } catch (e) {
-        // order probably doesn't exist
+          if (!existingOrder) {
+            return
+          }
+
+          const currentLastTimestamp = existingOrder.lastTimestamp
+
+          if (currentLastTimestamp && currentLastTimestamp > new Date(lastTimestamp)) {
+            return
+          }
+
+          await prisma.order.update({
+            where: {clOrderId},
+            data: {status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp},
+          })
+        } catch (e) {
+          // order probably doesn't exist
+        }
       }
     }
 
@@ -423,7 +433,7 @@ export class MessageClient {
         const existingPosition = await prisma.position.findUnique({
           where: {
             Position_symbol_exchangeAccountId_key: { symbol, exchangeAccountId },
-          }
+          },
         })
 
         const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
@@ -453,7 +463,7 @@ export class MessageClient {
         return prisma.position.upsert({
           create,
           update,
-          where: { Position_symbol_exchangeAccountId_key: { exchangeAccountId, symbol } }
+          where: { Position_symbol_exchangeAccountId_key: { exchangeAccountId, symbol } },
         })
       })
 
@@ -574,8 +584,8 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCreateBitmexOrder(accountId: string, data: any): Promise<string> {
-    const payload = { accountId, ...data }
+  async sendCreateBitmexOrder(accountId: string, orders: any): Promise<string> {
+    const payload = { accountId, orders }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ORDER)
 
@@ -622,8 +632,8 @@ export class MessageClient {
     return op.id
   }
 
-  async sendCloseBitmexPosition(accountId: string, data: any) {
-    const payload = { accountId, ...data }
+  async sendCloseBitmexPosition(accountId: string, orders: any) {
+    const payload = { accountId, orders }
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CLOSE_BITMEX_POSITION)
 
@@ -684,7 +694,7 @@ export class MessageClient {
 
     await _db.exchangeAccount.updateMany({
       where: { id: { in: Array.from(heartbeats) } },
-      data: { lastHeartbeat: new Date() }
+      data: { lastHeartbeat: new Date() },
     })
 
     heartbeats.clear()

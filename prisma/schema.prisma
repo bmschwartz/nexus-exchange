@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["nativeTypes"]
 }
 
@@ -9,7 +9,7 @@ datasource db {
 }
 
 model BinanceCurrency {
-  id                         String              @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id                         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   symbol                     String              @unique
   status                     BinanceSymbolStatus
   baseAsset                  String
@@ -63,7 +63,7 @@ model BinanceCurrency {
 }
 
 model BitmexCurrency {
-  id               String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   active           Boolean? @default(false)
   symbol           String   @unique
   underlying       String
@@ -78,7 +78,7 @@ model BitmexCurrency {
 }
 
 model OrderSet {
-  id                  String           @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   exchange            Exchange
   symbol              String
   description         String?
@@ -98,7 +98,7 @@ model OrderSet {
 }
 
 model ExchangeAccount {
-  id              String     @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   active          Boolean    @default(false)
   exchange        Exchange
   membershipId    String
@@ -115,7 +115,7 @@ model ExchangeAccount {
 }
 
 model AsyncOperation {
-  id        String        @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   opType    OperationType
   complete  Boolean       @default(false)
   success   Boolean?      @default(false)
@@ -126,10 +126,10 @@ model AsyncOperation {
 }
 
 model Order {
-  id                  String           @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   orderSetId          String           @db.Uuid
   exchangeAccountId   String           @db.Uuid
-  clOrderId           String?          @unique @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  clOrderId           String?          @unique
   clOrderLinkId       String?
   symbol              String
   exchange            Exchange
@@ -155,7 +155,7 @@ model Order {
 }
 
 model Position {
-  id                String          @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   exchangeAccountId String          @db.Uuid
   symbol            String
   isOpen            Boolean         @default(false)

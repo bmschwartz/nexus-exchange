@@ -1,6 +1,5 @@
 import { getOrderSet, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
 import { Context } from "src/context"
-import { createOrdersForExchangeAccounts } from "src/repository/ExchangeAccountRepository"
 
 export const OrderSetQueries = {
   async orderSet(parent: any, args: any, ctx: Context) {
