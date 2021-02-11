@@ -313,12 +313,11 @@ export class MessageClient {
 
     const op = await completeAsyncOperation(prisma, operationId, success, error)
 
-    console.log(orders, op);
     if (success && orders && op) {
 
       for (const order of Object.values(orders)) {
         const {
-          status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
+          status: orderStatus, clOrderId, orderQty: quantity, filledQty,
           stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
         }: Order = order
 
