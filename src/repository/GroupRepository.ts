@@ -18,7 +18,6 @@ export interface GroupPositionsResult {
   positions: Position[]
 }
 
-
 export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }: OrderSetsInput): Promise<OrderSetResult> => {
   const orderSets = await ctx.prisma.orderSet.findMany({
     take: limit,
