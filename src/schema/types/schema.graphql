@@ -454,6 +454,7 @@ enum OrderStatus {
   FILLED
   PARTIALLY_FILLED
   CANCELED
+  REJECTED
 }
 
 enum PositionSide {

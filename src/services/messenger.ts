@@ -328,6 +328,8 @@ export class MessageClient {
           status = OrderStatus.PARTIALLY_FILLED
         } else if (orderStatus === "Canceled") {
           status = OrderStatus.CANCELED
+        } else if (orderStatus === "Rejected") {
+          status = OrderStatus.REJECTED
         } else {
           status = OrderStatus.NEW
         }
@@ -372,6 +374,8 @@ export class MessageClient {
         status = OrderStatus.PARTIALLY_FILLED
       } else if (orderStatus === "Canceled") {
         status = OrderStatus.CANCELED
+      } else if (orderStatus === "Rejected") {
+        status = OrderStatus.REJECTED
       } else {
         status = OrderStatus.NEW
       }
