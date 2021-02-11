@@ -2,6 +2,12 @@ import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, Binanc
 import { Context } from "src/context";
 import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
 
+export enum StopOrderType {
+  NONE = "NONE",
+  STOP_LIMIT = "STOP_LIMIT",
+  TRAILING_STOP = "TRAILING_STOP",
+}
+
 interface CreateOrderSetInput {
   groupId: string;
   exchangeAccountIds: string[]
@@ -30,6 +36,7 @@ interface CancelOrderSetInput {
 
 interface OrdersInput {
   orderSetId: string
+  stopOrderType?: StopOrderType
   limit?: number
   offset?: number
 }
@@ -142,21 +149,37 @@ export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput): P
   return null
 }
 
+export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopOrderType }: OrdersInput): Promise<OrdersResult> => {
+  const whereClause = { orderSetId }
 
-export const getOrders = async (ctx: Context, { orderSetId, limit, offset }: OrdersInput): Promise<OrdersResult> => {
+  switch (stopOrderType) {
+    case StopOrderType.NONE:
+      whereClause["stopPrice"] = null
+      whereClause["trailingStopPercent"] = null
+      break
+    case StopOrderType.STOP_LIMIT:
+      whereClause["NOT"] = { stopPrice: null }
+      break
+    case StopOrderType.TRAILING_STOP:
+      whereClause["NOT"] = { trailingStopPercent: null }
+      break
+    default:
+      break
+  }
+
   const orders = await ctx.prisma.order.findMany({
     take: limit,
     skip: offset,
-    where: { orderSetId },
-    orderBy: { id: "asc" }
+    where: whereClause,
+    orderBy: {id: "asc"},
   })
   const totalCount = await ctx.prisma.order.count({
-    where: { orderSetId }
+    where: whereClause,
   })
 
   return {
     orders,
-    totalCount
+    totalCount,
   }
 }
 

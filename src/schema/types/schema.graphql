@@ -81,7 +81,7 @@ type OrderSet @key(fields: "id") {
   side: OrderSide!
   orderType: OrderType!
   closeOrderSet: Boolean!
-  orders(limit: Int, offset: Int): OrderSetOrders!
+  orders(limit: Int, offset: Int, stopOrderType: StopOrderType): OrderSetOrders!
   percent: Float!
   leverage: Float!
   stopPrice: Float
@@ -99,6 +99,7 @@ type OrderSetOrders {
 
 input OrderSetInput {
   id: ID!
+  stopOrderType: StopOrderType
 }
 
 input CreateOrderSetInput {
@@ -437,6 +438,12 @@ enum OrderSide {
 enum OrderType {
   MARKET
   LIMIT
+}
+
+enum StopOrderType {
+  NONE
+  STOP_LIMIT
+  TRAILING_STOP
 }
 
 enum StopTriggerType {
