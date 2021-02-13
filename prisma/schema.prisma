@@ -130,6 +130,7 @@ model Order {
   orderSetId          String           @db.Uuid
   exchangeAccountId   String           @db.Uuid
   clOrderId           String?          @unique
+  remoteOrderId       String?          @unique
   clOrderLinkId       String?
   symbol              String
   exchange            Exchange

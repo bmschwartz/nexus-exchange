@@ -218,8 +218,13 @@ export const getMemberOrders = async (ctx: Context, { membershipId, limit, offse
 
 export const cancelOrders = async (ctx: Context, orders: Order[]) => {
   const cancelMessages = orders.map(
-    async ({id: orderId, exchangeAccountId}: Order) => ctx.messenger.sendCancelBitmexOrder(exchangeAccountId, orderId),
-  )
+    async ({remoteOrderId, exchangeAccountId}: Order) => {
+      if (!remoteOrderId) {
+        return null
+      }
+      return ctx.messenger.sendCancelBitmexOrder(exchangeAccountId, remoteOrderId)
+    },
+  ).filter(Boolean)
 
   await Promise.allSettled(cancelMessages)
 }

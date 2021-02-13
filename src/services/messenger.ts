@@ -20,7 +20,7 @@ interface Order {
   orderId: string
   status: string
   clOrderId: string
-  clOrderLinkId: string
+  remoteOrderId: string
   orderQty: number
   filledQty: number
   price: number
@@ -34,6 +34,12 @@ interface OrderOperationResponse {
   success: boolean
   errors?: string[]
   orders?: object
+}
+
+interface CancelOrderOperationResponse {
+  success: boolean
+  order?: Order
+  error?: string
 }
 
 interface OrderUpdateMessage {
@@ -316,7 +322,7 @@ export class MessageClient {
     if (success && orders && op) {
       for (const order of Object.values(orders)) {
         const {
-          status: orderStatus, clOrderId, orderQty: quantity, filledQty,
+          status: orderStatus, clOrderId, orderQty: quantity, filledQty, remoteOrderId,
           stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
         }: Order = order
 
@@ -347,7 +353,9 @@ export class MessageClient {
 
           await prisma.order.update({
             where: {clOrderId},
-            data: {status, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp},
+            data: {
+              status, remoteOrderId, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp,
+            },
           })
         } catch (e) {
           // order probably doesn't exist
@@ -381,7 +389,7 @@ export class MessageClient {
     const { order }: OrderUpdateMessage = message.getContent()
 
     if (order) {
-      const { status: orderStatus, clOrderId, clOrderLinkId, orderQty: quantity, filledQty,
+      const { status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
 
@@ -419,7 +427,9 @@ export class MessageClient {
             updateData = { status, lastTimestamp }
             break
           default:
-            updateData = { status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp }
+            updateData = {
+              status, remoteOrderId, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp,
+            }
         }
 
         await prisma.order.update({
@@ -435,7 +445,79 @@ export class MessageClient {
   }
 
   async _orderCanceledConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    message.ack()
+    const { success, order, error }: CancelOrderOperationResponse = message.getContent()
+    const { correlationId: operationId } = message.properties
+
+    if (!operationId) {
+      message.reject(false)
+      return
+    }
+
+    const op = await completeAsyncOperation(prisma, operationId, success, [error])
+
+    if (op && order) {
+      const { status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
+        stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
+      }: Order = order
+
+      let status: OrderStatus
+      if (orderStatus === "Filled") {
+        status = OrderStatus.FILLED
+      } else if (orderStatus === "PartiallyFilled") {
+        status = OrderStatus.PARTIALLY_FILLED
+      } else if (orderStatus === "Canceled") {
+        status = OrderStatus.CANCELED
+      } else if (orderStatus === "Rejected") {
+        status = OrderStatus.REJECTED
+      } else {
+        status = OrderStatus.NEW
+      }
+
+      try {
+        const existingOrder = await prisma.order.findUnique({where: {clOrderId}, select: {lastTimestamp: true}})
+
+        if (!existingOrder) {
+          message.reject()
+          return
+        }
+
+        const currentLastTimestamp = existingOrder?.lastTimestamp
+        if (currentLastTimestamp === undefined || currentLastTimestamp === null) {
+          message.reject(true)
+          return
+        }
+
+        let updateData
+        switch (status) {
+          case OrderStatus.CANCELED:
+          case OrderStatus.REJECTED:
+            updateData = {status, lastTimestamp}
+            break
+          default:
+            updateData = {
+              status, remoteOrderId, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp,
+            }
+        }
+
+        await prisma.order.update({
+          where: {clOrderId},
+          data: updateData,
+        })
+      } catch (e) {
+        // order probably doesn't exist
+      }
+    } else if (error && op) {
+      if (!op.payload) {
+        return
+      }
+      const orderId = op.payload["orderId"]
+
+      if (!orderId) {
+        return
+      }
+
+      await prisma.order.update({where: { remoteOrderId: orderId }, data: { error }})
+    }
   }
 
   async _positionUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
