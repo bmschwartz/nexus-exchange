@@ -3,17 +3,17 @@ import { Context } from "../context"
 
 export const getAsyncOperation = async (ctx: Context, id: string): Promise<AsyncOperation | null> => {
   return ctx.prisma.asyncOperation.findUnique({
-    where: { id }
+    where: { id },
   })
 }
 
 export const createAsyncOperation = async (prisma: PrismaClient, data: any, opType: OperationType): Promise<AsyncOperation | null> => {
   return prisma.asyncOperation.create({
-    data: { ...data, opType }
+    data: { ...data, opType },
   })
 }
 
-export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, error?: string): Promise<AsyncOperation | null> => {
+export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, errors?: (string | undefined)[]): Promise<AsyncOperation | null> => {
   const exists = await prisma.asyncOperation.count({ where: { id } })
 
   if (!exists) {
@@ -25,8 +25,8 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
     data: {
       complete: true,
       success,
-      error,
-    }
+      error: errors?.join(","),
+    },
   })
 }
 

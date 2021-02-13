@@ -32,7 +32,7 @@ interface Order {
 
 interface OrderOperationResponse {
   success: boolean
-  error?: string
+  errors?: string[]
   orders?: object
 }
 
@@ -235,7 +235,7 @@ export class MessageClient {
       return
     }
 
-    await completeAsyncOperation(prisma, operationId, success, error)
+    await completeAsyncOperation(prisma, operationId, success, [error])
 
     try {
       if (success) {
@@ -269,7 +269,7 @@ export class MessageClient {
       return
     }
 
-    const operation = await completeAsyncOperation(prisma, operationId, success, error)
+    const operation = await completeAsyncOperation(prisma, operationId, success, [error])
 
     if (operation && accountId && success) {
       switch (operation.opType) {
@@ -303,7 +303,7 @@ export class MessageClient {
   }
 
   async _orderCreatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
-    const { success, orders, error }: OrderOperationResponse = message.getContent()
+    const { success, orders, errors }: OrderOperationResponse = message.getContent()
     const { correlationId: operationId } = message.properties
 
     if (!operationId) {
@@ -311,10 +311,9 @@ export class MessageClient {
       return
     }
 
-    const op = await completeAsyncOperation(prisma, operationId, success, error)
+    const op = await completeAsyncOperation(prisma, operationId, success, errors)
 
     if (success && orders && op) {
-
       for (const order of Object.values(orders)) {
         const {
           status: orderStatus, clOrderId, orderQty: quantity, filledQty,
