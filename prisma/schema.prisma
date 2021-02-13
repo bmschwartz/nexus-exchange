@@ -148,6 +148,7 @@ model Order {
   stopTriggerType     StopTriggerType?
   pegOffsetValue      Float?
   pegPriceType        PegPriceType?
+  error               String?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @default(now())
   exchangeAccount     ExchangeAccount  @relation(fields: [exchangeAccountId], references: [id])

@@ -294,7 +294,7 @@ export class MessageClient {
           break;
         }
         default: {
-          console.error("Invalid op type")
+          break;
         }
       }
     }
@@ -354,7 +354,24 @@ export class MessageClient {
         }
       }
     } else if (errors && op) {
-      console.log(errors, op.payload)
+      if (!op.payload) {
+        return
+      }
+      const ordersPayload = op.payload["orders"]
+      if (!ordersPayload) {
+        return
+      }
+
+      const orderUpdates = Object.entries(errors).map(([key, error]) => {
+        const orderData = ordersPayload[key]
+        if (!orderData) {
+          return null
+        }
+        const orderId: string = orderData["id"]
+        return this._db.order.update({ where: {id: orderId }, data: { status: OrderStatus.REJECTED, error }})
+      }).filter(Boolean)
+
+      await Promise.all(orderUpdates)
     }
 
     message.ack()

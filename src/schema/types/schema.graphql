@@ -51,6 +51,7 @@ type Order @key(fields: "id") {
   stopTriggerType: StopTriggerType
   filledQty: Float
   symbol: String!
+  error: String
   lastTimestamp: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
