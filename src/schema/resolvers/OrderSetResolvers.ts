@@ -1,4 +1,11 @@
-import { getOrderSet, createOrderSet, updateOrderSet, getOrders, getOrderSide } from "../../repository/OrderSetRepository"
+import {
+  getOrderSet,
+  createOrderSet,
+  updateOrderSet,
+  getOrders,
+  getOrderSide,
+  cancelOrderSet,
+} from "../../repository/OrderSetRepository"
 import { Context } from "src/context"
 
 export const OrderSetQueries = {
@@ -31,7 +38,13 @@ export const OrderSetMutations = {
       },
     } = args
 
-    const orderSet = await createOrderSet(ctx, { groupId, exchangeAccountIds, symbol, exchange, description, side, orderType, closeOrderSet, leverage, price, stopPrice, percent, stopTriggerType, trailingStopPercent })
+    const orderSet = await createOrderSet(ctx,
+      {
+        groupId, exchangeAccountIds, symbol, exchange, description,
+        side, orderType, closeOrderSet, leverage, price, stopPrice,
+        percent, stopTriggerType, trailingStopPercent,
+      },
+    )
 
     return { orderSet }
   },
@@ -42,6 +55,19 @@ export const OrderSetMutations = {
     } = args
 
     return updateOrderSet(ctx, { orderSetId, description })
+  },
+
+  async cancelOrderSet(parent: any, args: any, ctx: Context) {
+    const {
+      input: { orderSetId, stopOrderTypes },
+    } = args
+
+    try {
+      await cancelOrderSet(ctx, { orderSetId, stopOrderTypes })
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: String(error) }
+    }
   },
 }
 

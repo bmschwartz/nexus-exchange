@@ -1,6 +1,7 @@
-import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType } from "@prisma/client";
+import { OrderSet, OrderSide, OrderType, Exchange, Order, BitmexCurrency, BinanceCurrency, StopTriggerType, OrderStatus } from "@prisma/client";
 import { Context } from "src/context";
 import { createOrdersForExchangeAccounts } from "./ExchangeAccountRepository";
+import {cancelOrders} from "./OrderRepository";
 
 export enum StopOrderType {
   NONE = "NONE",
@@ -32,6 +33,7 @@ interface UpdateOrderSetInput {
 
 interface CancelOrderSetInput {
   orderSetId: string;
+  stopOrderTypes?: StopOrderType[];
 }
 
 interface OrdersInput {
@@ -133,20 +135,26 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
   return orderSet
 }
 
-export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput): Promise<OrderSet | null> => {
-  const { orderSetId } = data
-  // const orderSet = ctx.prisma.orderSet.update({
-  //   where: { id: Number(orderSetId) },
-  //   data: { status: OrderSetStatus.CANCELED },
-  // })
+export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput) => {
+  const { orderSetId, stopOrderTypes } = data
 
-  // if (!orderSet) {
-  //   return null
-  // }
+  const whereClause = {
+    orderSetId,
+    status: { in: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
+  }
+  if (stopOrderTypes?.includes(StopOrderType.NONE)) {
+    whereClause["AND"] = { stopPrice: null, trailingStopPercent: null }
+  } else if (stopOrderTypes?.includes(StopOrderType.STOP_LIMIT)) {
+    whereClause["NOT"] = { stopPrice: null }
+  } else if (stopOrderTypes?.includes(StopOrderType.TRAILING_STOP)) {
+    whereClause["NOT"] = { trailingStopPercent: null }
+  }
 
-  // emit orderset canceled updated message
+  const orders = await ctx.prisma.order.findMany({
+    where: whereClause,
+  })
 
-  return null
+  await cancelOrders(ctx, orders)
 }
 
 export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopOrderType }: OrdersInput): Promise<OrdersResult> => {

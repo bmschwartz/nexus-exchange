@@ -62,7 +62,7 @@ input OrderInput {
 }
 
 input CancelOrderInput {
-  id: String!
+  id: ID!
 }
 
 type CancelOrderResponse {
@@ -131,6 +131,7 @@ input UpdateOrderSetInput {
 
 input CancelOrderSetInput {
   orderSetId: ID!
+  stopOrderTypes: [StopOrderType!]
 }
 
 type CreateOrderSetResult {
@@ -143,7 +144,7 @@ type UpdateOrderSetResult {
 }
 
 type CancelOrderSetResult {
-  operationId: ID
+  success: Boolean!
   error: String
 }
 

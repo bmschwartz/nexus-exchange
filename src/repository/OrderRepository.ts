@@ -1,6 +1,7 @@
 import { v4 as uuid4 } from "uuid"
 import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } from "@prisma/client";
 import { Context } from "../context";
+import {getAllSettledResults} from "../helper";
 
 export interface MemberOrdersInput {
   membershipId: string
@@ -55,7 +56,7 @@ export const cancelOrder = async (ctx: Context, orderId: string) => {
 
   await ctx.prisma.order.update({
     where: { id: orderId },
-    data: { status: OrderStatus.CANCELED }
+    data: { status: OrderStatus.CANCELED },
   })
 
   // todo emit cancel order message
@@ -201,6 +202,14 @@ export const getMemberOrders = async (ctx: Context, { membershipId, limit, offse
 
   return {
     orders,
-    totalCount: orderCount
+    totalCount: orderCount,
   }
+}
+
+export const cancelOrders = async (ctx: Context, orders: Order[]) => {
+  const cancelMessages = orders.map(
+    ({id: orderId, exchangeAccountId}: Order) => ctx.messenger.sendCancelBitmexOrder(exchangeAccountId, orderId),
+  )
+
+  await Promise.allSettled(cancelMessages)
 }
