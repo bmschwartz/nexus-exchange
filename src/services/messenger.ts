@@ -353,6 +353,8 @@ export class MessageClient {
           // order probably doesn't exist
         }
       }
+    } else if (errors && op) {
+      console.log(errors, op.payload)
     }
 
     message.ack()

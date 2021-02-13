@@ -13,11 +13,19 @@ export const createAsyncOperation = async (prisma: PrismaClient, data: any, opTy
   })
 }
 
-export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, errors?: (string | undefined)[]): Promise<AsyncOperation | null> => {
+export const completeAsyncOperation = async (prisma: PrismaClient, id: string, success: boolean, errors?: string[] | object): Promise<AsyncOperation | null> => {
   const exists = await prisma.asyncOperation.count({ where: { id } })
 
   if (!exists) {
     return null
+  }
+
+  let errorString
+  const errorSeparator = " - "
+  if (Array.isArray(errors)) {
+    errorString = errors.join(errorSeparator)
+  } else if (typeof errors === "object") {
+    errorString = Object.entries(errors).map(entry => `${entry[0]}: ${entry[1]}`).join(errorSeparator)
   }
 
   return prisma.asyncOperation.update({
@@ -25,7 +33,7 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
     data: {
       complete: true,
       success,
-      error: errors?.join(","),
+      error: errorString,
     },
   })
 }

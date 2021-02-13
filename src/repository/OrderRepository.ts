@@ -1,7 +1,6 @@
 import { v4 as uuid4 } from "uuid"
 import { Exchange, Order, OrderSide, OrderStatus, OrderType, StopTriggerType } from "@prisma/client";
 import { Context } from "../context";
-import {getAllSettledResults} from "../helper";
 
 export interface MemberOrdersInput {
   membershipId: string
@@ -12,6 +11,10 @@ export interface MemberOrdersInput {
 export interface MemberOrdersResult {
   totalCount: number
   orders: Order[]
+}
+
+interface CreateOrdersContainer {
+  [key: string]: object;
 }
 
 export const getOrder = async (ctx: Context, orderId: string) => {
@@ -86,9 +89,10 @@ export const createOrder = async (
 ) => {
   const { percent, stopPrice, trailingStopPercent, stopTriggerType, side, ...realOrderData } = orderData
 
-  let order: object
-  let stopOrder: object | undefined
-  let tslOrder: object | undefined
+  let mainOrder: object
+  let stopOrder: object
+  let tslOrder: object
+  const orders: CreateOrdersContainer = {}
 
   const selectedFields = {
     id: true, clOrderId: true, symbol: true, side: true, orderType: true, closeOrder: true, price: true,
@@ -97,7 +101,7 @@ export const createOrder = async (
   const sharedId = uuid4().replace("-", "").slice(0, 24)
 
   try {
-    order = await ctx.prisma.order.create({
+    mainOrder = await ctx.prisma.order.create({
       data: {
         side,
         ...realOrderData,
@@ -109,7 +113,8 @@ export const createOrder = async (
       select: selectedFields,
     })
 
-    order["percent"] = percent
+    mainOrder["percent"] = percent
+    orders["main"] = mainOrder
 
     if (stopPrice) {
       stopOrder = await ctx.prisma.order.create({
@@ -127,6 +132,7 @@ export const createOrder = async (
       })
 
       stopOrder["percent"] = null
+      orders["stop"] = stopOrder
     }
     if (trailingStopPercent) {
       tslOrder = await ctx.prisma.order.create({
@@ -144,13 +150,14 @@ export const createOrder = async (
       })
 
       tslOrder["percent"] = null
+      orders["tsl"] = tslOrder
     }
   } catch (e) {
     console.error(e)
     return
   }
 
-  if (!order) {
+  if (!mainOrder) {
     return null
   }
 
@@ -161,8 +168,7 @@ export const createOrder = async (
         opId = ""  // TODO: Fix me
         break
       case Exchange.BITMEX:
-        const orders = [order, stopOrder, tslOrder].filter(Boolean)
-        if (order["closeOrder"]) {
+        if (mainOrder["closeOrder"]) {
           opId = await ctx.messenger.sendCloseBitmexPosition(exchangeAccountId, orders)
         } else {
           opId = await ctx.messenger.sendCreateBitmexOrder(exchangeAccountId, orders)
@@ -170,13 +176,17 @@ export const createOrder = async (
         break
     }
   } catch {
-    await ctx.prisma.order.delete({ where: { id: order["id"] } })
+    const deleteOperations = Object.values(orders).map(
+      (toDelete: object) => ctx.prisma.order.delete({ where: { id: toDelete["id"] } }),
+    )
+    await Promise.all(deleteOperations)
+
     return {
       error: "Unable to connect to exchange",
     }
   }
 
-  return order
+  return mainOrder
 }
 
 export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {
@@ -211,5 +221,5 @@ export const cancelOrders = async (ctx: Context, orders: Order[]) => {
     ({id: orderId, exchangeAccountId}: Order) => ctx.messenger.sendCancelBitmexOrder(exchangeAccountId, orderId),
   )
 
-  await Promise.allSettled(cancelMessages)
+  await Promise.all(cancelMessages)
 }
