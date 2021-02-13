@@ -412,9 +412,19 @@ export class MessageClient {
           return
         }
 
+        let updateData
+        switch (status) {
+          case OrderStatus.CANCELED:
+          case OrderStatus.REJECTED:
+            updateData = { status, lastTimestamp }
+            break
+          default:
+            updateData = { status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp }
+        }
+
         await prisma.order.update({
           where: { clOrderId },
-          data: { status, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp },
+          data: updateData,
         })
       } catch (e) {
         // order probably doesn't exist
