@@ -76,8 +76,12 @@ export const OrderSetResolvers = {
     return getOrderSet(ctx, orderSet.id)
   },
 
-  async orders({ id: orderSetId }: any, { limit, offset, stopOrderType }: any, ctx: Context) {
-    return getOrders(ctx, { limit, offset, orderSetId, stopOrderType })
+  async orders({ id: orderSetId }: any, args, ctx: Context) {
+    const {
+      input: { limit, offset, stopOrderType, orderStatus },
+    } = args
+
+    return getOrders(ctx, { limit, offset, orderSetId, stopOrderType, orderStatus })
   },
 
   async side({ id: orderSetId }: any, args: any, ctx: Context) {

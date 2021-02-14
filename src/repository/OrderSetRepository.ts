@@ -38,6 +38,7 @@ interface CancelOrderSetInput {
 
 interface OrdersInput {
   orderSetId: string
+  orderStatus?: OrderStatus
   stopOrderType?: StopOrderType
   limit?: number
   offset?: number
@@ -157,7 +158,7 @@ export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput) =>
   await cancelOrders(ctx, orders)
 }
 
-export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopOrderType }: OrdersInput): Promise<OrdersResult> => {
+export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopOrderType, orderStatus }: OrdersInput): Promise<OrdersResult> => {
   const whereClause = { orderSetId }
 
   switch (stopOrderType) {
@@ -173,6 +174,10 @@ export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopO
       break
     default:
       break
+  }
+
+  if (orderStatus) {
+    whereClause["status"] = orderStatus
   }
 
   const orders = await ctx.prisma.order.findMany({
@@ -196,7 +201,11 @@ export const getOrderSide = async (ctx: Context, orderSetId: string): Promise<Or
   return orderSet && orderSet.side
 }
 
-export const getOrderSetInputError = async (ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, closeOrder: boolean, leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType, trailingStopPercent?: number): Promise<Error | undefined> => {
+export const getOrderSetInputError = async (
+  ctx: Context, symbol: string, exchange: Exchange, percent: number, side: OrderSide, closeOrder: boolean,
+  leverage: number, price?: number, stopPrice?: number, stopTriggerType?: StopTriggerType,
+  trailingStopPercent?: number,
+): Promise<Error | undefined> => {
   if (!exchangeExists(exchange)) {
     return new Error("Exchange does not exist")
   }
@@ -230,8 +239,8 @@ export const getOrderSetInputError = async (ctx: Context, symbol: string, exchan
   } else {
     // market order
     if (stopPrice) {
-      if (side === OrderSide.BUY)
-        currency.lastPrice
+      // if (side === OrderSide.BUY)
+      //   currency.lastPrice
     }
   }
 

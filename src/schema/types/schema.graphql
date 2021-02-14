@@ -82,7 +82,7 @@ type OrderSet @key(fields: "id") {
   side: OrderSide!
   orderType: OrderType!
   closeOrderSet: Boolean!
-  orders(limit: Int, offset: Int, stopOrderType: StopOrderType): OrderSetOrders!
+  orders(input: OrderSetOrdersInput!): OrderSetOrdersResult!
   percent: Float!
   leverage: Float!
   stopPrice: Float
@@ -93,7 +93,14 @@ type OrderSet @key(fields: "id") {
   updatedAt: DateTime!
 }
 
-type OrderSetOrders {
+input OrderSetOrdersInput {
+  limit: Int
+  offset: Int
+  orderStatus: OrderStatus
+  stopOrderType: StopOrderType
+}
+
+type OrderSetOrdersResult {
   totalCount: Int!
   orders: [Order!]!
 }
