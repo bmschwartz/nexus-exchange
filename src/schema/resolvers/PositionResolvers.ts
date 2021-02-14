@@ -1,14 +1,10 @@
 import {
-  addStopToPositions,
-  addTslToPositions,
-  closePositions,
   getPosition,
   getPositionSide,
   getExchangeAccountPositions,
 } from "../../repository/PositionRepository"
 import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
 import { Context } from "../../context"
-import { createOrderSet } from "src/repository/OrderSetRepository"
 
 export const PositionQueries = {
   async position(parent: any, args: any, ctx: Context) {
