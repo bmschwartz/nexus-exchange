@@ -124,7 +124,7 @@ export const updateOrderSet = async (ctx: Context, data: UpdateOrderSetInput): P
   const { orderSetId, description } = data
   const orderSet = ctx.prisma.orderSet.update({
     where: { id: orderSetId },
-    data: { description },
+    data: { description, updatedAt: new Date() },
   })
 
   if (!orderSet) {

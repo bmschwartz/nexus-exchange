@@ -1,3 +1,4 @@
+import * as _ from "lodash"
 import * as Amqp from "amqp-ts"
 import Bull, { Job, JobInformation } from "bull"
 import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "@prisma/client";
@@ -247,12 +248,12 @@ export class MessageClient {
       if (success) {
         await prisma.exchangeAccount.update({
           where: { id: accountId },
-          data: { active: true, lastHeartbeat: new Date() },
+          data: { active: true, lastHeartbeat: new Date(), updatedAt: new Date() },
         })
       } else {
         await prisma.exchangeAccount.update({
           where: { id: accountId },
-          data: { active: false },
+          data: { active: false, updatedAt: new Date() },
         })
       }
     } catch (e) {
@@ -287,6 +288,7 @@ export class MessageClient {
               active: false,
               apiKey: null,
               apiSecret: null,
+              updatedAt: new Date(),
             },
           })
           break;
@@ -295,7 +297,7 @@ export class MessageClient {
         case OperationType.DISABLE_BINANCE_ACCOUNT: {
           await prisma.exchangeAccount.update({
             where: { id: accountId },
-            data: { active: false },
+            data: { active: false, updatedAt: new Date() },
           })
           break;
         }
@@ -354,7 +356,8 @@ export class MessageClient {
           await prisma.order.update({
             where: {clOrderId},
             data: {
-              status, remoteOrderId, quantity, filledQty, price, avgPrice, stopPrice, pegOffsetValue, lastTimestamp,
+              status, remoteOrderId, quantity, filledQty, price, avgPrice,
+              stopPrice, pegOffsetValue, lastTimestamp, updatedAt: new Date(),
             },
           })
         } catch (e) {
@@ -376,7 +379,10 @@ export class MessageClient {
           return null
         }
         const orderId: string = orderData["id"]
-        return this._db.order.update({ where: {id: orderId }, data: { status: OrderStatus.REJECTED, error }})
+        return this._db.order.update({
+          where: {id: orderId },
+          data: { status: OrderStatus.REJECTED, error, updatedAt: new Date() },
+        })
       }).filter(Boolean)
 
       await Promise.all(orderUpdates)
@@ -427,14 +433,23 @@ export class MessageClient {
             updateData = { status, lastTimestamp }
             break
           default:
-            updateData = {
-              status, remoteOrderId, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp,
-            }
+
+          const updateFields = {
+            orderStatus, clOrderId, remoteOrderId, quantity, filledQty,
+            stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
+          }
+
+          updateData = _.pickBy(updateFields, (val, key) => {
+            return !(val === undefined || val === null)
+          })
         }
 
         await prisma.order.update({
           where: { clOrderId },
-          data: updateData,
+          data: {
+            ...updateData,
+            updatedAt: new Date(),
+          },
         })
       } catch (e) {
         // order probably doesn't exist
@@ -501,7 +516,10 @@ export class MessageClient {
 
         await prisma.order.update({
           where: {clOrderId},
-          data: updateData,
+          data: {
+            ...updateData,
+            updatedAt: new Date(),
+          },
         })
       } catch (e) {
         // order probably doesn't exist
@@ -516,7 +534,12 @@ export class MessageClient {
         return
       }
 
-      await prisma.order.update({where: { remoteOrderId: orderId }, data: { error }})
+      await prisma.order.update({
+        where: { remoteOrderId: orderId },
+        data: {
+          error,
+          updatedAt: new Date(),
+        }})
     }
   }
 

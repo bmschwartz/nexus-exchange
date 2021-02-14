@@ -34,6 +34,7 @@ export const completeAsyncOperation = async (prisma: PrismaClient, id: string, s
       complete: true,
       success,
       error: errorString,
+      updatedAt: new Date(),
     },
   })
 }

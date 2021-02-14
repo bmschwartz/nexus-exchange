@@ -59,7 +59,7 @@ export const cancelOrder = async (ctx: Context, orderId: string) => {
 
   await ctx.prisma.order.update({
     where: { id: orderId },
-    data: { status: OrderStatus.CANCELED },
+    data: { status: OrderStatus.CANCELED, updatedAt: new Date() },
   })
 
   // todo emit cancel order message

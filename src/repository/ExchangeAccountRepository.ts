@@ -77,6 +77,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: string, 
         active: false,
         apiKey: null,
         apiSecret: null,
+        updatedAt: new Date(),
       },
     })
     return {
@@ -145,6 +146,7 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
         active: false,
         apiKey: null,
         apiSecret: null,
+        updatedAt: new Date(),
       },
     })
     const operation = await createAsyncOperation(
@@ -212,7 +214,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
     return { success: false, error: new Error(`Invalid API key pair for ${account.exchange}`) }
   }
 
-  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: accountId }, data: { apiKey, apiSecret } })
+  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: accountId }, data: { apiKey, apiSecret, updatedAt: new Date() } })
 
   if (!updatedAccount) {
     return {
@@ -237,6 +239,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
         active: false,
         apiKey: null,
         apiSecret: null,
+        updatedAt: new Date(),
       },
     })
     return {

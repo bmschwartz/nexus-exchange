@@ -91,8 +91,8 @@ async function _fetchTickers() {
     })
     .map((ticker: Ticker) => {
       return _bitmexClient.prisma.bitmexCurrency.update({
-        data: { lastPrice: Number(ticker.last), markPrice: Number(ticker.info.markPrice) },
-        where: { symbol: ticker.symbol }
+        data: { lastPrice: Number(ticker.last), markPrice: Number(ticker.info.markPrice), updatedAt: new Date() },
+        where: { symbol: ticker.symbol },
       })
     })
   await _bitmexClient.prisma.$transaction(upserts)
