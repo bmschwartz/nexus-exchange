@@ -1,7 +1,6 @@
 import { OrderSet, Position } from "@prisma/client";
 import { Context } from "src/context";
 
-
 export interface OrderSetsInput {
   groupId: string
   limit?: number
@@ -18,7 +17,10 @@ export interface GroupPositionsResult {
   positions: Position[]
 }
 
-export const getGroupOrderSets = async (ctx: Context, { groupId, limit, offset }: OrderSetsInput): Promise<OrderSetResult> => {
+export const getGroupOrderSets = async (
+  ctx: Context,
+  { groupId, limit, offset }: OrderSetsInput,
+): Promise<OrderSetResult> => {
   const orderSets = await ctx.prisma.orderSet.findMany({
     take: limit,
     skip: offset,

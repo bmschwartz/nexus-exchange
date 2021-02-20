@@ -16,6 +16,7 @@
     "amqp-ts": "^1.8.0",
     "apollo": "^2.30.2",
     "apollo-server": "2.15.1",
+    "aws-sdk": "^2.848.0",
     "binance-api-node": "^0.10.7",
     "bull": "^3.18.1",
     "ccxt.pro": "git+ssh://git@github.com/TradeNexus/ccxt.pro.git#1ca41783e01d39e937ed7e499f39dccde24e8953",
@@ -24,7 +25,9 @@
     "graphql-shield": "^7.3.3",
     "lodash": "^4.17.20",
     "picomatch": "^2.2.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3",
+    "winston-cloudwatch": "^2.5.0"
   },
   "devDependencies": {
     "@prisma/cli": "^2.16.0",

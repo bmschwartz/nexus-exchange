@@ -60,7 +60,7 @@ export const createExchangeAccount = async (ctx: Context, membershipId: string, 
     },
   })
 
-  let opId: string = ""
+  let opId = ""
   try {
     switch (exchange) {
       case Exchange.BINANCE:
@@ -105,7 +105,7 @@ export const deleteExchangeAccountsForMembership = async (prisma: PrismaClient, 
   }
 
   await Promise.allSettled(
-    accounts.map(async (account: ExchangeAccount) => doDeleteExchangeAccount(prisma, messenger, account))
+    accounts.map(async (account: ExchangeAccount) => doDeleteExchangeAccount(prisma, messenger, account)),
   )
 }
 
@@ -123,12 +123,6 @@ export const deleteExchangeAccount = async (ctx: Context, accountId: string) => 
 }
 
 const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageClient, account: ExchangeAccount) => {
-  const pendingAccountOps = await getPendingDeleteAccountOperations(prisma, account.id)
-
-  if (pendingAccountOps && pendingAccountOps.length > 0) {
-    return { error: "Already deleting account" }
-  }
-
   if (!account.active) {
     let opType: OperationType
     switch (account.exchange) {
@@ -144,8 +138,6 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
       where: { id: account.id },
       data: {
         active: false,
-        apiKey: null,
-        apiSecret: null,
         updatedAt: new Date(),
       },
     })
@@ -162,7 +154,7 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
     return { operationId: operation.id }
   }
 
-  let opId: string = ""
+  let opId = ""
 
   try {
     if (account.active) {
@@ -214,7 +206,10 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
     return { success: false, error: new Error(`Invalid API key pair for ${account.exchange}`) }
   }
 
-  const updatedAccount = await ctx.prisma.exchangeAccount.update({ where: { id: accountId }, data: { apiKey, apiSecret, updatedAt: new Date() } })
+  const updatedAccount = await ctx.prisma.exchangeAccount.update({
+    where: { id: accountId },
+    data: { apiKey, apiSecret, updatedAt: new Date() },
+  })
 
   if (!updatedAccount) {
     return {
@@ -222,7 +217,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
     }
   }
 
-  let opId: string = ""
+  let opId = ""
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
@@ -275,7 +270,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
     return {error: "API Key and Secret are required"}
   }
 
-  let opId: string = ""
+  let opId = ""
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
@@ -307,7 +302,12 @@ export const createOrdersForExchangeAccounts = async (
   orderSet: OrderSet,
   exchangeAccountIds: string[],
 ): Promise<any> => {
-  const { side, exchange, symbol, orderType, price, stopPrice, closeOrderSet, percent, trailingStopPercent, stopTriggerType, leverage } = orderSet
+  const {
+    side, exchange, symbol, orderType, price,
+    stopPrice, closeOrderSet, percent,
+    trailingStopPercent, stopTriggerType, leverage,
+  } = orderSet
+
   const closeOrder = closeOrderSet
 
   const exchangeAccounts = getAllSettledResults(await Promise.allSettled(
@@ -330,7 +330,10 @@ export const createOrdersForExchangeAccounts = async (
           ctx,
           orderSet.id,
           accountId,
-          { side, exchange, symbol, orderType, closeOrder, price, stopPrice, percent, leverage, stopTriggerType, trailingStopPercent },
+          {
+            side, exchange, symbol, orderType, closeOrder, price,
+            stopPrice, percent, leverage, stopTriggerType, trailingStopPercent,
+          },
         ) : null,
       )
       .filter(Boolean),
