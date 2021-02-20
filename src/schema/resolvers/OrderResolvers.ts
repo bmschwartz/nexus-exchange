@@ -1,5 +1,12 @@
 import { getExchangeAccount } from "../../repository/ExchangeAccountRepository"
-import { cancelOrder, getOrder, getOrderSet, getOrderSide, getOrderType } from "../../repository/OrderRepository"
+import {
+  cancelOrder,
+  getFilledPrice,
+  getOrder,
+  getOrderSet,
+  getOrderSide,
+  getOrderType,
+} from "../../repository/OrderRepository"
 import { Context } from "../../context"
 
 export const OrderQueries = {
@@ -22,6 +29,10 @@ export const OrderResolvers = {
 
   async side({ id: orderId }: any, args: any, ctx: Context) {
     return getOrderSide(ctx, orderId)
+  },
+
+  async filledPrice({ id: orderId }: any, args: any, ctx: Context) {
+    return getFilledPrice(ctx, orderId)
   },
 
   async orderType({ id: orderId }: any, args: any, ctx: Context) {

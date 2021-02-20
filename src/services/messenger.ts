@@ -488,6 +488,10 @@ export class MessageClient {
             updateData = { status, lastTimestamp }
             break
           default:
+            const updateFields = {
+              orderStatus, clOrderId, remoteOrderId, quantity, filledQty,
+              stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
+            }
 
           const updateFields = {
             orderStatus, clOrderId, remoteOrderId, quantity, filledQty,
@@ -884,6 +888,7 @@ export class MessageClient {
     logger.info({
       message: "[sendCancelBitmexOrder] Sending message",
       accountId,
+      orderId,
     })
 
     const opType = OperationType.CANCEL_BITMEX_ORDER
@@ -894,6 +899,7 @@ export class MessageClient {
       logger.error({
         message: "[sendCancelBitmexOrder] Error creating async op",
         accountId,
+        orderId,
       })
 
       throw new Error("Could not create asyncOperation")

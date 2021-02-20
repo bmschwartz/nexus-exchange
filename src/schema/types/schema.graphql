@@ -50,6 +50,7 @@ type Order @key(fields: "id") {
   trailingStopPercent: Float
   stopTriggerType: StopTriggerType
   filledQty: Float
+  filledPrice: Float
   symbol: String!
   error: String
   lastTimestamp: DateTime!
