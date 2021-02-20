@@ -189,7 +189,10 @@ export const createOrder = async (
   return mainOrder
 }
 
-export const getMemberOrders = async (ctx: Context, { membershipId, limit, offset }: MemberOrdersInput): Promise<MemberOrdersResult | Error> => {
+export const getMemberOrders = async (
+  ctx: Context,
+  { membershipId, limit, offset }: MemberOrdersInput,
+): Promise<MemberOrdersResult | Error> => {
   const exchangeAccounts = await ctx.prisma.exchangeAccount.findMany({
     where: { membershipId },
   })

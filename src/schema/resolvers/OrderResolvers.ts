@@ -35,7 +35,7 @@ export const OrderResolvers = {
   },
   async exchangeAccount(order: any, args: any, ctx: Context) {
     return getExchangeAccount(ctx, order.exchangeAccountId)
-  }
+  },
 }
 
 export const OrderMutations = {

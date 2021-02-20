@@ -6,7 +6,7 @@ import {
   createExchangeAccount as runCreateExchangeAccount,
   deleteExchangeAccount as runDeleteExchangeAccount,
   updateExchangeAccount as runUpdateExchangeAccount,
-  toggleExchangeAccountActive as runToggleExchangeAccountActive
+  toggleExchangeAccountActive as runToggleExchangeAccountActive,
 } from "../../repository/ExchangeAccountRepository"
 import {getExchangeAccountPosition, getExchangeAccountPositions} from "../../repository/PositionRepository";
 
@@ -55,8 +55,8 @@ export const ExchangeAccountMutations = {
   async createExchangeAccount(parent: any, args: any, ctx: Context) {
     const {
       input: {
-        membershipId, apiKey, apiSecret, exchange
-      }
+        membershipId, apiKey, apiSecret, exchange,
+      },
     } = args
 
     return runCreateExchangeAccount(ctx, membershipId, apiKey, apiSecret, exchange)
@@ -78,5 +78,5 @@ export const ExchangeAccountMutations = {
     const { input: { id: accountId } } = args
 
     return runToggleExchangeAccountActive(ctx, accountId)
-  }
+  },
 }

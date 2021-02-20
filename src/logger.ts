@@ -56,6 +56,10 @@ class Logger {
     }
   }
 
+  debug(data: object) {
+    this._logger.debug(JSON.stringify(data))
+  }
+
   info(data: object) {
     this._logger.info(JSON.stringify(data))
   }

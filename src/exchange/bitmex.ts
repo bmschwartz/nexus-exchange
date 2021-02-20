@@ -35,13 +35,13 @@ class BitmexClient {
     this._loadMarketsQueue = new Bull(
       "loadMarketsQueue",
       SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
     )
 
     this._fetchTickersQueue = new Bull(
       "fetchTickersQueue",
       SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } }
+      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
     )
 
     this.setupQueues()
@@ -76,7 +76,7 @@ async function _loadCurrencyData() {
     return _bitmexClient.prisma.bitmexCurrency.upsert({
       create: data.create,
       update: data.update,
-      where: { symbol: String(data.update.symbol) }
+      where: { symbol: String(data.update.symbol) },
     })
   })
 
@@ -102,7 +102,10 @@ function createMarketData(market: Market): BitmexCurrencyUpsertData {
   const { symbol, underlying, quoteCurrency, lastPrice, markPrice, tickSize, maxPrice } = market.info
   const fractionalDigits = 0
 
-  const symbolData = { symbol, underlying, quoteCurrency, active: market.active, maxPrice, lastPrice, markPrice, tickSize, fractionalDigits }
+  const symbolData = {
+    symbol, underlying, quoteCurrency, active: market.active,
+    maxPrice, lastPrice, markPrice, tickSize, fractionalDigits,
+  }
 
   return {
     create: symbolData,

@@ -158,7 +158,9 @@ export const cancelOrderSet = async (ctx: Context, data: CancelOrderSetInput) =>
   await cancelOrders(ctx, orders)
 }
 
-export const getOrders = async (ctx: Context, { orderSetId, limit, offset, stopOrderType, orderStatus }: OrdersInput): Promise<OrdersResult> => {
+export const getOrders = async (
+  ctx: Context, { orderSetId, limit, offset, stopOrderType, orderStatus }: OrdersInput,
+): Promise<OrdersResult> => {
   const whereClause = { orderSetId }
 
   switch (stopOrderType) {

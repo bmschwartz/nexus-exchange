@@ -4,6 +4,7 @@ import { SETTINGS } from "../settings";
 import { getAllSettledResults } from "../helper";
 import { validateApiKeyAndSecret } from "../repository/ExchangeAccountRepository";
 import { MessageClient } from "./messenger";
+import {logger} from "../logger";
 
 let _db: PrismaClient
 let _messenger: MessageClient
@@ -16,13 +17,13 @@ const HEARTBEAT_TIMEOUT = 20000 // ms
 async function _checkAccountLife(job: Job) {
   const timeoutDate = new Date(Date.now() - HEARTBEAT_TIMEOUT)
   const timedOutAccounts = await _db.exchangeAccount.findMany({
-    where: { active: true, lastHeartbeat: { lt: timeoutDate } }
+    where: { active: true, lastHeartbeat: { lt: timeoutDate } },
   })
 
   getAllSettledResults(await Promise.allSettled(
     timedOutAccounts
       .map(recreateAccount)
-      .filter(Boolean)
+      .filter(Boolean),
   ))
 }
 
@@ -55,11 +56,13 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
 
   const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
   if (!isValidApiKeyAndSecret) {
+    logger.info({ message: `Invalid API keys [${accountId} for ${exchange}]`})
     await _db.exchangeAccount.update({ where: { id: accountId }, data: { active: false, updatedAt: new Date() } })
     return
   }
 
-  console.log(`sending create account ${accountId}`);
+  logger.info({ message: "Sending create account", accountId, exchange })
+
   try {
     switch (exchange) {
       case Exchange.BITMEX:
@@ -68,7 +71,7 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
         return _messenger.sendCreateBinanceAccount(accountId, apiKey, apiSecret)
     }
   } catch (e) {
-    console.error(e)
+    logger.info({ message: "Send create account error", accountId })
   }
 
   return
@@ -84,7 +87,7 @@ export class AccountMonitor {
     this._accountMonitorQueue = new Bull(
       "accountMonitorQueue",
       SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnComplete: true, removeOnFail: true } }
+      { defaultJobOptions: { removeOnComplete: true, removeOnFail: true } },
     )
 
     // give heartbeats a chance to roll in before checking to see if they have expired

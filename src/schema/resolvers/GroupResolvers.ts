@@ -15,7 +15,7 @@ export const GroupResolvers = {
     // TODO This function...
     return {
       binance: [],
-      bitmex: []
+      bitmex: [],
     }
   },
 }

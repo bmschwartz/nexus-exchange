@@ -62,5 +62,5 @@ export const PositionMutations = {
     const { input: { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType } } = args
 
     // return addTslToPositions(ctx, { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType })
-  }
+  },
 }
