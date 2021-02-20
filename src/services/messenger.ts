@@ -493,14 +493,9 @@ export class MessageClient {
               stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
             }
 
-          const updateFields = {
-            orderStatus, clOrderId, remoteOrderId, quantity, filledQty,
-            stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
-          }
-
-          updateData = _.pickBy(updateFields, (val, key) => {
-            return !(val === undefined || val === null)
-          })
+            updateData = _.pickBy(updateFields, (val, key) => {
+              return !(val === undefined || val === null)
+            })
         }
 
         await prisma.order.update({
