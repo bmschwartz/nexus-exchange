@@ -4,13 +4,19 @@ import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
+import {logger} from "../logger";
 
 export const getExchangeAccount = async (ctx: Context, accountId: string) => {
   return ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 }
 
 export const getExchangeAccounts = async (ctx: Context, membershipId: string) => {
-  return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
+  try {
+    return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
+  } catch (e) {
+    logger.info({ message: "[getExchangeAccounts] Error getting exchange accounts", membershipId, error: e })
+    return null
+  }
 }
 
 export const getOrders = async (ctx: Context, id: string) => {
