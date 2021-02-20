@@ -200,7 +200,7 @@ export const getOrders = async (
 
 export const getOrderSide = async (ctx: Context, orderSetId: string): Promise<OrderSide | null> => {
   const orderSet = await ctx.prisma.orderSet.findUnique({ where: { id: orderSetId } })
-  return orderSet && orderSet.side
+  return orderSet ? orderSet.side : null
 }
 
 export const getOrderSetInputError = async (

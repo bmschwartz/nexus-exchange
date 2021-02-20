@@ -2,7 +2,7 @@ import { Exchange, ExchangeAccount, OperationType, OrderSet, PrismaClient } from
 import { MessageClient } from "src/services/messenger";
 import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
-import { createAsyncOperation, getPendingAccountOperations, getPendingDeleteAccountOperations } from "./AsyncOperationRepository";
+import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
 
 export const getExchangeAccount = async (ctx: Context, accountId: string) => {
@@ -19,7 +19,13 @@ export const getOrders = async (ctx: Context, id: string) => {
   })
 }
 
-export const createExchangeAccount = async (ctx: Context, membershipId: string, apiKey: string, apiSecret: string, exchange: Exchange) => {
+export const createExchangeAccount = async (
+  ctx: Context,
+  membershipId: string,
+  apiKey: string,
+  apiSecret: string,
+  exchange: Exchange,
+) => {
   if (!ctx.userId) {
     return {
       error: "No user found!",
