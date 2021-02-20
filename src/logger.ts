@@ -13,31 +13,61 @@ AWS.config.update({
   },
 })
 
-export const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
-  defaultMeta: { service: "nexus-exchange" },
-  transports: [
-    //
-    // - Write all logs with level `error` and below to `error.log`
-    // - Write all logs with level `info` and below to `combined.log`
-    //
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
-  ],
-});
+class Logger {
+  _logger: winston.Logger
 
-logger.add(new WinstonCloudWatch({
-  logGroupName: "nexus-exchange",
-  logStreamName: process.env.NODE_ENV,
-}));
+  constructor() {
+    this._logger = this.initLogger()
 
-//
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-//
-if (process.env.NODE_ENV !== "production") {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+    this._addTransports()
+
+  }
+
+  initLogger(): winston.Logger {
+    return winston.createLogger({
+      level: "info",
+      format: winston.format.json(),
+      defaultMeta: { service: "nexus-exchange" },
+      transports: [
+        //
+        // - Write all logs with level `error` and below to `error.log`
+        // - Write all logs with level `info` and below to `combined.log`
+        //
+        new winston.transports.File({ filename: "error.log", level: "error" }),
+        new winston.transports.File({ filename: "combined.log" }),
+      ],
+    });
+  }
+
+  _addTransports() {
+    this._logger.add(new WinstonCloudWatch({
+      logGroupName: "nexus-exchange",
+      logStreamName: process.env.NODE_ENV,
+    }));
+
+    //
+    // If we're not in production then log to the `console` with the format:
+    // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+    //
+    if (process.env.NODE_ENV !== "production") {
+      this._logger.add(new winston.transports.Console({
+        format: winston.format.simple(),
+      }));
+    }
+  }
+
+  info(data: object) {
+    this._logger.info(JSON.stringify(data))
+  }
+
+  warn(data: object) {
+    this._logger.warn(JSON.stringify(data))
+  }
+
+  error(data: object) {
+    this._logger.error(JSON.stringify(data))
+  }
+
 }
+
+export const logger = new Logger()
