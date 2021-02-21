@@ -123,6 +123,7 @@ export const getMemberPositions = async (
 
   const whereClause = {
     exchangeAccountId: { in: accountIds },
+    quantity: { not: 0 },
     exchangeAccount: {
       active: true,
     },
@@ -139,13 +140,7 @@ export const getMemberPositions = async (
   })
 
   const totalCount = await ctx.prisma.position.count({
-    where: {
-      exchangeAccount: {
-        active: true,
-      },
-      exchangeAccountId: { in: accountIds },
-      symbol,
-    },
+    where: whereClause,
   })
 
   return {
@@ -273,19 +268,21 @@ export const getExchangeAccountPositions = async (
   ctx: Context,
   { exchangeAccountId, limit, offset }: ExchangeAccountPositionsInput,
 ): Promise<ExchangeAccountPositionsResult | Error> => {
+  const whereClause = {
+    exchangeAccount: {
+      id: exchangeAccountId,
+      active: true,
+    },
+  }
+
   const positions: Position[] = await ctx.prisma.position.findMany({
     take: limit,
     skip: offset,
-    where: {
-      exchangeAccount: {
-        id: exchangeAccountId,
-        active: true,
-      },
-    },
+    where: whereClause,
     orderBy: { createdAt: "desc" },
   })
   const totalCount = await ctx.prisma.position.count({
-    where: { exchangeAccountId },
+    where: whereClause,
   })
 
   return {
