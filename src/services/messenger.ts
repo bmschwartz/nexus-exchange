@@ -637,7 +637,10 @@ export class MessageClient {
           },
         })
 
-        const side = ((quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0 ? PositionSide.LONG : PositionSide.SHORT
+        const side = (
+          (quantity !== undefined ? quantity : existingPosition?.quantity)) >= 0
+          ? PositionSide.LONG
+          : PositionSide.SHORT
 
         const inputData = {
           side,
@@ -697,8 +700,8 @@ export class MessageClient {
     logger.info({
       message: "[sendCreateBitmexAccount] Sending message",
       accountId,
-      apiKey: `${apiKey ? apiKey.slice(0, 5) : null }`,
-      apiSecret: `${apiSecret ? apiSecret.slice(0, 5) : null }`,
+      apiKey: apiKey.length > 0 ? `${apiKey.length} characters` : "Not Present",
+      apiSecret: apiSecret.length > 0 ? `${apiSecret.length} characters` : "Not Present",
     })
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BITMEX_ACCOUNT)
 
@@ -719,8 +722,8 @@ export class MessageClient {
     logger.info({
       message: "[sendUpdateBitmexAccount] Sending message",
       accountId,
-      apiKey: `${apiKey ? apiKey.slice(0, 5) : null }`,
-      apiSecret: `${apiSecret ? apiSecret.slice(0, 5) : null }`,
+      apiKey: apiKey.length > 0 ? `${apiKey.length} characters` : "Not Present",
+      apiSecret: apiSecret.length > 0 ? `${apiSecret.length} characters` : "Not Present",
     })
     const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BITMEX_ACCOUNT)
 
@@ -765,8 +768,8 @@ export class MessageClient {
     logger.info({
       message: "[sendCreateBinanceAccount] Sending message",
       accountId,
-      apiKey: `${apiKey ? apiKey.slice(0, 5) : null }`,
-      apiSecret: `${apiSecret ? apiSecret.slice(0, 5) : null }`,
+      apiKey: apiKey.length > 0 ? `${apiKey.length} characters` : "Not Present",
+      apiSecret: apiSecret.length > 0 ? `${apiSecret.length} characters` : "Not Present",
     })
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.CREATE_BINANCE_ACCOUNT)
@@ -788,8 +791,8 @@ export class MessageClient {
     logger.info({
       message: "[sendUpdateBinanceAccount] Sending message",
       accountId,
-      apiKey: `${apiKey ? apiKey.slice(0, 5) : null }`,
-      apiSecret: `${apiSecret ? apiSecret.slice(0, 5) : null }`,
+      apiKey: apiKey.length > 0 ? `${apiKey.length} characters` : "Not Present",
+      apiSecret: apiSecret.length > 0 ? `${apiSecret.length} characters` : "Not Present",
     })
 
     const op = await createAsyncOperation(this._db, { payload }, OperationType.UPDATE_BINANCE_ACCOUNT)
