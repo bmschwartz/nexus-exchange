@@ -12,7 +12,7 @@ let _messenger: MessageClient
 const CHECK_ACCOUNT_JOB = "checkAccountJob"
 const CHECK_ACCOUNT_INTERVAL = 5000 // ms
 
-const HEARTBEAT_TIMEOUT = 20000 // ms
+const HEARTBEAT_TIMEOUT = 60000 // ms
 
 async function _checkAccountLife(job: Job) {
   const timeoutDate = new Date(Date.now() - HEARTBEAT_TIMEOUT)
