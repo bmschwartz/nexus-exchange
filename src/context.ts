@@ -11,7 +11,6 @@ export const accountMonitor = new AccountMonitor(prisma, messenger)
 
 export interface Context {
   userId?: string
-  permissions: string[]
   prisma: PrismaClient
   messenger: MessageClient
   accountMonitor: AccountMonitor
