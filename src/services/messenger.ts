@@ -5,7 +5,7 @@ import { PrismaClient, OperationType, Prisma, PositionSide, OrderStatus } from "
 import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 import { deleteExchangeAccountsForMembership } from "../repository/ExchangeAccountRepository";
-import {logger} from "../logger";
+import { logger } from "../logger";
 
 interface AccountOperationResponse {
   success: boolean
@@ -325,7 +325,7 @@ export class MessageClient {
           case OperationType.DELETE_BITMEX_ACCOUNT:
           case OperationType.DELETE_BINANCE_ACCOUNT: {
             await prisma.exchangeAccount.update({
-              where: {id: accountId},
+              where: { id: accountId },
               data: {
                 active: false,
                 apiKey: null,
@@ -338,8 +338,8 @@ export class MessageClient {
           case OperationType.DISABLE_BITMEX_ACCOUNT:
           case OperationType.DISABLE_BINANCE_ACCOUNT: {
             await prisma.exchangeAccount.update({
-              where: {id: accountId},
-              data: {active: false, updatedAt: new Date()},
+              where: { id: accountId },
+              data: { active: false, updatedAt: new Date() },
             })
             break;
           }
@@ -389,7 +389,7 @@ export class MessageClient {
           status = OrderStatus.NEW
         }
         try {
-          const existingOrder = await prisma.order.findUnique({where: {clOrderId}, select: {lastTimestamp: true}})
+          const existingOrder = await prisma.order.findUnique({ where: { clOrderId }, select: { lastTimestamp: true } })
 
           if (!existingOrder) {
             return
@@ -402,7 +402,7 @@ export class MessageClient {
           }
 
           await prisma.order.update({
-            where: {clOrderId},
+            where: { clOrderId },
             data: {
               status, remoteOrderId, quantity, filledQty, price, avgPrice,
               stopPrice, pegOffsetValue, lastTimestamp, updatedAt: new Date(),
@@ -429,8 +429,8 @@ export class MessageClient {
           }
           const orderId: string = orderData["id"]
           return this._db.order.update({
-            where: {id: orderId},
-            data: {status: OrderStatus.REJECTED, error, updatedAt: new Date()},
+            where: { id: orderId },
+            data: { status: OrderStatus.REJECTED, error, updatedAt: new Date() },
           })
         }).filter(Boolean)
 
@@ -548,7 +548,7 @@ export class MessageClient {
       let updateData
 
       try {
-        const existingOrder = await prisma.order.findUnique({where: {clOrderId}, select: {lastTimestamp: true}})
+        const existingOrder = await prisma.order.findUnique({ where: { clOrderId }, select: { lastTimestamp: true } })
 
         if (!existingOrder) {
           message.reject()
@@ -564,7 +564,7 @@ export class MessageClient {
         switch (status) {
           case OrderStatus.CANCELED:
           case OrderStatus.REJECTED:
-            updateData = {status, lastTimestamp}
+            updateData = { status, lastTimestamp }
             break
           default:
             updateData = {
@@ -573,24 +573,25 @@ export class MessageClient {
         }
 
         await prisma.order.update({
-          where: {clOrderId},
+          where: { clOrderId },
           data: {
             ...updateData,
             updatedAt: new Date(),
           },
         })
       } catch (e) {
-        logger.error({ message: "[_orderCanceledConsumer] Update error", clOrderId, data: updateData })
+        logger.error({ message: "[_orderCanceledConsumer] Update error", error: e, clOrderId, data: updateData })
       }
     } else if (error && op) {
       try {
-
         if (!op.payload) {
+          message.reject()
           return
         }
         const orderId = op.payload["orderId"]
 
         if (!orderId) {
+          message.reject()
           return
         }
 
@@ -599,9 +600,10 @@ export class MessageClient {
           data: {
             error,
             updatedAt: new Date(),
-          }})
+          },
+        })
       } catch (e) {
-        logger.error({ message: "[_orderCanceledConsumer] Update error", error })
+        logger.error({ message: "[_orderCanceledConsumer] Update error", error: e })
       }
     }
   }

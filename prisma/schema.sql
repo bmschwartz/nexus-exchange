@@ -197,7 +197,7 @@ CREATE FUNCTION delete_old_async_operations() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-  DELETE FROM "public"."AsyncOperation" WHERE "createdAt" < NOW() - INTERVAL '3 days';
+  DELETE FROM "public"."AsyncOperation" WHERE "createdAt" < NOW() - INTERVAL '15 minutes';
   RETURN NULL;
 END;
 $$;
