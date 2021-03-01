@@ -186,7 +186,7 @@ export const getOrders = async (
     take: limit,
     skip: offset,
     where: whereClause,
-    orderBy: {id: "asc"},
+    orderBy: { createdAt: "desc" },
   })
   const totalCount = await ctx.prisma.order.count({
     where: whereClause,

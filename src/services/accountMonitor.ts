@@ -10,7 +10,7 @@ let _db: PrismaClient
 let _messenger: MessageClient
 
 const CHECK_ACCOUNT_JOB = "checkAccountJob"
-const CHECK_ACCOUNT_INTERVAL = 10 * 1000 // ms
+const CHECK_ACCOUNT_INTERVAL = 30 * 1000 // ms
 
 const HEARTBEAT_TIMEOUT = 2 * 60 * 1000 // ms
 
