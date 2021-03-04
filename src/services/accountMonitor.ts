@@ -66,8 +66,10 @@ async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: E
   try {
     switch (exchange) {
       case Exchange.BITMEX:
+        await _messenger.sendDeleteBitmexAccount(accountId, true)
         return _messenger.sendCreateBitmexAccount(accountId, apiKey, apiSecret)
       case Exchange.BINANCE:
+        await _messenger.sendDeleteBinanceAccount(accountId, true)
         return _messenger.sendCreateBinanceAccount(accountId, apiKey, apiSecret)
     }
   } catch (e) {
