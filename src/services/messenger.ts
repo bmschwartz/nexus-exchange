@@ -508,7 +508,7 @@ export class MessageClient {
           },
         })
       } catch (e) {
-        logger.error({ message: "[_orderUpdatedConsumer] Error", error: e })
+        logger.error({ message: "[_orderUpdatedConsumer] Error", order })
       }
     }
 
