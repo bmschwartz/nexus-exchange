@@ -345,6 +345,7 @@ export class MessageClient {
             })
             break;
           }
+          case OperationType.CLEAR_BITMEX_NODE:
           default: {
             break;
           }
@@ -746,10 +747,17 @@ export class MessageClient {
     return op.id
   }
 
-  async sendDeleteBitmexAccount(accountId: string, disabling?: boolean) {
+  async sendDeleteBitmexAccount(accountId: string, disabling: boolean, clearing: boolean) {
     const payload = { accountId }
 
-    const opType = disabling ? OperationType.DISABLE_BITMEX_ACCOUNT : OperationType.DELETE_BITMEX_ACCOUNT
+    let opType: OperationType
+    if (disabling) {
+      opType = OperationType.DISABLE_BITMEX_ACCOUNT
+    } else if (clearing) {
+      opType = OperationType.CLEAR_BITMEX_NODE
+    } else {
+      opType = OperationType.DELETE_BITMEX_ACCOUNT
+    }
 
     logger.info({
       message: "[sendDeleteBitmexAccount] Sending message",

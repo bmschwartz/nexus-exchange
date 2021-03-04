@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "OperationType" ADD VALUE 'CLEAR_BITMEX_NODE';

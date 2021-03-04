@@ -175,7 +175,7 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
           opId = await messenger.sendDeleteBinanceAccount(account.id)
           break
         case Exchange.BITMEX:
-          opId = await messenger.sendDeleteBitmexAccount(account.id)
+          opId = await messenger.sendDeleteBitmexAccount(account.id, false, false)
           break
       }
     } else {
@@ -294,7 +294,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
         break
       case Exchange.BITMEX:
         if (account.active) {
-          opId = await ctx.messenger.sendDeleteBitmexAccount(account.id, true)
+          opId = await ctx.messenger.sendDeleteBitmexAccount(account.id, true, false)
         } else {
           opId = await ctx.messenger.sendCreateBitmexAccount(account.id, apiKey, apiSecret)
         }
