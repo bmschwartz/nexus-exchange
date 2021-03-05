@@ -492,7 +492,7 @@ export class MessageClient {
             break
           default:
             const updateFields = {
-              orderStatus, clOrderId, remoteOrderId, quantity, filledQty,
+              status, clOrderId, remoteOrderId, quantity, filledQty,
               stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
             }
 
