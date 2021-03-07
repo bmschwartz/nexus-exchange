@@ -87,10 +87,12 @@ export class AccountMonitor {
   }
 
   async start() {
-    this._accountMonitorJob = schedule.scheduleJob(
-      "accountMonitor",
-      "*/60 * * * * *", // every 60 seconds
-      _checkAccountLife(this._db, this._messenger),
-    )
+    setTimeout(() => {
+      this._accountMonitorJob = schedule.scheduleJob(
+        "accountMonitor",
+        "*/60 * * * * *", // every 60 seconds
+        _checkAccountLife(this._db, this._messenger),
+      )
+    }, 2 * 60 * 1000)  // wait for a while before starting to check account timeouts
   }
 }
