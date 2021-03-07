@@ -1,105 +1,96 @@
+import schedule from "node-schedule"
 import { Exchange, ExchangeAccount, OperationType, PrismaClient } from "@prisma/client";
-import Bull, { Job } from "bull";
-import { SETTINGS } from "../settings";
 import { getAllSettledResults } from "../helper";
 import { validateApiKeyAndSecret } from "../repository/ExchangeAccountRepository";
 import { MessageClient } from "./messenger";
 import {logger} from "../logger";
 
-let _db: PrismaClient
-let _messenger: MessageClient
-
-const CHECK_ACCOUNT_JOB = "checkAccountJob"
-const CHECK_ACCOUNT_INTERVAL = 30 * 1000 // ms
-
 const HEARTBEAT_TIMEOUT = 2 * 60 * 1000 // ms
 
-async function _checkAccountLife(job: Job) {
-  const timeoutDate = new Date(Date.now() - HEARTBEAT_TIMEOUT)
-  const timedOutAccounts = await _db.exchangeAccount.findMany({
-    where: { active: true, lastHeartbeat: { lt: timeoutDate } },
-  })
+function _checkAccountLife(prisma: PrismaClient, messenger: MessageClient) {
+  return async () => {
+    const timeoutDate = new Date(Date.now() - HEARTBEAT_TIMEOUT)
+    const timedOutAccounts = await prisma.exchangeAccount.findMany({
+      where: {active: true, lastHeartbeat: {lt: timeoutDate}},
+    })
 
-  getAllSettledResults(await Promise.allSettled(
-    timedOutAccounts
-      .map(recreateAccount)
-      .filter(Boolean),
-  ))
+    getAllSettledResults(await Promise.allSettled(
+      timedOutAccounts
+        .map(recreateAccount(prisma, messenger))
+        .filter(Boolean),
+    ))
+  }
 }
 
-async function recreateAccount({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount): Promise<string | undefined> {
-  let opType: OperationType
-  switch (exchange) {
-    case Exchange.BITMEX:
-      opType = OperationType.CREATE_BITMEX_ACCOUNT
-      break
-    case Exchange.BINANCE:
-      opType = OperationType.CREATE_BINANCE_ACCOUNT
-      break
-  }
-
-  const query = `
-  SELECT count(*) FROM "AsyncOperation"
-  WHERE
-    "opType" = '${opType}' AND
-    payload ->> 'accountId' = '${accountId}' AND
-    complete = false;`
-  const pendingCreateOpCount = await _db.$queryRaw(query)
-
-  if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
-    return
-  }
-
-  if (!apiKey || !apiSecret) {
-    return
-  }
-
-  const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
-  if (!isValidApiKeyAndSecret) {
-    logger.info({ message: `Invalid API keys [${accountId} for ${exchange}]`})
-    await _db.exchangeAccount.update({ where: { id: accountId }, data: { active: false, updatedAt: new Date() } })
-    return
-  }
-
-  logger.info({ message: "Sending create account", accountId, exchange })
-
-  try {
+function recreateAccount(prisma: PrismaClient, messenger: MessageClient): (account: ExchangeAccount) => Promise<string | undefined> {
+  return async ({ id: accountId, exchange, apiKey, apiSecret }: ExchangeAccount) => {
+    let opType: OperationType
     switch (exchange) {
       case Exchange.BITMEX:
-        await _messenger.sendDeleteBitmexAccount(accountId, false, true)
-        return _messenger.sendCreateBitmexAccount(accountId, apiKey, apiSecret)
+        opType = OperationType.CREATE_BITMEX_ACCOUNT
+        break
       case Exchange.BINANCE:
-        await _messenger.sendDeleteBinanceAccount(accountId, true)
-        return _messenger.sendCreateBinanceAccount(accountId, apiKey, apiSecret)
+        opType = OperationType.CREATE_BINANCE_ACCOUNT
+        break
     }
-  } catch (e) {
-    logger.info({ message: "Send create account error", accountId })
-  }
 
-  return
+    const query = `
+    SELECT count(*) FROM "AsyncOperation"
+    WHERE
+      "opType" = '${opType}' AND
+      payload ->> 'accountId' = '${accountId}' AND
+      complete = false;`
+    const pendingCreateOpCount = await prisma.$queryRaw(query)
+
+    if (!pendingCreateOpCount || pendingCreateOpCount[0]["count"] > 0) {
+      return
+    }
+
+    if (!apiKey || !apiSecret) {
+      return
+    }
+
+    const isValidApiKeyAndSecret = await validateApiKeyAndSecret(exchange, apiKey, apiSecret)
+    if (!isValidApiKeyAndSecret) {
+      logger.info({message: `Invalid API keys [${accountId} for ${exchange}]`})
+      await prisma.exchangeAccount.update({where: {id: accountId}, data: {active: false, updatedAt: new Date()}})
+      return
+    }
+
+    logger.info({message: "Sending create account", accountId, exchange})
+
+    try {
+      switch (exchange) {
+        case Exchange.BITMEX:
+          await messenger.sendDeleteBitmexAccount(accountId, false, true)
+          return messenger.sendCreateBitmexAccount(accountId, apiKey, apiSecret)
+        case Exchange.BINANCE:
+          await messenger.sendDeleteBinanceAccount(accountId, true)
+          return messenger.sendCreateBinanceAccount(accountId, apiKey, apiSecret)
+      }
+    } catch (e) {
+      logger.info({message: "Send create account error", accountId})
+    }
+
+    return
+  }
 }
 
 export class AccountMonitor {
-  _accountMonitorQueue: Bull.Queue
+  _db: PrismaClient
+  _messenger: MessageClient
+  _accountMonitorJob: schedule.Job
 
   constructor(prisma: PrismaClient, messenger: MessageClient) {
-    _db = prisma
-    _messenger = messenger
-
-    this._accountMonitorQueue = new Bull(
-      "accountMonitorQueue",
-      SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnComplete: true, removeOnFail: true } },
-    )
-
-    // give heartbeats a chance to roll in before checking to see if they have expired
-    setTimeout(() => {
-      this._accountMonitorQueue.process(CHECK_ACCOUNT_JOB, _checkAccountLife)
-    }, 1000 * 60)
+    this._db = prisma
+    this._messenger = messenger
   }
 
   async start() {
-    await this._accountMonitorQueue.empty()
-    await this._accountMonitorQueue.add(CHECK_ACCOUNT_JOB, {}, { repeat: { every: CHECK_ACCOUNT_INTERVAL } })
+    this._accountMonitorJob = schedule.scheduleJob(
+      "accountMonitor",
+      "*/60 * * * * *", // every 60 seconds
+      _checkAccountLife(this._db, this._messenger),
+    )
   }
 }
