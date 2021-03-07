@@ -1,14 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client"
 import Bull from "bull";
+import schedule from "node-schedule"
 import { Market, Ticker } from "ccxt";
 import { bitmex as CcxtBitmex } from "ccxt.pro"
-import { SETTINGS } from "../settings";
-
-const LOAD_CURRENCY_JOB = "loadCurrencyJob"
-const LOAD_CURRENCY_INTERVAL = 3600000 // ms
-
-const FETCH_TICKERS_JOB = "fetchTickersJob"
-const FETCH_TICKERS_INTERVAL = 10000 // ms
 
 let _bitmexClient: BitmexClient
 
@@ -18,7 +12,12 @@ interface BitmexCurrencyUpsertData {
 }
 
 export async function initBitmex(prisma: PrismaClient) {
-  _bitmexClient = new BitmexClient(new CcxtBitmex(), prisma)
+  const ccxtClient = new CcxtBitmex()
+  if (process.env.APP_ENV !== "production") {
+    ccxtClient.urls["api"] = ccxtClient.urls["test"]
+  }
+
+  _bitmexClient = new BitmexClient(ccxtClient, prisma)
   await _bitmexClient.start()
 }
 
@@ -28,74 +27,71 @@ class BitmexClient {
   _loadMarketsQueue: Bull.Queue
   _fetchTickersQueue: Bull.Queue
 
+  _loadMarketsJob: schedule.Job
+  _fetchTickersJob: schedule.Job
+
   constructor(client: CcxtBitmex, prisma: PrismaClient) {
     this.client = client
     this.prisma = prisma
-
-    this._loadMarketsQueue = new Bull(
-      "loadMarketsQueue",
-      SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
-    )
-
-    this._fetchTickersQueue = new Bull(
-      "fetchTickersQueue",
-      SETTINGS["REDIS_URL"],
-      { defaultJobOptions: { removeOnFail: true, removeOnComplete: true } },
-    )
-
-    this.setupQueues()
-  }
-
-  setupQueues() {
-    this._loadMarketsQueue.process(LOAD_CURRENCY_JOB, _loadCurrencyData)
-    this._fetchTickersQueue.process(FETCH_TICKERS_JOB, _fetchTickers)
   }
 
   async start() {
     // On initial start, run this once
-    await _loadCurrencyData()
+    await _loadCurrencyData(this.client, this.prisma)()
 
     await this.setupJobs()
   }
 
   async setupJobs() {
-    await this._fetchTickersQueue.empty()
-    await this._loadMarketsQueue.empty()
+    this._loadMarketsJob = schedule.scheduleJob(
+      "loadMarkets",
+      "*/60 * * * *",  // every 60 minutes
+      _loadCurrencyData(this.client, this.prisma),
+    )
 
-    await this._loadMarketsQueue.add(LOAD_CURRENCY_JOB, {}, { repeat: { every: LOAD_CURRENCY_INTERVAL } })
-    await this._fetchTickersQueue.add(FETCH_TICKERS_JOB, {}, { repeat: { every: FETCH_TICKERS_INTERVAL } })
+    this._fetchTickersJob = schedule.scheduleJob(
+      "fetchTickers",
+      "*/10 * * * * *", // every 10 seconds
+      _fetchTickers(this.client, this.prisma),
+    )
   }
 }
 
-async function _loadCurrencyData() {
-  const allMarkets = await _bitmexClient.client.loadMarkets()
+function _loadCurrencyData(client: CcxtBitmex, prisma: PrismaClient) {
+  return async () => {
+    const allMarkets = await client.loadMarkets()
 
-  const upserts = Object.values(allMarkets).map((market: Market) => {
-    const data = createMarketData(market)
-    return _bitmexClient.prisma.bitmexCurrency.upsert({
-      create: data.create,
-      update: data.update,
-      where: { symbol: String(data.update.symbol) },
-    })
-  })
+    const marketUpserts = Object.values(allMarkets)
+      .map((market: Market) => {
+        const data = createMarketData(market)
+        return prisma.bitmexCurrency.upsert({
+          create: data.create,
+          update: data.update,
+          where: {symbol: String(data.update.symbol)},
+        })
+      })
 
-  await _bitmexClient.prisma.$transaction(upserts)
+    await Promise.allSettled(marketUpserts)
+  }
 }
 
-async function _fetchTickers() {
-  const tickers = await _bitmexClient.client.fetchTickers()
-  const upserts = Object.values(tickers)
-    .filter((ticker: Ticker) => {
-      return ticker.last !== undefined
-    })
-    .map((ticker: Ticker) => {
-      return _bitmexClient.prisma.bitmexCurrency.update({
-        data: { lastPrice: Number(ticker.last), markPrice: Number(ticker.info.markPrice), updatedAt: new Date() },
-        where: { symbol: ticker.symbol },
+function _fetchTickers(client: CcxtBitmex, prisma: PrismaClient) {
+  return async () => {
+    const tickers = await client.fetchTickers()
+
+    const tickerUpserts = Object.values(tickers)
+      .filter((ticker: Ticker) => {
+        return ticker.info.lastPrice !== undefined
       })
-    })
-  await _bitmexClient.prisma.$transaction(upserts)
+      .map((ticker: Ticker) => {
+        return prisma.bitmexCurrency.update({
+          data: {lastPrice: Number(ticker.info.lastPrice), markPrice: Number(ticker.info.markPrice), updatedAt: new Date()},
+          where: {symbol: ticker.info.symbol},
+        })
+      })
+
+    await Promise.allSettled(tickerUpserts)
+  }
 }
 
 function createMarketData(market: Market): BitmexCurrencyUpsertData {

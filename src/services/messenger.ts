@@ -6,6 +6,7 @@ import { SETTINGS } from "../settings";
 import { createAsyncOperation, completeAsyncOperation } from "../repository/AsyncOperationRepository";
 import { deleteExchangeAccountsForMembership } from "../repository/ExchangeAccountRepository";
 import { logger } from "../logger";
+import {ASYNC_OPERATION_TTL} from "./asyncOpCleanup";
 
 interface AccountOperationResponse {
   success: boolean
@@ -50,8 +51,6 @@ interface OrderUpdateMessage {
 
 const FLUSH_HEARTBEAT_JOB = "flushHeartbeats"
 const FLUSH_HEARTBEAT_INTERVAL = 5 * 1000 // ms
-
-const SEND_MESSAGE_TTL = 10 * 60 * 1000 // MS
 
 const accountHeartbeats: object = {}
 const heartbeats: Set<string> = new Set<string>()
@@ -716,7 +715,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, SETTINGS["BITMEX_CREATE_ACCOUNT_CMD_KEY"])
 
@@ -740,7 +739,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -773,7 +772,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -798,7 +797,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBinanceExchange?.send(message, SETTINGS["BINANCE_CREATE_ACCOUNT_CMD_KEY"])
 
@@ -823,7 +822,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_UPDATE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -849,7 +848,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBinanceExchange?.send(message, `${SETTINGS["BINANCE_DELETE_ACCOUNT_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -872,7 +871,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CREATE_ORDER_CMD_PREFIX"]}${accountId}`)
 
@@ -901,7 +900,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_UPDATE_ORDER_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -932,7 +931,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CANCEL_ORDER_CMD_KEY_PREFIX"]}${accountId}`)
 
@@ -959,7 +958,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_CLOSE_POSITION_CMD_PREFIX"]}${accountId}`)
 
@@ -985,7 +984,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_ADD_STOP_POSITION_CMD_PREFIX"]}${accountId}`)
 
@@ -1007,7 +1006,7 @@ export class MessageClient {
     }
 
     const message = new Amqp.Message(JSON.stringify(payload),
-      { persistent: true, correlationId: String(op.id), expiration: SEND_MESSAGE_TTL },
+      { persistent: true, correlationId: String(op.id), expiration: ASYNC_OPERATION_TTL },
     )
     this._sendBitmexExchange?.send(message, `${SETTINGS["BITMEX_ADD_TSL_POSITION_CMD_PREFIX"]}${accountId}`)
 
