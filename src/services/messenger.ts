@@ -277,7 +277,12 @@ export class MessageClient {
       return
     }
 
-    await completeAsyncOperation(prisma, operationId, success, [error])
+    const op = await completeAsyncOperation(prisma, operationId, success, [error])
+
+    if (!op) {
+      message.reject(false)
+      return
+    }
 
     try {
       if (success) {
@@ -317,6 +322,11 @@ export class MessageClient {
     }
 
     const operation = await completeAsyncOperation(prisma, operationId, success, [error])
+
+    if (!operation) {
+      message.reject(false)
+      return
+    }
 
     try {
 
@@ -370,6 +380,11 @@ export class MessageClient {
     }
 
     const op = await completeAsyncOperation(prisma, operationId, success, errors)
+
+    if (!op) {
+      message.reject(false)
+      return
+    }
 
     if (success && orders && op) {
       for (const order of Object.values(orders)) {
@@ -529,8 +544,14 @@ export class MessageClient {
 
     const op = await completeAsyncOperation(prisma, operationId, success, [error])
 
+    if (!op) {
+      message.reject(false)
+      return
+    }
+
     if (op && order) {
-      const { status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
+      const {
+        status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
 
