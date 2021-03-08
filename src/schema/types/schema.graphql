@@ -413,7 +413,7 @@ extend type GroupMembership @key(fields: "id") {
   id: ID! @external
   orders(input: MemberOrdersInput!): MemberOrdersResult!
   positions(input: MemberPositionsInput!): MemberPositionsResult!
-  exchangeAccounts: [ExchangeAccount!]!
+  exchangeAccounts(input: MemberExchangeAccountsInput): [ExchangeAccount!]!
 }
 
 type MemberOrdersResult {
@@ -436,6 +436,11 @@ input MemberPositionsInput {
 input MemberOrdersInput {
   limit: Int
   offset: Int
+}
+
+input MemberExchangeAccountsInput {
+  exchange: Exchange
+  activeOnly: Boolean
 }
 
 ###########################

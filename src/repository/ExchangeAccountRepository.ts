@@ -10,9 +10,21 @@ export const getExchangeAccount = async (ctx: Context, accountId: string) => {
   return ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
 }
 
-export const getExchangeAccounts = async (ctx: Context, membershipId: string) => {
+export const getExchangeAccounts = async (
+  ctx: Context,
+  membershipId: string,
+  activeOnly?: boolean,
+  exchange?: string,
+) => {
+  const whereClause = { membershipId }
+  if (activeOnly) {
+    whereClause["active"] = true
+  }
+  if (exchange) {
+    whereClause["exchange"] = exchange
+  }
   try {
-    return ctx.prisma.exchangeAccount.findMany({ where: { membershipId }, orderBy: { exchange: "asc" } })
+    return ctx.prisma.exchangeAccount.findMany({ where: whereClause, orderBy: { exchange: "asc" } })
   } catch (e) {
     logger.info({ message: "[getExchangeAccounts] Error getting exchange accounts", membershipId, error: e })
     return null

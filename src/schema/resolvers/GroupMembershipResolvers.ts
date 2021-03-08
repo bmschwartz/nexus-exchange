@@ -24,8 +24,16 @@ export const GroupMembershipResolvers = {
   },
 
   async exchangeAccounts(membership: any, args: any, ctx: Context) {
+    let activeOnly: boolean
+    let exchange: string
+
+    if (args.input) {
+      activeOnly = args.input.activeOnly
+      exchange = args.input.exchange
+    }
+
     try {
-      return getExchangeAccounts(ctx, membership.id)
+      return getExchangeAccounts(ctx, membership.id, activeOnly, exchange)
     } catch (e) {
       logger.info({
         message: "[GroupMembershipResolvers.exchangeAccounts] Error getting exchange accounts",
