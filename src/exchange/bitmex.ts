@@ -45,13 +45,13 @@ class BitmexClient {
   async setupJobs() {
     this._loadMarketsJob = schedule.scheduleJob(
       "loadMarkets",
-      "*/60 * * * *",  // every 60 minutes
+      "*/60 * * * *",  // every X minutes in */X
       _loadCurrencyData(this.client, this.prisma),
     )
 
     this._fetchTickersJob = schedule.scheduleJob(
       "fetchTickers",
-      "*/10 * * * * *", // every 10 seconds
+      "*/30 * * * * *", // every X seconds in */X
       _fetchTickers(this.client, this.prisma),
     )
   }
