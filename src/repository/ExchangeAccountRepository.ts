@@ -355,8 +355,8 @@ export const createOrdersForExchangeAccounts = async (
           orderSet.id,
           accountId,
           {
-            side, exchange, symbol, orderType, closeOrder, price,
-            stopPrice, percent, leverage, stopTriggerType, trailingStopPercent,
+            side, exchange, symbol, orderType, closeOrder, price: Number(price),
+            stopPrice: Number(stopPrice), percent, leverage, stopTriggerType, trailingStopPercent,
           },
         ) : null,
       )

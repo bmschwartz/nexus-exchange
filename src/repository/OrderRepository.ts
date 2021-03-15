@@ -47,7 +47,7 @@ export const getOrderType = async (ctx: Context, orderId: string) => {
 
 export const getFilledPrice = async (ctx: Context, orderId: string): Promise<number> => {
   const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
-  return order ? order.avgPrice : null
+  return order ? Number(order.avgPrice) : null
 }
 
 export const cancelOrder = async (ctx: Context, orderId: string) => {
