@@ -3,7 +3,8 @@
   "scripts": {
     "start": "node dist/server",
     "clean": "rm -rf dist",
-    "build": "npm -s run clean && npm -s run generate && tsc --build tsconfig.json",
+    "build": "npm -s run clean && npm -s run generate && tsc --build tsconfig.json && npm -s run copy:schema",
+    "copy:schema": "cp src/schema/types/schema.graphql dist/schema/types",
     "generate": "npm -s run generate:prisma",
     "generate:prisma": "prisma generate",
     "postinstall": "npm -s run generate",
