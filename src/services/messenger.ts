@@ -629,6 +629,8 @@ export class MessageClient {
         logger.error({ message: "[_orderCanceledConsumer] Update error", error: e })
       }
     }
+
+    message.ack()
   }
 
   async _positionUpdatedConsumer(prisma: PrismaClient, message: Amqp.Message) {
