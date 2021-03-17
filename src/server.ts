@@ -8,13 +8,15 @@ import { createContext } from "./context"
 import { permissions } from "./permissions"
 import { bootstrap } from "./bootstrap"
 
+const graphVariant = process.env.APOLLO_GRAPH_VARIANT || "current"
+
 const server = new ApolloServer({
   schema: applyMiddleware(
     buildFederatedSchema([{ typeDefs, resolvers }]),
     permissions,
   ),
   engine: {
-    graphVariant: "current",
+    graphVariant,
   },
   context: createContext,
   introspection: true,
