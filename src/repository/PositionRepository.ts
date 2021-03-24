@@ -203,7 +203,6 @@ export const addStopToPositions = async (
               error: "Binance add stop to position not implemented",
             }
           case Exchange.BITMEX:
-            console.log(`adding stop to bitmex ${exchangeAccountId}`)
             opId = await ctx.messenger.sendAddStopBitmexPosition(exchangeAccount.id, { symbol, stopPrice, stopTriggerPriceType })
             break
         }
@@ -225,14 +224,10 @@ export const addTslToPositions = async (
   ctx: Context,
   { exchangeAccountIds, symbol, tslPercent, stopTriggerPriceType }: AddTslToPositionsInput,
 ): Promise<any> => {
-  console.log(`Add TSL to position of ${symbol} on ${exchangeAccountIds.length} accounts`)
-
-  const ops: any[] = getAllSettledResults(await Promise.allSettled(
+  return getAllSettledResults(await Promise.allSettled(
     exchangeAccountIds.map(async (exchangeAccountId: string) => {
-      console.log(exchangeAccountId);
       const exchangeAccount = await ctx.prisma.exchangeAccount.findUnique({ where: { id: exchangeAccountId } })
       if (!exchangeAccount) {
-        console.log("no exchange account")
         return {
           error: "No exchange account found",
         }
@@ -246,7 +241,6 @@ export const addTslToPositions = async (
               error: "Binance add tsl to position not implemented",
             }
           case Exchange.BITMEX:
-            console.log(`adding tsl to bitmex ${exchangeAccountId}`)
             opId = await ctx.messenger.sendAddTslBitmexPosition(exchangeAccount.id, { symbol, tslPercent, stopTriggerPriceType })
             break
         }
@@ -260,8 +254,6 @@ export const addTslToPositions = async (
       }
     }),
   ))
-  console.log(ops)
-  return ops
 }
 
 export const getExchangeAccountPositions = async (

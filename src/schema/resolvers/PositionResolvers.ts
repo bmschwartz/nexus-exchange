@@ -51,14 +51,12 @@ export const PositionResolvers = {
 
 export const PositionMutations = {
   async addStopToPositions(parent: any, args: any, ctx: Context) {
-    console.log("add stop")
     const { input: { exchange, membershipIds, symbol, stopPrice, stopTriggerPriceType } } = args
 
     // return addStopToPositions(ctx, { exchange, membershipIds, symbol, stopPrice, stopTriggerPriceType })
   },
 
   async addTslToPositions(parent: any, args: any, ctx: Context) {
-    console.log("add tsl")
     const { input: { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType } } = args
 
     // return addTslToPositions(ctx, { exchange, membershipIds, symbol, tslPercent, stopTriggerPriceType })
