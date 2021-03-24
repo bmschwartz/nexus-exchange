@@ -170,6 +170,7 @@ export const getOrders = async (
       break
     case StopOrderType.STOP_LIMIT:
       whereClause["NOT"] = { stopPrice: null }
+      whereClause["trailingStopPercent"] = null
       break
     case StopOrderType.TRAILING_STOP:
       whereClause["NOT"] = { trailingStopPercent: null }

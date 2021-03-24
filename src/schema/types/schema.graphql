@@ -68,7 +68,7 @@ input CancelOrderInput {
 }
 
 type CancelOrderResponse {
-  operationId: ID
+  success: Boolean!
   error: String
 }
 
