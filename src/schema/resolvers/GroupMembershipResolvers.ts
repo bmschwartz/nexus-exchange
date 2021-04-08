@@ -5,14 +5,17 @@ import { Context } from "../../context"
 import {logger} from "../../logger";
 
 export const GroupMembershipResolvers = {
-  async orders(membership: any, { limit, offset }: any, ctx: Context) {
+  async orders(membership: any, args: any, ctx: Context) {
+    const {
+      input: { limit, offset },
+    } = args
     return getMemberOrders(ctx, { limit, offset, membershipId: membership.id })
   },
 
   async positions(membership: any, args: any, ctx: Context) {
     try {
-      const {input: {symbol, exchange, limit, offset}} = args
-      return getMemberPositions(ctx, { symbol, exchange, limit, offset, membershipId: membership.id })
+      const {input: { symbol, exchange, limit, offset, side } } = args
+      return getMemberPositions(ctx, { symbol, exchange, limit, offset, side, membershipId: membership.id })
     } catch (e) {
       logger.info({
         message: "[GroupMembershipResolvers.positions] Error getting positions",

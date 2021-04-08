@@ -14,7 +14,7 @@ interface Order {
   clOrderId: string
   remoteOrderId: string
   orderQty: number
-  filledQty: number
+  filled: number
   price: number
   avgPrice: number
   stopPrice: number
@@ -180,7 +180,7 @@ export class MessageClient {
     if (success && orders && op) {
       for (const order of Object.values(orders)) {
         const {
-          status: orderStatus, clOrderId, orderQty: quantity, filledQty, remoteOrderId,
+          status: orderStatus, clOrderId, orderQty: quantity, filled, remoteOrderId,
           stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
         }: Order = order
 
@@ -212,7 +212,7 @@ export class MessageClient {
           await prisma.order.update({
             where: { clOrderId },
             data: {
-              status, remoteOrderId, quantity, filledQty, price, avgPrice,
+              status, remoteOrderId, quantity, filledQty: filled, price, avgPrice,
               stopPrice, pegOffsetValue, lastTimestamp, updatedAt: new Date(),
             },
           })
@@ -258,7 +258,7 @@ export class MessageClient {
     logger.debug({ message: "[_orderUpdatedConsumer] Received message" })
 
     if (order) {
-      const { status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
+      const { status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filled,
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
 
@@ -297,7 +297,7 @@ export class MessageClient {
             break
           default:
             const updateFields = {
-              status, clOrderId, remoteOrderId, quantity, filledQty,
+              status, clOrderId, remoteOrderId, quantity, filledQty: filled,
               stopPrice, avgPrice, price, pegOffsetValue, lastTimestamp,
             }
 
@@ -342,7 +342,7 @@ export class MessageClient {
 
     if (op && order) {
       const {
-        status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filledQty,
+        status: orderStatus, clOrderId, remoteOrderId, orderQty: quantity, filled,
         stopPrice, avgPrice, price, pegOffsetValue, timestamp: lastTimestamp,
       }: Order = order
 
@@ -382,7 +382,7 @@ export class MessageClient {
             break
           default:
             updateData = {
-              status, remoteOrderId, quantity, filledQty, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp,
+              status, remoteOrderId, quantity, filledQty: filled, price, stopPrice, pegOffsetValue, avgPrice, lastTimestamp,
             }
         }
 

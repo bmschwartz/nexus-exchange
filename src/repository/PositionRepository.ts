@@ -1,4 +1,4 @@
-import { Exchange, Position, PositionSide, StopTriggerType } from "prisma";
+import { Exchange, Position, StopTriggerType, PositionSide } from "prisma";
 import { Context } from "src/context";
 import { getAllSettledResults } from "../helper";
 
@@ -8,6 +8,7 @@ export interface MemberPositionsInput {
   symbol?: string
   limit?: number
   offset?: number
+  side?: string
 }
 
 export interface MemberPositionsResult {
@@ -98,7 +99,7 @@ export const createPosition = async (
 
 export const getMemberPositions = async (
   ctx: Context,
-  { symbol, exchange, membershipId, limit, offset }: MemberPositionsInput,
+  { symbol, exchange, membershipId, limit, offset, side }: MemberPositionsInput,
 ): Promise<MemberPositionsResult | Error> => {
   let accountIds: string[] = []
 
@@ -130,6 +131,9 @@ export const getMemberPositions = async (
   }
   if (symbol) {
     whereClause["symbol"] = symbol
+  }
+  if (side) {
+    whereClause["side"] = side
   }
 
   const positions: Position[] = await ctx.prisma.position.findMany({

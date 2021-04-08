@@ -427,10 +427,11 @@ type MemberPositionsResult {
 }
 
 input MemberPositionsInput {
-  exchange: Exchange
-  symbol: String
   limit: Int
   offset: Int
+  symbol: String
+  exchange: Exchange
+  side: PositionSide
 }
 
 input MemberOrdersInput {
