@@ -240,7 +240,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
 
   const updatedAccount = await ctx.prisma.exchangeAccount.update({
     where: { id: accountId },
-    data: { apiKey, apiSecret, active: true, updatedAt: new Date() },
+    data: { apiKey, apiSecret, updatedAt: new Date() },
   })
 
   if (!updatedAccount) {
