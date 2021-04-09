@@ -4,7 +4,7 @@ import { Context } from "../context";
 import { getAllSettledResults } from "../helper"
 import { createAsyncOperation, getPendingAccountOperations } from "./AsyncOperationRepository";
 import { createOrder } from "./OrderRepository";
-import {logger} from "../logger";
+import { logger } from "../logger";
 
 export const getExchangeAccount = async (ctx: Context, accountId: string) => {
   return ctx.prisma.exchangeAccount.findUnique({ where: { id: accountId } })
@@ -199,6 +199,14 @@ const doDeleteExchangeAccount = async (prisma: PrismaClient, messenger: MessageC
     }
   }
 
+  await prisma.exchangeAccount.update({
+    where: { id: account.id },
+    data: {
+      active: false,
+      updatedAt: new Date(),
+    },
+  })
+
   return {
     operationId: opId,
   }
@@ -232,7 +240,7 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
 
   const updatedAccount = await ctx.prisma.exchangeAccount.update({
     where: { id: accountId },
-    data: { apiKey, apiSecret, updatedAt: new Date() },
+    data: { apiKey, apiSecret, active: true, updatedAt: new Date() },
   })
 
   if (!updatedAccount) {
@@ -291,7 +299,7 @@ export const toggleExchangeAccountActive = async (ctx: Context, accountId: strin
   const { apiKey, apiSecret } = account
 
   if (!apiKey || !apiSecret) {
-    return {error: "API Key and Secret are required"}
+    return { error: "API Key and Secret are required" }
   }
 
   let opId = ""
