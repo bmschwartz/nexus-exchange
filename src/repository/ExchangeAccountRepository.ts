@@ -253,10 +253,18 @@ export const updateExchangeAccount = async (ctx: Context, accountId: string, api
   try {
     switch (account.exchange) {
       case Exchange.BINANCE:
-        opId = await ctx.messenger.sendUpdateBinanceAccount(account.id, apiKey, apiSecret)
+        if (account.active) {
+          opId = await ctx.messenger.sendUpdateBinanceAccount(account.id, apiKey, apiSecret)
+        } else {
+          opId = await ctx.messenger.sendCreateBinanceAccount(account.id, apiKey, apiSecret)
+        }
         break
       case Exchange.BITMEX:
-        opId = await ctx.messenger.sendUpdateBitmexAccount(account.id, apiKey, apiSecret)
+        if (account.active) {
+          opId = await ctx.messenger.sendUpdateBitmexAccount(account.id, apiKey, apiSecret)
+        } else {
+          opId = await ctx.messenger.sendCreateBitmexAccount(account.id, apiKey, apiSecret)
+        }
         break
     }
   } catch {
