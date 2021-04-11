@@ -43,6 +43,7 @@ export const createExchangeAccount = async (
   apiKey: string,
   apiSecret: string,
   exchange: Exchange,
+  groupId: string,
 ) => {
   if (!ctx.userId) {
     return {
@@ -76,11 +77,12 @@ export const createExchangeAccount = async (
 
   const account = await ctx.prisma.exchangeAccount.create({
     data: {
-      active: false,
       apiKey,
+      groupId,
       exchange,
       apiSecret,
       membershipId,
+      active: false,
     },
   })
 

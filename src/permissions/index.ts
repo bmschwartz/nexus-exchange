@@ -1,19 +1,40 @@
-import { rule, shield } from "graphql-shield"
-
-const isAuthenticated = rule()((parent, args, { userId }) => {
-  return !!userId
-})
+import { shield } from "graphql-shield"
+import {
+  ExchangeAccountPermissions,
+  ExchangeAccountMutationPermissions,
+  ExchangeAccountQueryPermissions,
+} from "./exchangeAccount";
+import {
+  OrderMutationPermissions,
+  OrderPermissions,
+  OrderQueryPermissions,
+} from "./order";
+import {
+  OrderSetMutationPermissions,
+  OrderSetPermissions,
+  OrderSetQueryPermissions,
+} from "./orderSet";
+import {
+  PositionMutationPermissions,
+  PositionQueryPermissions,
+  PositionPermissions,
+} from "./position";
 
 export const permissions = shield({
   Query: {
-    orderSet: isAuthenticated,
-
-    asyncOperationStatus: isAuthenticated,
+    ...OrderQueryPermissions,
+    ...OrderSetQueryPermissions,
+    ...PositionQueryPermissions,
+    ...ExchangeAccountQueryPermissions,
   },
   Mutation: {
-    createOrderSet: isAuthenticated,
-    updateOrderSet: isAuthenticated,
-
-    cancelOrder: isAuthenticated,
+    ...OrderMutationPermissions,
+    ...OrderSetMutationPermissions,
+    ...PositionMutationPermissions,
+    ...ExchangeAccountMutationPermissions,
   },
+  Order: OrderPermissions,
+  OrderSet: OrderSetPermissions,
+  Position: PositionPermissions,
+  ExchangeAccount: ExchangeAccountPermissions,
 })
